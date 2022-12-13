@@ -1,0 +1,21 @@
+Package: tsg
+Type: Package
+Title: Table Summary Generator
+Version: 0.1.0
+Author: Bhas Abdulsamad
+Maintainer: The package maintainer <connect@bhasabdulsamad.com>
+Description: Generate table summary with ease. 
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Suggests: 
+    testthat (>= 3.0.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.2.2
+Imports:
+    dplyr,
+    tidyr,
+    stringr,
+    janitor,
+    rlang,
+    tibble
