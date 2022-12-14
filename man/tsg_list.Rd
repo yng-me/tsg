@@ -6,14 +6,13 @@
 \usage{
 tsg_list(
   data,
+  list_group,
   var_row,
   ...,
   fn = "tsg_freq",
-  list_grouping = NULL,
   list_name_overall = "ALL",
-  exclude_overall = F,
-  label_var_row = NULL,
-  label_list_grouping = NULL
+  collapse_overall = F,
+  exclude_overall = F
 )
 }
 \arguments{
@@ -25,15 +24,15 @@ tsg_list(
 
 \item{fn}{d}
 
-\item{list_grouping}{e}
-
 \item{list_name_overall}{f}
 
 \item{exclude_overall}{g}
 
+\item{list}{e}
+
 \item{label_var_row}{h}
 
-\item{label_list_grouping}{i}
+\item{label_list}{i}
 }
 \description{
 tsg_list

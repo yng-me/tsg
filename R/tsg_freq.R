@@ -26,11 +26,11 @@ tsg_freq <- function(
     ...
 ) {
 
-  Percent <- NULL
-  Frequency <- NULL
-  percent <- NULL
-  n <- NULL
-  `:=` <- NULL
+  # Percent <- NULL
+  # Frequency <- NULL
+  # percent <- NULL
+  # n <- NULL
+  # `:=` <- NULL
 
   # utils::globalVariables(c('Percent', 'Frequency', 'n'))
 
@@ -43,47 +43,45 @@ tsg_freq <- function(
 
   if(!is.null(group_rows)) {
 
-    create_group <- function(d, g, ...) {
-      if(is.character(g) & length(g) > 0) {
-        for(i in 1:length(g)) {
-          d <- d |> dplyr::group_by(!!as.name(g[i]), ..., .add = T)
-        }
-        return(d)
-      } else {
-        stop('Grouping variable is invalid.')
-      }
-    }
-
     if(use_var_row_as_group == T) {
       var_row_string <- c(var_row_string, group_rows)
-      df <- create_group(data, var_row_string)
     } else {
       var_row_string <- c(group_rows, var_row_string)
-      df <- create_group(data, var_row_string)
     }
 
-    df <- df |>
-      dplyr::count() |>
-      dplyr::ungroup() |>
-      dplyr::mutate({{percent}} := {{n}} / sum({{n}}))
+    df <- data |>
+        tsg_util_create_group(var_row_string) |>
+        dplyr::count() |>
+        dplyr::ungroup() |>
+        dplyr::mutate(percent := n / sum(n))
   }
 
   if(sort_frequency == T) {
-    df <- df |> dplyr::arrange(dplyr::desc({{n}}))
+    df <- df |> dplyr::arrange(dplyr::desc(n))
   }
 
-  df <- df |> dplyr::mutate({{Percent}} := {{percent}} * 100) |>
-    dplyr::select(dplyr::matches(paste0('^', var_row_string, '$')), {{Frequency}} := {{n}}, {{Percent}}) |>
+  df <- df |> dplyr::mutate(Percent := percent * 100) |>
+    dplyr::select(dplyr::matches(paste0('^', var_row_string, '$')), Frequency := n, Percent) |>
     tsg_freq_inclusion(excluded_cols = var_row_string, ...)
 
-  # if(!is.null(code_ref)) {
-  #   df <- df |> recode_ts(code_ref)
-  # }
+  if(!is.null(code_ref)) {
+    df <- df |> recode_ts(code_ref)
+  }
 
   if(!is.null(label)) {
     df <- df |> dplyr::rename((!!as.name(label)) := {{var_row}})
   }
 
-  return(df)
+  return(df %>% dplyr::tibble())
 
 }
+
+
+
+
+
+
+
+
+
+

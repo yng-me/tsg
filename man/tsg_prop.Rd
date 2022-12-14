@@ -2,7 +2,7 @@
 % Please edit documentation in R/tsg_prop.R
 \name{tsg_prop}
 \alias{tsg_prop}
-\title{tsg_prop}
+\title{Title}
 \usage{
 tsg_prop(
   data,
@@ -15,20 +15,8 @@ tsg_prop(
 )
 }
 \arguments{
-\item{data}{a}
-
-\item{var_row}{b}
-
-\item{var_col}{c}
-
-\item{group_rows}{d}
-
-\item{group_cols}{e}
-
-\item{use_var_row_as_group}{f}
-
-\item{...}{g}
+\item{...}{}
 }
 \description{
-tsg_prop
+Title
 }

@@ -24,7 +24,17 @@ tsg_prop_total <- function(
   ) {
 
   `.` <- NULL
+
   g_val <- tolower(group_values_by)
+
+  tsg_util_get_label <- function(col, label) {
+    if(g_val == 'indicators' | g_val == 'indicator') {
+      p <- paste0(col, '||', label)
+    } else {
+      p <- paste0(label, '||', col)
+    }
+    return(p)
+  }
 
   # Check if the argument for 'direction' is valid
   if(!(total_by %in% c('col', 'row'))) {
@@ -50,18 +60,18 @@ tsg_prop_total <- function(
   if(total_by == 'col') {
     pct <- data |>
       janitor::adorn_totals('col', name = t_label) |>
-      janitor::adorn_percentages('col', na.rm = T, dplyr::matches('^pivot_')) |>
+      janitor::adorn_percentages('col', na.rm = T, dplyr::matches('^pivot_|Total')) |>
       dplyr::select(dplyr::starts_with('pivot_'), dplyr::contains('Total')) |>
-      replace(is.na(.), 0) |>
+      # replace(is.na(.), 0) |>
       dplyr::mutate_all(~ . * 100) |>
-      dplyr::rename_all(~ tsg_util_get_label(., g_val, p_label)) |>
+      dplyr::rename_all(~ tsg_util_get_label(., p_label)) |>
       dplyr::tibble()
 
     df <- data |>
       janitor::adorn_totals('col', name = t_label) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::matches('^pivot_')),
-        ~ tsg_util_get_label(., g_val, 'Frequency')
+        ~ tsg_util_get_label(., 'Frequency')
       ) |>
       dplyr::bind_cols(pct) |>
       janitor::adorn_totals() |>
@@ -77,18 +87,18 @@ tsg_prop_total <- function(
       ) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::ends_with('_pl')),
-        ~ tsg_util_get_label(., g_val, p_label)
+        ~ tsg_util_get_label(., p_label)
       ) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::starts_with('pivot_'), -dplyr::contains(p_label)),
-        ~ tsg_util_get_label(., g_val, 'Frequency')
+        ~ tsg_util_get_label(., 'Frequency')
       )
 
     if(!is.null(total_label)) {
       df <- df |>
         dplyr::rename_at(
           dplyr::vars(dplyr::matches('^Total$')),
-          ~ tsg_util_get_label(paste0('pivot_', total_label, '||', .), g_val, 'Frequency')
+          ~ tsg_util_get_label(paste0('pivot_', total_label, '||', .), 'Frequency')
         )
     }
   }
@@ -96,7 +106,7 @@ tsg_prop_total <- function(
   df <- df |>
     dplyr::rename_at(
       dplyr::vars(dplyr::matches('^Total$')),
-      ~ tsg_util_get_label('Total', g_val, 'Frequency')
+      ~ tsg_util_get_label('Total', 'Frequency')
     )
 
   return(df |> tsg_prop_inclusion(...))

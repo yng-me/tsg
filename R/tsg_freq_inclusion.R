@@ -19,11 +19,11 @@ tsg_freq_inclusion <- function(
     exclude_cumulative = F,
     exclude_zero_value = T
 ) {
+#
+#   Frequency <- NULL
+#   Percent <- NULL
 
-  Frequency <- NULL
-  Percent <- NULL
-
-  df <- data
+  df <- data %>% dplyr::tibble()
 
   if(exclude_cumulative == F) {
     cumulative <- data |>
@@ -35,7 +35,6 @@ tsg_freq_inclusion <- function(
       )
     df <- data |> dplyr::bind_cols(cumulative)
   }
-
 
   if(exclude_total == F) {
     df <- df |>
