@@ -1,35 +1,22 @@
-#' tsg_prop_inclusion
-#'
-#' @param data a
-#' @param exclude_freq b
-#' @param exclude_prop c
-#' @param exclude_total d
-#' @param prop_label e
-#'
-#' @return
-#' @export
-#'
-#' @examples
-#'
-
-tsg_prop_inclusion <- function(
+tsg_crosstab_inclusion <- function(
     data,
-    exclude_freq = F,
-    exclude_prop = F,
-    exclude_total = F,
-    prop_label = 'Percent'
+    separator,
+    p_label = 'Percent',
+    exclude_freq = FALSE,
+    exclude_prop = FALSE,
+    exclude_total = FALSE
 ) {
 
-  # Check if both values of include_freq and include_prop are valid.
+  # Check if both values of exclude_freq and include_prop are valid.
   if(exclude_freq == T & exclude_prop == T) {
-    include_freq <- T
-    warning("'include_freq' and 'include_prop' cannot be both 'FALSE'. Defaulted back to 'include_freq = TRUE'")
+    exclude_freq <- T
+    warning("'exclude_freq' and 'include_prop' cannot be both 'FALSE'. Defaulted back to 'exclude_freq = TRUE'")
   }
 
   df <- data
 
-  p <- paste0('\\|\\|', prop_label, '|', prop_label, '\\|\\|')
-  f <- '\\|\\|Frequency|Frequency\\|\\|'
+  p <- paste0(separator, p_label, '|', p_label, separator)
+  f <- paste0(separator, 'Frequency|Frequency', separator)
 
   # Check if to include frequency
   if(exclude_prop == T) {

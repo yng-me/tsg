@@ -2,38 +2,52 @@
 % Please edit documentation in R/tsg_list.R
 \name{tsg_list}
 \alias{tsg_list}
-\title{tsg_list}
+\title{Generate summary tables as a list based on defined grouping or aggregation}
 \usage{
 tsg_list(
   data,
   list_group,
   var_row,
   ...,
-  fn = "tsg_freq",
+  fn = "tsg_frequency",
   list_name_overall = "ALL",
-  collapse_overall = F,
-  exclude_overall = F
+  exclude_overall = FALSE,
+  collapse_overall = FALSE
 )
 }
 \arguments{
-\item{data}{a}
+\item{data}{\strong{Required}. A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
 
-\item{var_row}{b}
+\item{list_group}{\strong{Required}. A factor or categorical variable from \code{data} to be used grouping for the list generated.}
 
-\item{...}{c}
+\item{var_row}{\strong{Required}. column name of the variable to be used as categories.}
 
-\item{fn}{d}
+\item{...}{Accepts valid arguments of the selected function in \code{fn}.}
 
-\item{list_name_overall}{f}
+\item{fn}{Accepts \code{tsg_frequency} | \code{tsg_crosstab}. The default value is \code{tsg_frequency}.}
 
-\item{exclude_overall}{g}
+\item{list_name_overall}{Accepts a string that will be used as name/label for the first list. The default value is \code{All}.}
 
-\item{list}{e}
+\item{exclude_overall}{Whether to exclude the overall (aggregate) table (first table) in the list.}
 
-\item{label_var_row}{h}
-
-\item{label_list}{i}
+\item{collapse_overall}{Whether to conform the structure of the first table with the rest in the list.}
+}
+\value{
+Returns a list of tables aggregated based on values defined in \code{list_group}.
 }
 \description{
-tsg_list
+This function allows you to generate summary tables based on a defined grouping or aggregation.
+You can optionally return table values in either frequency or proportion/percentage or both.
+It uses any \code{tsg_*} valid functions as calculator to generate desired tabulation structure.
+}
+\examples{
+mtcars_by_cyl_freq <- mtcars |>
+  tsg_list(list_group = cyl, var_row = am)
+
+mtcars_by_cyl_freq
+
+mtcars_by_cyl_prop <- mtcars |>
+  tsg_list(list_group = cyl, var_row = am, gear, fn = 'tsg_crosstab')
+
+mtcars_by_cyl_prop
 }

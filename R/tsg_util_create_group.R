@@ -1,4 +1,3 @@
-# [Function] Create column grouping variable/s if defined.
 tsg_util_create_group <- function(d, g, ...) {
   if(is.character(g) & length(g) > 0) {
     for(i in 1:length(g)) {

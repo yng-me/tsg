@@ -1,23 +1,9 @@
-#' tsg_prop_total
-#'
-#' @param data a
-#' @param total_by b
-#' @param group_values_by c
-#' @param format_to_percent d
-#' @param format_precision e
-#' @param total_label f
-#' @param ... g
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
-tsg_prop_total <- function(
+tsg_crosstab_total <- function(
     data,
     total_by = 'row',
+    separator,
     group_values_by = 'statistics',
-    format_to_percent = T,
+    format_to_percent = TRUE,
     format_precision = 2,
     total_label = NULL,
     ...
@@ -29,9 +15,9 @@ tsg_prop_total <- function(
 
   tsg_util_get_label <- function(col, label) {
     if(g_val == 'indicators' | g_val == 'indicator') {
-      p <- paste0(col, '||', label)
+      p <- paste0(col, separator, label)
     } else {
-      p <- paste0(label, '||', col)
+      p <- paste0(label, separator, col)
     }
     return(p)
   }
@@ -54,7 +40,7 @@ tsg_prop_total <- function(
 
   t_label <- 'Total'
   if(!is.null(total_label)) {
-    t_label <- paste0('pivot_', total_label, '||Total')
+    t_label <- paste0('pivot_', total_label, separator, 'Total')
   }
 
   if(total_by == 'col') {
@@ -78,11 +64,12 @@ tsg_prop_total <- function(
       dplyr::tibble()
 
   } else {
+
     df <- data |>
       janitor::adorn_totals(c('row', 'col')) |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::contains('pivot_')),
-        list(pl = ~ if_else(Total == 0, 0, (. / Total) * 100))
+        list(pl = ~ dplyr::if_else(Total == 0, 0, (. / Total) * 100))
         # list(pl = ~ get_prop(., Total))
       ) |>
       dplyr::rename_at(
@@ -98,7 +85,7 @@ tsg_prop_total <- function(
       df <- df |>
         dplyr::rename_at(
           dplyr::vars(dplyr::matches('^Total$')),
-          ~ tsg_util_get_label(paste0('pivot_', total_label, '||', .), 'Frequency')
+          ~ tsg_util_get_label(paste0('pivot_', total_label, separator, .), 'Frequency')
         )
     }
   }
@@ -109,5 +96,5 @@ tsg_prop_total <- function(
       ~ tsg_util_get_label('Total', 'Frequency')
     )
 
-  return(df |> tsg_prop_inclusion(...))
+  return(df |> tsg_crosstab_inclusion(separator = separator, p_label = p_label, ...))
 }

@@ -17,6 +17,8 @@ Imports:
     tidyr,
     stringr,
     janitor,
+    purrr,
     rlang,
-    tibble
+    tibble,
+    openxlsx
 URL: https://github.com/yng-me/tsg

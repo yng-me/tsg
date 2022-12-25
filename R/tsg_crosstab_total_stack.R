@@ -1,14 +1,8 @@
-#' tsg_prop_total_stack
-#'
-#' @param data a
-#' @param ... b
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
-tsg_prop_total_stack <- function(data, ...) {
+tsg_crosstab_total_stack <- function(
+    data,
+    separator,
+    ...
+) {
 
   value <- NULL
 
@@ -23,18 +17,17 @@ tsg_prop_total_stack <- function(data, ...) {
 
   x <- cols |>
     dplyr::mutate(value = stringr::str_remove(value, 'pivot_')) |>
-    dplyr::mutate(value = stringr::str_remove(value, '\\|\\|.*$')) |>
+    dplyr::mutate(value = stringr::str_remove(value,  paste0(separator, '.*$') )) |>
     dplyr::distinct() |>
     dplyr::pull(value)
-
 
   df <- data |>
     dplyr::select(
       dplyr::matches(ex_col_names),
-      dplyr::starts_with(paste0('pivot_', x[1], '||'))
+      dplyr::starts_with(paste0('pivot_', x[1], separator))
     ) |>
     dplyr::mutate_at(dplyr::vars(dplyr::matches(ex_cols)), as.character) |>
-    tsg_prop_total(total_label = x[1], ...) |>
+    tsg_crosstab_total(separator = separator, total_label = x[1], ...) |>
     dplyr::tibble()
 
   for(i in 2:length(x)) {
@@ -42,10 +35,10 @@ tsg_prop_total_stack <- function(data, ...) {
     df_y <- data |>
       dplyr::select(
         dplyr::matches(ex_cols),
-        dplyr::starts_with(paste0('pivot_', x[i], '||'))
+        dplyr::starts_with(paste0('pivot_', x[i], separator))
       ) |>
       dplyr::mutate_at(dplyr::vars(dplyr::matches(ex_cols)), as.character) |>
-      tsg_prop_total(total_label = x[i], ...) |>
+      tsg_crosstab_total(separator = separator, total_label = x[i], ...) |>
       dplyr::select(-dplyr::matches(ex_cols)) |>
       dplyr::tibble()
 

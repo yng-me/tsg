@@ -1,29 +1,15 @@
-#' tsg_freq_inclusion
-#'
-#' @param data a
-#' @param excluded_cols b
-#' @param exclude_total c
-#' @param exclude_cumulative e
-#' @param exclude_zero_value d
-#'
-#' @return
-#' @export
-#'
-#' @examples
-
-
-tsg_freq_inclusion <- function(
+tsg_frequency_inclusion <- function(
     data,
     excluded_cols,
-    exclude_total = F,
-    exclude_cumulative = F,
-    exclude_zero_value = T
+    exclude_total = FALSE,
+    exclude_cumulative = FALSE,
+    exclude_zero_value = TRUE
 ) {
-#
-#   Frequency <- NULL
-#   Percent <- NULL
 
-  df <- data %>% dplyr::tibble()
+  Frequency <- NULL
+  Percent <- NULL
+
+  df <- data |> dplyr::tibble()
 
   if(exclude_cumulative == F) {
     cumulative <- data |>
