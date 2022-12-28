@@ -3,9 +3,9 @@
 #' You can optionally return table values in either frequency or proportion/percentage or both.
 #' It uses any \code{tsg_*} valid functions as calculator to generate desired tabulation structure.
 #'
-#' @param data \strong{Required}. A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
-#' @param list_group \strong{Required}. A factor or categorical variable from \code{data} to be used grouping for the list generated.
-#' @param var_row \strong{Required}. column name of the variable to be used as categories.
+#' @param .data \strong{Required}. A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
+#' @param list_group \strong{Required}. A factor or categorical variable from \code{.data} to be used grouping for the list generated.
+#' @param x \strong{Required}. column name of the variable to be used as categories.
 #' @param ... Accepts valid arguments of the selected function in \code{fn}.
 #' @param fn Accepts \code{tsg_frequency} | \code{tsg_crosstab}. The default value is \code{tsg_frequency}.
 #' @param list_name_overall Accepts a string that will be used as name/label for the first list. The default value is \code{All}.
@@ -17,20 +17,20 @@
 #'
 #' @examples
 #' mtcars_by_cyl_freq <- mtcars |>
-#'   tsg_list(list_group = cyl, var_row = am)
+#'   tsg_list(list_group = cyl, x = am)
 #'
 #' mtcars_by_cyl_freq
 #'
 #' mtcars_by_cyl_prop <- mtcars |>
-#'   tsg_list(list_group = cyl, var_row = am, gear, fn = 'tsg_crosstab')
+#'   tsg_list(list_group = cyl, x = am, gear, fn = 'tsg_crosstab')
 #'
 #' mtcars_by_cyl_prop
 
 
 tsg_list <- function(
-    data,
+    .data,
     list_group,
-    var_row,
+    x,
     ...,
     fn = 'tsg_frequency',
     list_name_overall = 'ALL',
@@ -47,7 +47,7 @@ tsg_list <- function(
 
   f <- eval(as.name(fn))
 
-  list_names <- dplyr::distinct(data, {{list_group}}) |>
+  list_names <- dplyr::distinct(.data, {{list_group}}) |>
     dplyr::collect() |>
     dplyr::pull({{list_group}})
 
@@ -56,25 +56,25 @@ tsg_list <- function(
   if(exclude_overall == F) {
 
     if(collapse_overall == T) {
-      df_all <- data |>
-        f({{var_row}}, use_var_row_as_group = !collapse_overall, ...)
+      df_all <- .data |>
+        f({{x}}, use_x_as_group = !collapse_overall, ...)
 
     } else {
-      df_all <- data |>
-        dplyr::select(-{{var_row}}) |>
-        f({{list_group}}, use_var_row_as_group = !collapse_overall, ...)
+      df_all <- .data |>
+        dplyr::select(-{{x}}) |>
+        f({{list_group}}, use_x_as_group = !collapse_overall, ...)
     }
 
     df[[list_name_overall]] <- df_all
   }
 
   for(i in 1:length(list_names)) {
-    df_d <- data |>
+    df_d <- .data |>
       dplyr::filter({{list_group}} == list_names[i]) |>
       dplyr::select(-{{list_group}})
 
     if(nrow(df_d) > 0) {
-      df[[list_names[i]]] <- df_d |> f({{var_row}}, ...)
+      df[[list_names[i]]] <- df_d |> f({{x}}, ...)
     }
   }
 

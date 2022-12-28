@@ -6,22 +6,19 @@
 \usage{
 tse_write_excel(
   data,
-  wb,
-  sheet,
+  ...,
   title = NULL,
   description = NULL,
   start_col = 2,
   footnote = NULL,
-  options = NULL,
-  ...
+  options = tsg_get_config("facade"),
+  separator = ">"
 )
 }
 \arguments{
 \item{data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
 
-\item{wb}{A workbook object from \code{openxlsx} package.}
-
-\item{sheet}{worksheet (sheet name/number) of the workbook instance.}
+\item{...}{\code{openxlsx} workbook object and sheet name.}
 
 \item{title}{Table title.}
 
@@ -33,7 +30,7 @@ tse_write_excel(
 
 \item{options}{Formatting options.}
 
-\item{...}{Column separator that defines the table hierarchy.}
+\item{separator}{Column separator that defines the table hierarchy.}
 }
 \value{
 A formatted workbook object.

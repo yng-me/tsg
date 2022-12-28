@@ -5,28 +5,29 @@
 \title{Generate cross-tabulation}
 \usage{
 tsg_crosstab(
-  data,
-  var_row,
-  var_col,
-  group_rows = NULL,
-  group_cols = NULL,
-  use_var_row_as_group = FALSE,
+  .data,
+  x,
+  y,
+  x_group = NULL,
+  y_group = NULL,
+  x_label = tsg_get_config("x_label"),
+  use_x_as_group = FALSE,
   separator = ">",
   ...
 )
 }
 \arguments{
-\item{data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{.data}{A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.}
 
-\item{var_row}{\strong{Required}. Row variable to be used as categories.}
+\item{x}{\strong{Required}. Row variable to be used as categories.}
 
-\item{var_col}{\strong{Required}. Column variable.}
+\item{y}{\strong{Required}. Column variable.}
 
-\item{group_rows}{Row grouping variable/s.}
+\item{x_group}{Row grouping variable/s.}
 
-\item{group_cols}{Column grouping variable/s.}
+\item{y_group}{Column grouping variable/s.}
 
-\item{use_var_row_as_group}{Use row variable as grouping.}
+\item{use_x_as_group}{Use row variable as grouping.}
 
 \item{separator}{Column separator that defines the table hierarchy.}
 

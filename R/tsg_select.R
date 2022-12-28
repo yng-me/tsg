@@ -1,12 +1,12 @@
 tsg_select <- function(
     data,
-    group_rows = NULL,
-    group_cols = NULL,
+    x_group = NULL,
+    y_group = NULL,
     ...
 ) {
   data |> dplyr::select(
-      dplyr::matches(paste0('^', group_rows, '$')),
-      dplyr::matches(paste0('^', group_cols, '$')),
+      dplyr::matches(paste0('^', x_group, '$')),
+      dplyr::matches(paste0('^', y_group, '$')),
       ...
     )
 }

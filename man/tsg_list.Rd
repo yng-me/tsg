@@ -5,9 +5,9 @@
 \title{Generate summary tables as a list based on defined grouping or aggregation}
 \usage{
 tsg_list(
-  data,
+  .data,
   list_group,
-  var_row,
+  x,
   ...,
   fn = "tsg_frequency",
   list_name_overall = "ALL",
@@ -16,11 +16,11 @@ tsg_list(
 )
 }
 \arguments{
-\item{data}{\strong{Required}. A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{.data}{\strong{Required}. A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.}
 
-\item{list_group}{\strong{Required}. A factor or categorical variable from \code{data} to be used grouping for the list generated.}
+\item{list_group}{\strong{Required}. A factor or categorical variable from \code{.data} to be used grouping for the list generated.}
 
-\item{var_row}{\strong{Required}. column name of the variable to be used as categories.}
+\item{x}{\strong{Required}. column name of the variable to be used as categories.}
 
 \item{...}{Accepts valid arguments of the selected function in \code{fn}.}
 
@@ -42,12 +42,12 @@ It uses any \code{tsg_*} valid functions as calculator to generate desired tabul
 }
 \examples{
 mtcars_by_cyl_freq <- mtcars |>
-  tsg_list(list_group = cyl, var_row = am)
+  tsg_list(list_group = cyl, x = am)
 
 mtcars_by_cyl_freq
 
 mtcars_by_cyl_prop <- mtcars |>
-  tsg_list(list_group = cyl, var_row = am, gear, fn = 'tsg_crosstab')
+  tsg_list(list_group = cyl, x = am, gear, fn = 'tsg_crosstab')
 
 mtcars_by_cyl_prop
 }

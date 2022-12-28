@@ -1,15 +1,14 @@
 #' @title Generate frequency table
 #' @description Generate a frequency table with optional cumulative total and percent.
 #'
-#' @param data \strong{Required}. A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
-#' @param var_row \strong{Required}. Variable to be used as categories.
-#' @param group_rows \strong{Required}. Accepts a vector of string/character as grouping variables.
-#' @param group_cols Column grouping variable/s.
+#' @param x \strong{Required}. Variable to be used as categories.
+#' @param x_group \strong{Required}. Accepts a vector of string/character as grouping variables.
+#' @param y_group Column grouping variable/s.
 #' @param label Accepts a string or character value to be used as label for variable or grouping variable.
-#' @param code_ref Code reference that will be used to replace the coded value with proper label.
 #' @param sort_frequency Whether to sort the output. It accepts \code{TRUE} (descending) | \code{FALSE} (ascending). The default is \code{FALSE}
-#' @param use_var_row_as_group Use row variable as grouping.
+#' @param use_x_as_group Use row variable as grouping.
 #' @param ... Accepts valid arguments for \code{tsg_frequency_inclusion}.
+#' @param .data
 #'
 #' @return Returns a frequency table of type \code{tibble} with optional cumulative total and percent.
 #' @export
@@ -22,14 +21,13 @@
 #'
 
 tsg_frequency <- function(
-    data,
-    var_row,
-    group_rows = NULL,
-    group_cols = NULL,
-    label = NULL,
-    code_ref = NULL,
+    .data,
+    x,
+    x_group = NULL,
+    y_group = NULL,
+    x_label = tsg_get_config('x_label'),
     sort_frequency = FALSE,
-    use_var_row_as_group = FALSE,
+    use_x_as_group = FALSE,
     ...
 ) {
 
@@ -39,29 +37,29 @@ tsg_frequency <- function(
   n <- NULL
   `:=` <- NULL
 
-  if (!is.data.frame(data) && !is.data.frame(dplyr::collect(data))) {
+  if (!is.data.frame(.data) && !is.data.frame(dplyr::collect(.data))) {
     stop(paste0("Data input must be a valid data frame."))
   }
 
-  var_row_string <- stringr::str_remove(rlang::expr_text(rlang::enquo(var_row)), '~')
+  x_string <- stringr::str_remove(rlang::expr_text(rlang::enquo(x)), '~')
 
-  df <- data |>
-    # tsg_select(group_rows = group_rows, group_cols = group_cols, {{var_row}}) |>
-    dplyr::count({{var_row}}) |>
+  df <- .data |>
+    # tsg_select(x_group = x_group, y_group = y_group, {{x}}) |>
+    dplyr::count({{x}}) |>
     dplyr::collect() |>
     dplyr::mutate(percent = n / sum(n))
 
-  if(!is.null(group_rows)) {
+  if(!is.null(x_group)) {
 
-    if(use_var_row_as_group == T) {
-      var_row_string <- c(var_row_string, group_rows)
+    if(use_x_as_group == T) {
+      x_string <- c(x_string, x_group)
     } else {
-      var_row_string <- c(group_rows, var_row_string)
+      x_string <- c(x_group, x_string)
     }
 
-    df <- data |>
-      tsg_select(group_rows = group_rows, group_cols = group_cols, {{var_row}}) |>
-      tsg_util_create_group(var_row_string) |>
+    df <- .data |>
+      tsg_select(x_group = x_group, y_group = y_group, {{x}}) |>
+      tsg_util_create_group(x_string) |>
       dplyr::count() |>
       dplyr::ungroup() |>
       dplyr::collect() |>
@@ -74,14 +72,14 @@ tsg_frequency <- function(
 
   df <- df |> dplyr::mutate(Percent := percent * 100) |>
     dplyr::select(
-      dplyr::matches(paste0('^', var_row_string, '$')),
+      dplyr::matches(paste0('^', x_string, '$')),
       Frequency := n,
       Percent
     ) |>
-    tsg_frequency_inclusion(excluded_cols = var_row_string, ...)
+    tsg_frequency_inclusion(excluded_cols = x_string, ...)
 
-  if(!is.null(label)) {
-    df <- df |> dplyr::rename((!!as.name(label)) := {{var_row}})
+  if(!is.null(x_label)) {
+    df <- df |> rename((!!as.name(x_label)) := {{x}})
   }
 
   return(df |> dplyr::tibble())

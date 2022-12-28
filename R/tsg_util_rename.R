@@ -1,20 +1,19 @@
 ts_util_rename <- function(data, by = 'value') {
 
-  ref <- NULL
   refs <- NULL
   value <- NULL
   label <- NULL
 
-  if(exists('refs')) {
-    ref <- refs$data_dictionary
+  if(exists('tsg_config')) {
+    refs <- tsg_config$data_dictionary
   }
 
-  if(!is.null(ref)) {
+  if(!is.null(refs)) {
 
     df_name <- names(data)
 
     df_name <- dplyr::as_tibble(names(data)) |>
-      dplyr::left_join(ref, by = by) |>
+      dplyr::left_join(refs, by = by) |>
       dplyr::mutate(label = dplyr::if_else(is.na(label), value, label)) |>
       dplyr::pull(label)
 

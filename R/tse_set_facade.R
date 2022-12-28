@@ -1,6 +1,5 @@
-tse_facade <- function(
-  wb,
-  sheet,
+tse_set_facade <- function(
+  ...,
   header_depth,
   start_row_init,
   start_row,
@@ -74,23 +73,20 @@ tse_facade <- function(
   # Default width of the first column
   start_col_width <- start_col - 1
   openxlsx::setColWidths(
-    wb = wb,
-    sheet = sheet,
+    ...,
     cols = 1:start_col,
     widths = c(rep(2, start_col_width), options$first_col_width)
   )
 
   openxlsx::setRowHeights(
-    wb = wb,
-    sheet = sheet,
+    ...,
     rows = 1:end_row,
     heights = options$row_height
   )
 
   end_row_header <- header_depth + start_row - 1
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$style_header,
     rows = start_row:end_row_header,
     cols = start_col:end_col,
@@ -99,8 +95,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$style_indent,
     rows = 1:end_row,
     cols = start_col:end_col,
@@ -109,8 +104,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$border_right_outer,
     rows = start_row:end_row,
     cols = end_col,
@@ -119,8 +113,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$border_left_outer,
     rows = start_row:end_row,
     cols = start_col,
@@ -129,8 +122,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$border_top_outer,
     rows = start_row,
     cols = start_col:end_col,
@@ -139,8 +131,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$border_bottom_outer,
     rows = end_row,
     cols = start_col:end_col,
@@ -149,8 +140,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$border_header,
     rows = end_row_header,
     cols = start_col:end_col,
@@ -159,8 +149,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$title,
     rows = start_row_init,
     cols = start_col,
@@ -169,8 +158,7 @@ tse_facade <- function(
   )
 
   openxlsx::addStyle(
-    wb = wb,
-    sheet = sheet,
+    ...,
     style = options$footnote,
     rows = end_row + 2,
     cols = start_col,

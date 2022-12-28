@@ -1,4 +1,4 @@
-tsg_util_extract_col <- function(
+tse_util_extract_col <- function(
   df,
   start_col,
   start_row,

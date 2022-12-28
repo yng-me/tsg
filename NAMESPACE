@@ -2,6 +2,6 @@
 
 export(tse_write_excel)
 export(tsg_crosstab)
+export(tsg_crosstab_multi_response)
 export(tsg_frequency)
 export(tsg_list)
-export(tsg_multi_response)

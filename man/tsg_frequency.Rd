@@ -5,35 +5,32 @@
 \title{Generate frequency table}
 \usage{
 tsg_frequency(
-  data,
-  var_row,
-  group_rows = NULL,
-  group_cols = NULL,
-  label = NULL,
-  code_ref = NULL,
+  .data,
+  x,
+  x_group = NULL,
+  y_group = NULL,
+  x_label = tsg_get_config("x_label"),
   sort_frequency = FALSE,
-  use_var_row_as_group = FALSE,
+  use_x_as_group = FALSE,
   ...
 )
 }
 \arguments{
-\item{data}{\strong{Required}. A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{.data}{}
 
-\item{var_row}{\strong{Required}. Variable to be used as categories.}
+\item{x}{\strong{Required}. Variable to be used as categories.}
 
-\item{group_rows}{\strong{Required}. Accepts a vector of string/character as grouping variables.}
+\item{x_group}{\strong{Required}. Accepts a vector of string/character as grouping variables.}
 
-\item{group_cols}{Column grouping variable/s.}
-
-\item{label}{Accepts a string or character value to be used as label for variable or grouping variable.}
-
-\item{code_ref}{Code reference that will be used to replace the coded value with proper label.}
+\item{y_group}{Column grouping variable/s.}
 
 \item{sort_frequency}{Whether to sort the output. It accepts \code{TRUE} (descending) | \code{FALSE} (ascending). The default is \code{FALSE}}
 
-\item{use_var_row_as_group}{Use row variable as grouping.}
+\item{use_x_as_group}{Use row variable as grouping.}
 
 \item{...}{Accepts valid arguments for \code{tsg_frequency_inclusion}.}
+
+\item{label}{Accepts a string or character value to be used as label for variable or grouping variable.}
 }
 \value{
 Returns a frequency table of type \code{tibble} with optional cumulative total and percent.
