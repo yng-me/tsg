@@ -9,27 +9,51 @@ tsg_crosstab_multi_response(
   x,
   ...,
   y = NULL,
+  y_group_separator = ">",
   x_group = NULL,
   x_label = tsg_get_config("x_label"),
-  use_x_as_group = F
+  use_x_as_group = FALSE,
+  format_to_percent = TRUE,
+  group_values_by = "statistics"
 )
 }
 \arguments{
+\item{.data}{A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.}
+
 \item{x}{\strong{Required}. Row variable to be used as categories.}
 
-\item{y}{\strong{Required}. Column variable.}
+\item{...}{Columns with binary-coded response. Use tidyselect specification.}
+
+\item{y}{Column variable to specify for a letter-coded response.}
+
+\item{y_group_separator}{Column separator that defines the table hierarchy.}
 
 \item{x_group}{Column grouping variable/s.}
 
+\item{x_label}{Stubhead label (first column).}
+
 \item{use_x_as_group}{Use row variable as grouping.}
 
-\item{data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{format_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
 
-\item{filter_var}{Use of screening variable.}
+\item{group_values_by}{Whether to group column variables by \code{statistics} or \code{indicators}.}
 }
 \value{
 Returns a cross-table of type \code{tibble}
 }
 \description{
 Generate summary table from a multiple response category
+}
+\examples{
+
+df <- data.frame(
+   category = c("G1", "G1", "G2", "G1", "G2", "G1"),
+   response = c("AB", "AC", "B", "ABC", "AB", "C"),
+   A = c(1, 1, 0, 1, 1, 0),
+   B = c(1, 0, 1, 1, 1, 0),
+   C = c(0, 1, 0, 1, 0, 1)
+ )
+
+df |> tsg_crosstab_multi_response(category, A:C)
+df |> tsg_crosstab_multi_response(category, y = response)
 }

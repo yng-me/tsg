@@ -11,13 +11,13 @@ tsg_crosstab(
   x_group = NULL,
   y_group = NULL,
   x_label = tsg_get_config("x_label"),
-  use_x_as_group = FALSE,
-  separator = ">",
+  y_group_separator = ">",
+  x_as_group = FALSE,
   ...
 )
 }
 \arguments{
-\item{.data}{A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.}
+\item{.data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
 
 \item{x}{\strong{Required}. Row variable to be used as categories.}
 
@@ -27,9 +27,11 @@ tsg_crosstab(
 
 \item{y_group}{Column grouping variable/s.}
 
-\item{use_x_as_group}{Use row variable as grouping.}
+\item{x_label}{Stubhead label (first column).}
 
-\item{separator}{Column separator that defines the table hierarchy.}
+\item{y_group_separator}{Column separator that defines the table hierarchy.}
+
+\item{x_as_group}{Use row variable as grouping.}
 
 \item{...}{Accepts valid arguments for \code{tsg_crosstab_inclusion}.}
 }
@@ -38,4 +40,8 @@ Returns a cross-table of type \code{tibble}
 }
 \description{
 The function can generate a cross-tabulation that supports more than one (1) variable specified in the column.
+}
+\examples{
+
+dplyr::starwars |> tsg_crosstab(species, sex)
 }

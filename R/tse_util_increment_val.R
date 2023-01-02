@@ -1,4 +1,4 @@
-tsg_util_increment_val <- function(vec) {
+tse_util_increment_val <- function(vec) {
   c <- vec[1]
   s <- 1
   for(i in 2:length(vec)) {

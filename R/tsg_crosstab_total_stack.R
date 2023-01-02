@@ -1,6 +1,6 @@
 tsg_crosstab_total_stack <- function(
     data,
-    separator,
+    y_group_separator,
     ...
 ) {
 
@@ -17,17 +17,17 @@ tsg_crosstab_total_stack <- function(
 
   x <- cols |>
     dplyr::mutate(value = stringr::str_remove(value, 'pivot_')) |>
-    dplyr::mutate(value = stringr::str_remove(value,  paste0(separator, '.*$') )) |>
+    dplyr::mutate(value = stringr::str_remove(value,  paste0(y_group_separator, '.*$') )) |>
     dplyr::distinct() |>
     dplyr::pull(value)
 
   df <- data |>
     dplyr::select(
       dplyr::matches(ex_col_names),
-      dplyr::starts_with(paste0('pivot_', x[1], separator))
+      dplyr::starts_with(paste0('pivot_', x[1], y_group_separator))
     ) |>
     dplyr::mutate_at(dplyr::vars(dplyr::matches(ex_cols)), as.character) |>
-    tsg_crosstab_total(separator = separator, total_label = x[1], ...) |>
+    tsg_crosstab_total(y_group_separator = y_group_separator, total_label = x[1], ...) |>
     dplyr::tibble()
 
   for(i in 2:length(x)) {
@@ -35,10 +35,10 @@ tsg_crosstab_total_stack <- function(
     df_y <- data |>
       dplyr::select(
         dplyr::matches(ex_cols),
-        dplyr::starts_with(paste0('pivot_', x[i], separator))
+        dplyr::starts_with(paste0('pivot_', x[i], y_group_separator))
       ) |>
       dplyr::mutate_at(dplyr::vars(dplyr::matches(ex_cols)), as.character) |>
-      tsg_crosstab_total(separator = separator, total_label = x[i], ...) |>
+      tsg_crosstab_total(y_group_separator = y_group_separator, total_label = x[i], ...) |>
       dplyr::select(-dplyr::matches(ex_cols)) |>
       dplyr::tibble()
 

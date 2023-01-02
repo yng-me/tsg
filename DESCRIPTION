@@ -9,6 +9,9 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Suggests: 
+    knitr,
+    gt,
+    rmarkdown,
     testthat (>= 3.0.0)
 Config/testthat/edition: 3
 RoxygenNote: 7.2.2
@@ -22,3 +25,4 @@ Imports:
     tibble,
     openxlsx
 URL: https://github.com/yng-me/tsg
+VignetteBuilder: knitr

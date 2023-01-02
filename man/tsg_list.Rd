@@ -12,7 +12,10 @@ tsg_list(
   fn = "tsg_frequency",
   list_name_overall = "ALL",
   exclude_overall = FALSE,
-  collapse_overall = FALSE
+  collapse_overall = TRUE,
+  save_as_excel = FALSE,
+  formatted = TRUE,
+  filename = NULL
 )
 }
 \arguments{
@@ -31,6 +34,12 @@ tsg_list(
 \item{exclude_overall}{Whether to exclude the overall (aggregate) table (first table) in the list.}
 
 \item{collapse_overall}{Whether to conform the structure of the first table with the rest in the list.}
+
+\item{save_as_excel}{\code{Bolean}. Whether to save the output in Excel. Default is \code{FALSE}.}
+
+\item{formatted}{Whether to apply formatting for the Excel output. Default is \code{FALSE}.}
+
+\item{filename}{Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.}
 }
 \value{
 Returns a list of tables aggregated based on values defined in \code{list_group}.

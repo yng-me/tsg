@@ -9,66 +9,67 @@ tse_set_facade <- function(
   options = NULL
   ) {
 
-  if(is.null(options)) {
-    options <- list()
-    options$first_col_width <- 20
-    options$row_height <- 20
+  options_default <- list()
 
-    options$title <- openxlsx::createStyle(
-      fontSize = 13,
-      textDecoration = 'bold'
-    )
+  options_default$first_col_width <- 20
+  options_default$row_height <- 20
 
-    options$style_indent <- openxlsx::createStyle(
-      indent = 1,
-      numFmt = '#,##0',
-      valign = 'center'
-    )
+  options_default$title <- openxlsx::createStyle(
+    fontSize = 13,
+    textDecoration = 'bold'
+  )
 
-    options$style_header <- openxlsx::createStyle(
-      wrapText = T,
-      valign = 'center',
-      fgFill = '#f5f5f5',
-      border = c('top', 'bottom', 'left', 'right'),
-      borderStyle = 'dashed',
-      borderColour = 'gray'
-    )
+  options_default$style_indent <- openxlsx::createStyle(
+    indent = 1,
+    numFmt = '#,##0',
+    valign = 'center'
+  )
 
-    options$border_right_outer <- openxlsx::createStyle(
-      border = 'right',
-      borderColour = '#757575',
-      borderStyle = 'medium'
-    )
+  options_default$style_header <- openxlsx::createStyle(
+    wrapText = T,
+    valign = 'center',
+    fgFill = '#f5f5f5',
+    border = c('top', 'bottom', 'left', 'right'),
+    borderStyle = 'dashed',
+    borderColour = 'gray'
+  )
 
-    options$border_left_outer <- openxlsx::createStyle(
-      border = 'left',
-      borderColour = '#757575',
-      borderStyle = 'medium'
-    )
+  options_default$border_right_outer <- openxlsx::createStyle(
+    border = 'right',
+    borderColour = '#757575',
+    borderStyle = 'medium'
+  )
 
-    options$border_top_outer <- openxlsx::createStyle(
-      border = 'top',
-      borderColour = '#757575',
-      borderStyle = 'medium'
-    )
+  options_default$border_left_outer <- openxlsx::createStyle(
+    border = 'left',
+    borderColour = '#757575',
+    borderStyle = 'medium'
+  )
 
-    options$border_bottom_outer <- openxlsx::createStyle(
-      border = 'bottom',
-      borderColour = '#757575',
-      borderStyle = 'medium'
-    )
+  options_default$border_top_outer <- openxlsx::createStyle(
+    border = 'top',
+    borderColour = '#757575',
+    borderStyle = 'medium'
+  )
 
-    options$border_header <- openxlsx::createStyle(
-      border = 'bottom',
-      borderColour = '#757575',
-      borderStyle = 'double'
-    )
+  options_default$border_bottom_outer <- openxlsx::createStyle(
+    border = 'bottom',
+    borderColour = '#757575',
+    borderStyle = 'medium'
+  )
 
-    options$footnote <- openxlsx::createStyle(
-      fontSize = 10,
-      textDecoration = 'italic'
-    )
-  }
+  options_default$border_header <- openxlsx::createStyle(
+    border = 'bottom',
+    borderColour = '#757575',
+    borderStyle = 'double'
+  )
+
+  options_default$footnote <- openxlsx::createStyle(
+    fontSize = 10,
+    textDecoration = 'italic'
+  )
+
+  options <- c(options, options_default)
 
   # Default width of the first column
   start_col_width <- start_col - 1

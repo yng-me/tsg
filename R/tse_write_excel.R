@@ -1,28 +1,38 @@
 #' Write data into an Excel workbook
 #'
-#' @param data A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
+#' @param .data A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
 #' @param ... \code{openxlsx} workbook object and sheet name.
 #' @param title Table title.
 #' @param description Table description.
 #' @param options Formatting options.
 #' @param start_col Column position to start write the data.
 #' @param footnote Table footnote.
-#' @param separator Column separator that defines the table hierarchy.
+#' @param y_group_separator Column separator that defines the table hierarchy.
 #'
 #' @return A formatted workbook object.
 #' @export
 #'
 #' @examples
+#'
+#' library(openxlsx)
+#' library(dplyr)
+#'
+#' starwars_species_sex <- starwars |>
+#'     tsg_crosstab(species, sex)
+#'
+#' wb <- createWorkbook()
+#'
+#' tse_write_excel(starwars_species_sex, wb = wb, sheet = "Table 1")
 
 tse_write_excel <- function(
-  data,
+  .data,
   ...,
   title = NULL,
   description = NULL,
   start_col = 2,
   footnote = NULL,
   options = tsg_get_config('facade'),
-  separator = '>'
+  y_group_separator = '>'
 ) {
 
   depth <- NULL
@@ -57,10 +67,10 @@ tse_write_excel <- function(
   }
 
   merge_colnames <- tse_util_extract_col(
-    data,
+    .data,
     start_col = start_col,
     start_row = start_row,
-    separator = separator
+    y_group_separator = y_group_separator
   )
 
   row_depth <- max(merge_colnames$depth)
@@ -69,7 +79,7 @@ tse_write_excel <- function(
 
     openxlsx::writeData(
       ...,
-      x = data,
+      x = .data,
       startCol = start_col,
       startRow = row_depth + start_row,
       borders = 'all',
@@ -84,7 +94,7 @@ tse_write_excel <- function(
 
     openxlsx::writeData(
       ...,
-      x = data,
+      x = .data,
       startCol = start_col,
       startRow = row_depth_all + start_row,
       colNames = F,
@@ -199,8 +209,8 @@ tse_write_excel <- function(
   }
 
 
-  row_length <- nrow(data) + start_row + row_depth
-  col_length <- ncol(data) + start_col - 1
+  row_length <- nrow(.data) + start_row + row_depth
+  col_length <- ncol(.data) + start_col - 1
 
   if(!is.null(footnote)) {
     openxlsx::writeData(

@@ -8,29 +8,26 @@ tsg_frequency(
   .data,
   x,
   x_group = NULL,
-  y_group = NULL,
   x_label = tsg_get_config("x_label"),
   sort_frequency = FALSE,
-  use_x_as_group = FALSE,
+  x_as_group = FALSE,
   ...
 )
 }
 \arguments{
-\item{.data}{}
+\item{.data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
 
 \item{x}{\strong{Required}. Variable to be used as categories.}
 
-\item{x_group}{\strong{Required}. Accepts a vector of string/character as grouping variables.}
+\item{x_group}{Accepts a vector of string/character as grouping variables.}
 
-\item{y_group}{Column grouping variable/s.}
+\item{x_label}{Stubhead label (first column).}
 
-\item{sort_frequency}{Whether to sort the output. It accepts \code{TRUE} (descending) | \code{FALSE} (ascending). The default is \code{FALSE}}
+\item{sort_frequency}{Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.}
 
-\item{use_x_as_group}{Use row variable as grouping.}
+\item{x_as_group}{Use row variable as grouping.}
 
 \item{...}{Accepts valid arguments for \code{tsg_frequency_inclusion}.}
-
-\item{label}{Accepts a string or character value to be used as label for variable or grouping variable.}
 }
 \value{
 Returns a frequency table of type \code{tibble} with optional cumulative total and percent.

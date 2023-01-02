@@ -2,15 +2,14 @@
 #'
 #' @description The function can generate a cross-tabulation that supports more than one (1) variable specified in the column.
 
-#' @param .data A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
-#'
+#' @param .data A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
 #' @param x \strong{Required}. Row variable to be used as categories.
 #' @param y \strong{Required}. Column variable.
 #' @param x_group Row grouping variable/s.
 #' @param y_group Column grouping variable/s.
-#' @param x_label
-#' @param use_x_as_group Use row variable as grouping.
-#' @param separator Column separator that defines the table hierarchy.
+#' @param x_label Stubhead label (first column).
+#' @param y_group_separator Column separator that defines the table hierarchy.
+#' @param x_as_group Use row variable as grouping.
 #' @param ... Accepts valid arguments for \code{tsg_crosstab_inclusion}.
 #'
 #' @return Returns a cross-table of type \code{tibble}
@@ -18,6 +17,8 @@
 #' @export
 #'
 #' @examples
+#'
+#' dplyr::starwars |> tsg_crosstab(species, sex)
 
 
 tsg_crosstab <- function(
@@ -27,8 +28,8 @@ tsg_crosstab <- function(
   x_group = NULL,
   y_group = NULL,
   x_label = tsg_get_config('x_label'),
-  use_x_as_group = FALSE,
-  separator = '>',
+  y_group_separator = '>',
+  x_as_group = FALSE,
   ...
 ) {
 
@@ -54,7 +55,7 @@ tsg_crosstab <- function(
   # Check if x_group are defined
   if(!is.null(x_group)) {
 
-    if(use_x_as_group == T) {
+    if(x_as_group == T) {
       g <- c(g, x_group)
     } else {
       g <- c(x_group, g)
@@ -77,15 +78,15 @@ tsg_crosstab <- function(
         names_from = dplyr::matches(paste0('^', gc, '$')),
         values_from = n,
         values_fill = 0,
-        names_sep = separator,
+        names_sep = y_group_separator,
         names_prefix = 'pivot_'
       )
 
-    df_names_sorted <- paste0('^', stringr::str_subset(sort(names(df)), separator), '$')
+    df_names_sorted <- paste0('^', stringr::str_subset(sort(names(df)), y_group_separator), '$')
 
     df <- df |>
       dplyr::select(dplyr::matches(paste0('^', g, '$')), dplyr::matches(df_names_sorted)) |>
-      tsg_crosstab_total_stack(separator = separator, ...)
+      tsg_crosstab_total_stack(y_group_separator = y_group_separator, ...)
 
   } else {
     df <- df |>
@@ -96,19 +97,19 @@ tsg_crosstab <- function(
         names_from = {{y}},
         values_from = n,
         values_fill = 0,
-        names_sep = separator,
+        names_sep = y_group_separator,
         names_prefix = 'pivot_'
       ) |>
       dplyr::ungroup() |>
-      tsg_crosstab_total(separator = separator, ...)
+      tsg_crosstab_total(y_group_separator = y_group_separator, ...)
   }
 
   df <- df |>
     dplyr::tibble() |>
-    tsg_crosstab_rename(separator = separator)
+    tsg_crosstab_rename(y_group_separator = y_group_separator)
 
   if(!is.null(x_label)) {
-    df <- df |> rename((!!as.name(x_label)) := {{x}})
+    df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
   }
 
   return(df)

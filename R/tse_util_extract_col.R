@@ -2,7 +2,7 @@ tse_util_extract_col <- function(
   df,
   start_col,
   start_row,
-  separator = '>'
+  y_group_separator = '>'
 ) {
 
   value <- NULL
@@ -13,7 +13,7 @@ tse_util_extract_col <- function(
 
   dplyr::as_tibble(names(df)) |>
     dplyr::mutate(
-      value = stringr::str_split(value, separator),
+      value = stringr::str_split(value, y_group_separator),
       col_from = 1:n()
     ) |>
     dplyr::mutate(col_from = col_from + start_col - 1) |>

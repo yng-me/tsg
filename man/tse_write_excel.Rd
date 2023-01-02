@@ -5,18 +5,18 @@
 \title{Write data into an Excel workbook}
 \usage{
 tse_write_excel(
-  data,
+  .data,
   ...,
   title = NULL,
   description = NULL,
   start_col = 2,
   footnote = NULL,
   options = tsg_get_config("facade"),
-  separator = ">"
+  y_group_separator = ">"
 )
 }
 \arguments{
-\item{data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{.data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
 
 \item{...}{\code{openxlsx} workbook object and sheet name.}
 
@@ -30,11 +30,23 @@ tse_write_excel(
 
 \item{options}{Formatting options.}
 
-\item{separator}{Column separator that defines the table hierarchy.}
+\item{y_group_separator}{Column separator that defines the table hierarchy.}
 }
 \value{
 A formatted workbook object.
 }
 \description{
 Write data into an Excel workbook
+}
+\examples{
+
+library(openxlsx)
+library(dplyr)
+
+starwars_species_sex <- starwars |>
+    tsg_crosstab(species, sex)
+
+wb <- createWorkbook()
+
+tse_write_excel(starwars_species_sex, wb = wb, sheet = "Table 1")
 }
