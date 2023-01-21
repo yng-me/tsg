@@ -258,10 +258,10 @@ dplyr::starwars |>
   gt::tab_options(table.font.size = 13)
 ```
 
-### 3. **`generate_crosstab_multi_response`**
+### 3. **`generate_multiple_response`**
 
 ```r
-generate_crosstab_multi_response(
+generate_multiple_response(
   .data,
   x,
   ...,
@@ -279,7 +279,7 @@ generate_crosstab_multi_response(
 
 ```r
 dplyr::starwars |>
-  generate_crosstab_multi_response(
+  generate_multiple_response(
     x = homeworld, 
     y = films
   ) |>
@@ -290,7 +290,7 @@ dplyr::starwars |>
 
 ```r
 dplyr::starwars |>
-  generate_crosstab_multi_response(
+  generate_multiple_response(
     x = name, 
     y = films,
     format_to_percent = FALSE,
@@ -300,10 +300,10 @@ dplyr::starwars |>
   gt::tab_options(table.font.size = 13)
 ```
 
-### 4. **`tsg_list`**
+### 4. **`generate_as_list`**
 
 ```r
-tsg_list(
+generate_as_list(
   .data,
   list_group,
   x,
