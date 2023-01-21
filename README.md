@@ -30,7 +30,7 @@ install.packages('tsg')
 
 Then load the package after installation.
 
-```{r}
+```r
 library(tsg)
 ```
 
@@ -41,7 +41,7 @@ library(tsg)
 
 **`generate_frequency`** generates a frequency distribution table (marginal table) of a categorical variable `x` specified in the second argument of the function. It returns five (5) columns at the minimum if `x_group` is not specified. These include (1) categories of `x`, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
 
-```{r, eval=F}
+```r
 generate_frequency(
   .data,
   x,
@@ -164,7 +164,7 @@ dplyr::starwars |>
 
 **`generate_crosstab`** extends the functionality of `generate_frequency` by allowing you to generate cross-tabulations of two (2) or more categorical variables. 
 
-```{r, eval=F}
+```r
 generate_crosstab(
   .data,
   x,
@@ -234,7 +234,7 @@ generate_crosstab(
 
 **Example 2.1**: Basic usage
 
-```{r}
+```r
 dplyr::starwars |> 
   generate_crosstab(
     x = sex, 
@@ -246,7 +246,7 @@ dplyr::starwars |>
 
 **Example 2.2**: Percent/proportion total by column
 
-```{r}
+```r
 dplyr::starwars |> 
   generate_crosstab(
     x = sex, 
@@ -260,7 +260,7 @@ dplyr::starwars |>
 
 ### 3. **`generate_crosstab_multi_response`**
 
-```{r, eval=F}
+```r
 generate_crosstab_multi_response(
   .data,
   x,
@@ -277,7 +277,7 @@ generate_crosstab_multi_response(
 
 **Example 3.1**: Basic usage
 
-```{r}
+```r
 dplyr::starwars |>
   generate_crosstab_multi_response(
     x = homeworld, 
@@ -288,7 +288,7 @@ dplyr::starwars |>
 ```
 
 
-```{r}
+```r
 dplyr::starwars |>
   generate_crosstab_multi_response(
     x = name, 
@@ -302,7 +302,7 @@ dplyr::starwars |>
 
 ### 4. **`tsg_list`**
 
-```{r, eval=F}
+```r
 tsg_list(
   .data,
   list_group,
@@ -317,10 +317,3 @@ tsg_list(
   filename = NULL
 )
 ```
-
-## `tse` functions
-
-### 5. `tse_write_excel`
-
-### 6. `tse_save_excel`
-
