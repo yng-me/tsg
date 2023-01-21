@@ -14,7 +14,7 @@ Features include:
 
 You may install the `tsg` package either from GitHub or R-CRAN (waiting for approval).
 
-```{r setup, eval=F}
+```r
 # Install devtools if not yet installed in your machine
 if(!('devtools' %in% installed.packages()[,'Package'])){
    install.packages('devtools')
@@ -97,7 +97,7 @@ generate_frequency(
 
 **Example 1.1**: Basic usage
 
-```{r, warning=F}
+```r
 dplyr::starwars |> 
   generate_frequency(sex) |>
   gt::gt() |>
@@ -106,7 +106,7 @@ dplyr::starwars |>
 
 **Example 1.2**: Add grouping variable and define label from `x`
 
-```{r, warning=F}
+```r
 dplyr::starwars |> 
   generate_frequency(
     x = sex, 
@@ -119,7 +119,7 @@ dplyr::starwars |>
 
 **Example 1.3**: Add grouping variable, use `x` as group, and exclude column total
 
-```{r, warning=F}
+```r
 dplyr::starwars |> 
   generate_frequency(
     x = sex, 
@@ -133,7 +133,7 @@ dplyr::starwars |>
 
 **Example 1.4**: Exclude cumulative values and sort the output by frequency
 
-```{r, warning=F}
+```r
 dplyr::starwars |> 
   generate_frequency(
     x = sex, 
@@ -147,7 +147,7 @@ dplyr::starwars |>
 
 **Example 1.5**: Exclude cumulative values and define multiple grouping variables
 
-```{r, warning=F}
+```r
 dplyr::starwars |> 
   generate_frequency(
     x = sex, 
