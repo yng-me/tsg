@@ -7,7 +7,10 @@
 #' @param x_label Stubhead label (first column).
 #' @param x_as_group Use row variable as grouping.
 #' @param sort_frequency Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.
-#' @param ... Accepts valid arguments for \code{tsg_frequency_inclusion}.
+#' @param include_total Whether to include row total
+#' @param include_cumulative Whether to cumulative frequencies
+#' @param exclude_zero_value Whether to drop categories with zero (0) values
+#' @param ... Additional agruments
 #'
 #' @return Returns a frequency table of type \code{tibble} with optional cumulative total and percent.
 #' @export
@@ -20,14 +23,20 @@
 #'
 
 tsg_frequency <- function(
-    .data,
-    x,
-    x_group = NULL,
-    x_label = tsg_get_config('x_label'),
-    sort_frequency = FALSE,
-    x_as_group = FALSE,
-    ...
+  .data,
+  x,
+  x_group = NULL,
+  x_label = get_config('x_label'),
+  sort_frequency = FALSE,
+  x_as_group = FALSE,
+  include_total = TRUE,
+  include_cumulative = TRUE,
+  exclude_zero_value = FALSE,
+  ...
 ) {
+
+
+  check_input_data_validity(.data)
 
   Percent <- NULL
   Frequency <- NULL
@@ -35,11 +44,7 @@ tsg_frequency <- function(
   n <- NULL
   `:=` <- NULL
 
-  if (!is.data.frame(.data) && !is.data.frame(dplyr::collect(.data))) {
-    stop(paste0("Data input must be a valid data frame."))
-  }
-
-  x_string <- stringr::str_remove(rlang::expr_text(rlang::enquo(x)), '~')
+  x_string <- set_as_string({{x}})
 
   df <- .data |>
     dplyr::count({{x}}) |>
@@ -55,8 +60,8 @@ tsg_frequency <- function(
     }
 
     df <- .data |>
-      tsg_select(x_group = x_group, NULL, {{x}}) |>
-      tsg_util_create_group(x_string) |>
+      select_only(x_group = x_group, NULL, {{x}}) |>
+      create_group(x_string) |>
       dplyr::count() |>
       dplyr::ungroup() |>
       dplyr::collect() |>
@@ -73,7 +78,12 @@ tsg_frequency <- function(
       Frequency := n,
       Percent
     ) |>
-    tsg_frequency_inclusion(excluded_cols = x_string, ...)
+    frequency_inclusion(
+      excluded_cols = x_string,
+      include_total,
+      include_cumulative,
+      exclude_zero_value
+    )
 
   if(!is.null(x_label)) {
     df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})

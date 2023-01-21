@@ -7,7 +7,7 @@
 #' @param y_group_separator Column separator that defines the table hierarchy.
 #' @param x_group Column grouping variable/s.
 #' @param x_label Stubhead label (first column).
-#' @param use_x_as_group Use row variable as grouping.
+#' @param x_as_group Use row variable as grouping.
 #' @param group_values_by Whether to group column variables by \code{statistics} or \code{indicators}.
 #' @param format_to_percent Whether to format to \code{percent} or \code{proportion}.
 #'
@@ -33,49 +33,40 @@ tsg_crosstab_multi_response <- function(
     x,
     ...,
     y = NULL,
-    y_group_separator = '>',
     x_group = NULL,
-    x_label = tsg_get_config('x_label'),
-    use_x_as_group = FALSE,
+    x_label = get_config('x_label'),
+    x_as_group = FALSE,
+    y_group_separator = '>',
     format_to_percent = TRUE,
     group_values_by = 'statistics'
 ) {
+
+  # Check the if input data is valid
+  check_input_data_validity(.data)
 
   type <- NULL
   n <- NULL
   `:=` <- NULL
 
-  if (!is.data.frame(.data) && !is.data.frame(dplyr::collect(.data))) {
-    stop(paste0("Data input must be a valid data frame."))
-  }
-
   g_val <- tolower(group_values_by)
 
   get_label <- function(col, label) {
-    if(g_val == 'indicators' | g_val == 'indicator') {
-      p <- paste0(col, y_group_separator, label)
-    } else {
-      p <- paste0(label, y_group_separator, col)
-    }
-    return(p)
+    if(g_val == 'indicators' | g_val == 'indicator') return(paste0(col, y_group_separator, label))
+    else return(paste0(label, y_group_separator, col))
   }
 
   p_divisor <- dplyr::if_else(format_to_percent == T, 100, 1)
   p_label <- dplyr::if_else(format_to_percent == T, 'Percent', 'Proportion')
 
   df <- .data |>
-    tsg_select(x_group, y_group = NULL, {{x}}, {{y}}, ...)
+    select_only(x_group, y_group = NULL, {{x}}, {{y}}, ...)
 
-  as_string <- function(to_str) {
-    stringr::str_remove(rlang::expr_text(rlang::enquo(to_str)), '~')
-  }
-
-  g <- as_string({{x}})
+  g <- set_as_string({{x}})
 
   # Check if x_group are defined
   if(!is.null(x_group)) {
 
-    if(use_x_as_group == T) {
+    if(x_as_group == T) {
       g <- c(g, x_group)
     } else {
       g <- c(x_group, g)
@@ -83,14 +74,14 @@ tsg_crosstab_multi_response <- function(
   }
 
   join_with <- df |>
-    tsg_util_create_group(g) |>
+    create_group(g) |>
     dplyr::count() |>
     dplyr::collect()
 
-  y_as_str <- as_string({{y}})
+  y_as_str <- set_as_string({{y}})
   if(y_as_str == 'NULL') {
     df <- df |>
-      tsg_util_create_group(g) |>
+      create_group(g) |>
       dplyr::collect() |>
       dplyr::mutate_at(dplyr::vars(...), ~ dplyr::if_else(. > 1, 0L, as.integer(.))) |>
       dplyr::summarise_at(dplyr::vars(...), ~ sum(., na.rm = T))
@@ -100,7 +91,7 @@ tsg_crosstab_multi_response <- function(
     df <- df |>
       tidyr::unnest({{y}}) |>
       dplyr::filter(!is.na({{y}})) |>
-      tsg_util_create_group(g, {{y}}) |>
+      create_group(g, {{y}}) |>
       dplyr::count() |>
       dplyr::ungroup() |>
       tidyr::pivot_wider(
@@ -119,7 +110,7 @@ tsg_crosstab_multi_response <- function(
       dplyr::mutate(type = strsplit(type, split = '')) |>
       tidyr::unnest(type) |>
       dplyr::filter(!is.na(type), grepl('^[A-Z]$', type)) |>
-      tsg_util_create_group(g, type) |>
+      create_group(g, type) |>
       dplyr::count() |>
       dplyr::ungroup() |>
       tidyr::pivot_wider(

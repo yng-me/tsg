@@ -1,4 +1,19 @@
-tse_set_facade <- function(
+increment_inner_depth <- function(vec) {
+  c <- vec[1]
+  s <- 1
+  for(i in 2:length(vec)) {
+    s_n <- s[i - 1]
+    if(c == vec[i]) {
+      s <- c(s, s_n)
+    } else {
+      s <- c(s, s_n + 1)
+    }
+    c <- vec[i]
+  }
+  return(s)
+}
+
+set_export_facade <- function(
   ...,
   header_depth,
   start_row_init,
@@ -7,7 +22,7 @@ tse_set_facade <- function(
   end_row,
   end_col,
   options = NULL
-  ) {
+) {
 
   options_default <- list()
 
@@ -167,4 +182,45 @@ tse_set_facade <- function(
     stack =  T
   )
 
+}
+
+
+extract_column_names <- function(
+  df,
+  start_col,
+  start_row,
+  y_group_separator = '>'
+) {
+
+  value <- NULL
+  n <- NULL
+  col_from <- NULL
+  row_from <- NULL
+  data <- NULL
+
+  dplyr::as_tibble(names(df)) |>
+    dplyr::mutate(
+      value = stringr::str_split(value, y_group_separator),
+      col_from = 1:n()
+    ) |>
+    dplyr::mutate(col_from = col_from + start_col - 1) |>
+    tidyr::unnest(value) |>
+    dplyr::group_by(col_from) |>
+    dplyr::mutate(row_from = 1:n()) |>
+    dplyr::mutate(row_from = row_from + start_row - 1) |>
+    tidyr::nest() |>
+    dplyr::mutate(depth = purrr::map_int(data, nrow)) |>
+    tidyr::unnest(data) |>
+    dplyr::ungroup() |>
+    dplyr::group_by(value) |>
+    tidyr::nest() |>
+    dplyr::mutate(r = purrr::map_int(data, nrow)) |>
+    tidyr::unnest(data) |>
+    dplyr::arrange(col_from)
+}
+
+
+set_sheet_name <- function(wb) {
+  sheet <- paste0('Sheet ', length(names(wb)) + 1)
+  return(sheet)
 }

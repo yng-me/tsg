@@ -9,7 +9,7 @@ tsg_list(
   list_group,
   x,
   ...,
-  fn = "tsg_frequency",
+  fn = "tsg_crosstab",
   list_name_overall = "ALL",
   exclude_overall = FALSE,
   collapse_overall = TRUE,

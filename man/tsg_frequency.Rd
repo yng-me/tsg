@@ -8,9 +8,12 @@ tsg_frequency(
   .data,
   x,
   x_group = NULL,
-  x_label = tsg_get_config("x_label"),
+  x_label = get_config("x_label"),
   sort_frequency = FALSE,
   x_as_group = FALSE,
+  include_total = TRUE,
+  include_cumulative = TRUE,
+  exclude_zero_value = FALSE,
   ...
 )
 }
@@ -27,7 +30,13 @@ tsg_frequency(
 
 \item{x_as_group}{Use row variable as grouping.}
 
-\item{...}{Accepts valid arguments for \code{tsg_frequency_inclusion}.}
+\item{include_total}{Whether to include row total}
+
+\item{include_cumulative}{Whether to cumulative frequencies}
+
+\item{exclude_zero_value}{Whether to drop categories with zero (0) values}
+
+\item{...}{Additional agruments}
 }
 \value{
 Returns a frequency table of type \code{tibble} with optional cumulative total and percent.

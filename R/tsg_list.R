@@ -31,17 +31,17 @@
 
 
 tsg_list <- function(
-    .data,
-    list_group,
-    x,
-    ...,
-    fn = 'tsg_frequency',
-    list_name_overall = 'ALL',
-    exclude_overall = FALSE,
-    collapse_overall = TRUE,
-    save_as_excel = FALSE,
-    formatted = TRUE,
-    filename = NULL
+  .data,
+  list_group,
+  x,
+  ...,
+  fn = 'tsg_crosstab',
+  list_name_overall = 'ALL',
+  exclude_overall = FALSE,
+  collapse_overall = TRUE,
+  save_as_excel = FALSE,
+  formatted = TRUE,
+  filename = NULL
 ) {
 
   value <- NULL
@@ -88,42 +88,10 @@ tsg_list <- function(
   df <- Filter(Negate(is.null), df)
 
   if(save_as_excel == T) {
-    print_file_location <- NULL
-    if(is.null(filename)) {
-      filename <- 'tsg_list.xlsx'
-      wd <- getwd()
-      print_file_location <- paste0('File location: ', wd, '/', filename)
-    }
-
-    df_names <- dplyr::as_tibble(names(df)) |>
-      dplyr::mutate(value = dplyr::if_else(
-          nchar(value) > 31,
-          stringr::str_sub(value, 1, 31),
-          value
-        )
-      ) |>
-      dplyr::pull(value)
-
-    names(df) <- df_names
-
-    if(formatted == T) {
-      wb <- openxlsx::createWorkbook()
-      for(i in seq_along(df_names)) {
-        tse_write_excel(
-          df[[df_names[i]]],
-          wb = wb,
-          sheet = df_names[i],
-          title = df_names[i]
-        )
-      }
-      openxlsx::saveWorkbook(wb, file = filename, overwrite = T)
-    } else {
-      openxlsx::write.xlsx(df, file = filename)
-    }
-
-    if(!is.null(print_file_location)) {
-      print(print_file_location)
-    }
+    df |> tse_save_excel(
+      formatted = formatted,
+      filename = filename
+    )
   }
 
   return(df)

@@ -23,6 +23,8 @@ Imports:
     purrr,
     rlang,
     tibble,
+    jsonlite,
+    yaml,
     openxlsx
 URL: https://github.com/yng-me/tsg
 VignetteBuilder: knitr

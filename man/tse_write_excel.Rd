@@ -6,19 +6,24 @@
 \usage{
 tse_write_excel(
   .data,
-  ...,
+  wb,
+  sheet = set_sheet_name(wb),
   title = NULL,
   description = NULL,
   start_col = 2,
   footnote = NULL,
-  options = tsg_get_config("facade"),
-  y_group_separator = ">"
+  source_note = NULL,
+  options = get_config("facade"),
+  y_group_separator = ">",
+  ...
 )
 }
 \arguments{
 \item{.data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
 
-\item{...}{\code{openxlsx} workbook object and sheet name.}
+\item{wb}{Workbook instance created using openxlsx package.}
+
+\item{sheet}{Tab/sheet name.}
 
 \item{title}{Table title.}
 
@@ -28,9 +33,13 @@ tse_write_excel(
 
 \item{footnote}{Table footnote.}
 
+\item{source_note}{Table footnote.}
+
 \item{options}{Formatting options.}
 
 \item{y_group_separator}{Column separator that defines the table hierarchy.}
+
+\item{...}{\code{openxlsx} workbook object and sheet name.}
 }
 \value{
 A formatted workbook object.

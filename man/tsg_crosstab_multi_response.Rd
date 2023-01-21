@@ -9,10 +9,10 @@ tsg_crosstab_multi_response(
   x,
   ...,
   y = NULL,
-  y_group_separator = ">",
   x_group = NULL,
-  x_label = tsg_get_config("x_label"),
-  use_x_as_group = FALSE,
+  x_label = get_config("x_label"),
+  x_as_group = FALSE,
+  y_group_separator = ">",
   format_to_percent = TRUE,
   group_values_by = "statistics"
 )
@@ -26,13 +26,13 @@ tsg_crosstab_multi_response(
 
 \item{y}{Column variable to specify for a letter-coded response.}
 
-\item{y_group_separator}{Column separator that defines the table hierarchy.}
-
 \item{x_group}{Column grouping variable/s.}
 
 \item{x_label}{Stubhead label (first column).}
 
-\item{use_x_as_group}{Use row variable as grouping.}
+\item{x_as_group}{Use row variable as grouping.}
+
+\item{y_group_separator}{Column separator that defines the table hierarchy.}
 
 \item{format_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
 

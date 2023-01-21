@@ -3,3 +3,13 @@
 .RData
 .Ruserdata
 inst/doc
+
+.DS_Store
+~$*
+
+.TXT
+.txt
+.csv
+.CSV
+.parquet
+.xlsx
