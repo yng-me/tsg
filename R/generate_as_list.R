@@ -7,7 +7,7 @@
 #' @param list_group \strong{Required}. A factor or categorical variable from \code{.data} to be used grouping for the list generated.
 #' @param x \strong{Required}. column name of the variable to be used as categories.
 #' @param ... Accepts valid arguments of the selected function in \code{fn}.
-#' @param fn Accepts \code{tsg_frequency} | \code{tsg_crosstab}. The default value is \code{tsg_frequency}.
+#' @param fn Accepts \code{generate_frequency} | \code{generate_crosstab}. The default value is \code{generate_frequency}.
 #' @param list_name_overall Accepts a string that will be used as name/label for the first list. The default value is \code{All}.
 #' @param exclude_overall Whether to exclude the overall (aggregate) table (first table) in the list.
 #' @param collapse_overall Whether to conform the structure of the first table with the rest in the list.
@@ -20,22 +20,22 @@
 #'
 #' @examples
 #' mtcars_by_cyl_freq <- mtcars |>
-#'   tsg_list(list_group = cyl, x = am)
+#'   generate_as_list(list_group = cyl, x = am)
 #'
 #' mtcars_by_cyl_freq
 #'
 #' mtcars_by_cyl_prop <- mtcars |>
-#'   tsg_list(list_group = cyl, x = am, gear, fn = 'tsg_crosstab')
+#'   generate_as_list(list_group = cyl, x = am, gear, fn = 'generate_crosstab')
 #'
 #' mtcars_by_cyl_prop
 
 
-tsg_list <- function(
+generate_as_list <- function(
   .data,
   list_group,
   x,
   ...,
-  fn = 'tsg_crosstab',
+  fn = 'generate_crosstab',
   list_name_overall = 'ALL',
   exclude_overall = FALSE,
   collapse_overall = TRUE,
@@ -45,11 +45,11 @@ tsg_list <- function(
 ) {
 
   value <- NULL
-  valid_fn <- c('tsg_crosstab', 'tsg_frequency', 'tsg_multi_response')
+  valid_fn <- c('generate_crosstab', 'generate_frequency', 'generate_multiple_response')
 
   if(!(fn %in% valid_fn)) {
-    fn <- 'tsg_frequency'
-    warning("You have entered invalid agrument for 'func' parameter. It only accepts: 'tsg_crosstab' | 'tsg_frequency' | 'tsg_multi_response'")
+    fn <- 'generate_frequency'
+    warning("You have entered invalid agrument for 'func' parameter. It only accepts: 'generate_crosstab' | 'generate_frequency' | 'generate_multiple_response'")
   }
 
   f <- eval(as.name(fn))
@@ -88,7 +88,7 @@ tsg_list <- function(
   df <- Filter(Negate(is.null), df)
 
   if(save_as_excel == T) {
-    df |> tse_save_excel(
+    df |> save_as_excel(
       formatted = formatted,
       filename = filename
     )

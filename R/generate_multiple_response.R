@@ -10,6 +10,7 @@
 #' @param x_as_group Use row variable as grouping.
 #' @param group_values_by Whether to group column variables by \code{statistics} or \code{indicators}.
 #' @param format_to_percent Whether to format to \code{percent} or \code{proportion}.
+#' @param value_to_count Value used as basis for counting the frequencies.
 #'
 #' @return Returns a cross-table of type \code{tibble}
 #' @export
@@ -24,11 +25,11 @@
 #'    C = c(0, 1, 0, 1, 0, 1)
 #'  )
 #'
-#' df |> tsg_crosstab_multi_response(category, A:C)
-#' df |> tsg_crosstab_multi_response(category, y = response)
+#' df |> generate_multiple_response(category, A:C)
+#' df |> generate_multiple_response(category, y = response)
 
 
-tsg_crosstab_multi_response <- function(
+generate_multiple_response <- function(
     .data,
     x,
     ...,
@@ -38,7 +39,8 @@ tsg_crosstab_multi_response <- function(
     x_as_group = FALSE,
     y_group_separator = '>',
     format_to_percent = TRUE,
-    group_values_by = 'statistics'
+    group_values_by = 'statistics',
+    value_to_count = 1
 ) {
 
   # Check the if input data is valid
@@ -65,12 +67,8 @@ tsg_crosstab_multi_response <- function(
 
   # Check if x_group are defined
   if(!is.null(x_group)) {
-
-    if(x_as_group == T) {
-      g <- c(g, x_group)
-    } else {
-      g <- c(x_group, g)
-    }
+    if(x_as_group == T) g <- c(g, x_group)
+    else g <- c(x_group, g)
   }
 
   join_with <- df |>
@@ -79,11 +77,15 @@ tsg_crosstab_multi_response <- function(
     dplyr::collect()
 
   y_as_str <- set_as_string({{y}})
+
   if(y_as_str == 'NULL') {
     df <- df |>
       create_group(g) |>
       dplyr::collect() |>
-      dplyr::mutate_at(dplyr::vars(...), ~ dplyr::if_else(. > 1, 0L, as.integer(.))) |>
+      dplyr::mutate_at(
+        dplyr::vars(...),
+        ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
+      ) |>
       dplyr::summarise_at(dplyr::vars(...), ~ sum(., na.rm = T))
 
   } else if(typeof(df[[y_as_str]]) == 'list') {
@@ -113,6 +115,7 @@ tsg_crosstab_multi_response <- function(
       create_group(g, type) |>
       dplyr::count() |>
       dplyr::ungroup() |>
+      dplyr::arrange(type) |>
       tidyr::pivot_wider(
         names_from = type,
         values_from = n,

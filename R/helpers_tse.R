@@ -1,3 +1,4 @@
+# ------------------------------------------------------------------------------
 increment_inner_depth <- function(vec) {
   c <- vec[1]
   s <- 1
@@ -13,6 +14,8 @@ increment_inner_depth <- function(vec) {
   return(s)
 }
 
+
+# ------------------------------------------------------------------------------
 set_export_facade <- function(
   ...,
   header_depth,
@@ -184,7 +187,7 @@ set_export_facade <- function(
 
 }
 
-
+# ------------------------------------------------------------------------------
 extract_column_names <- function(
   df,
   start_col,
@@ -219,7 +222,7 @@ extract_column_names <- function(
     dplyr::arrange(col_from)
 }
 
-
+# ------------------------------------------------------------------------------
 set_sheet_name <- function(wb) {
   sheet <- paste0('Sheet ', length(names(wb)) + 1)
   return(sheet)

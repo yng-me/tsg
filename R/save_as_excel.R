@@ -9,12 +9,12 @@
 #' @param tab_variable_name Column name to be used as tab/sheet name.
 #' @param ... Additional arguments
 #'
-#' @return
+#' @return Workbook
 #' @export
 #'
 #' @examples
 
-tse_save_excel <- function(
+save_as_excel <- function(
   .list,
   filename = NULL,
   formatted = TRUE,
@@ -26,6 +26,8 @@ tse_save_excel <- function(
 ) {
 
   wb <- openxlsx::createWorkbook()
+  openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 12)
+
   print_file_location <- NULL
   value <- NULL
 
@@ -35,35 +37,36 @@ tse_save_excel <- function(
     print_file_location <- paste0('File location: ', wd, '/', filename)
   }
 
-  df_names <- dplyr::as_tibble(names(.list))
+  if(is.list(.list) == T & formatted == T) {
 
-  if(!is.null(export_settings)) {
-    df_names <- export_settings |>
-      dplyr::filter(!!as.name(tab_variable_name) %in% names(.list))
-  }
+    df_names <- dplyr::as_tibble(names(.list))
 
-  df_sheet_names <- df_names |>
-    dplyr::mutate(
-      value = dplyr::if_else(
-        nchar(value) > 31,
-        stringr::str_sub(value, 1, 31),
-        value
-      )
-    ) |>
-    dplyr::pull(value)
+    if(!is.null(export_settings)) {
+      df_names <- export_settings |>
+        dplyr::filter(!!as.name(tab_variable_name) %in% names(.list))
+    }
 
-  names(.list) <- df_sheet_names
+    df_sheet_names <- df_names |>
+      dplyr::mutate(
+        value = dplyr::if_else(
+          nchar(value) > 31,
+          stringr::str_sub(value, 1, 31),
+          value
+        )
+      ) |>
+      dplyr::pull(value)
 
-  if(formatted == T) {
+    names(.list) <- df_sheet_names
 
     for(i in seq_along(df_sheet_names)) {
-      tse_write_excel(
+      write_as_excel(
         .list[[df_sheet_names[i]]],
         wb = wb,
         sheet = df_sheet_names[i],
         title = df_sheet_names[i]
       )
     }
+
     openxlsx::saveWorkbook(wb, file = filename, overwrite = overwrite)
 
   } else {

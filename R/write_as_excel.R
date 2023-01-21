@@ -10,6 +10,9 @@
 #' @param footnote Table footnote.
 #' @param source_note Table footnote.
 #' @param y_group_separator Column separator that defines the table hierarchy.
+#' @param save_as_excel Whether to save/export the table as Excel.
+#' @param filename Name of file to specify with .xlsx extension.
+#' @param overwrite Whether to overwrite the existing file.
 #' @param ... \code{openxlsx} workbook object and sheet name.
 #'
 #' @return A formatted workbook object.
@@ -21,13 +24,13 @@
 #' library(dplyr)
 #'
 #' starwars_species_sex <- starwars |>
-#'     tsg_crosstab(species, sex)
+#'     generate_crosstab(species, sex)
 #'
 #' wb <- createWorkbook()
 #'
-#' tse_write_excel(starwars_species_sex, wb = wb, sheet = "Table 1")
+#' write_as_excel(starwars_species_sex, wb = wb, sheet = "Table 1")
 
-tse_write_excel <- function(
+write_as_excel <- function(
   .data,
   wb,
   sheet = set_sheet_name(wb),
@@ -38,6 +41,9 @@ tse_write_excel <- function(
   source_note = NULL,
   options = get_config('facade'),
   y_group_separator = '>',
+  save_as_excel = FALSE,
+  filename = NULL,
+  overwrite = TRUE,
   ...
 ) {
 
@@ -268,4 +274,14 @@ tse_write_excel <- function(
     end_col = col_length,
     options = options
   )
+
+  if(save_as_excel == T) {
+    if(is.null(filename)) filename <- 'Book 1.xlsx'
+    openxlsx::saveWorkbook(
+      wb = wb,
+      file = filename,
+      overwrite = overwrite
+    )
+  }
+
 }

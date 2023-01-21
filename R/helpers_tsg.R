@@ -1,3 +1,5 @@
+# ------------------------------------------------------------------------------
+
 crosstab_total <- function(
   .data_piped,
   y_group_separator,
@@ -15,13 +17,9 @@ crosstab_total <- function(
 
   g_val <- tolower(group_values_by)
 
-  tsg_util_get_label <- function(col, label) {
-    if(g_val == 'indicators' | g_val == 'indicator') {
-      p <- paste0(col, y_group_separator, label)
-    } else {
-      p <- paste0(label, y_group_separator, col)
-    }
-    return(p)
+  get_label <- function(col, label) {
+    if(grepl('^indicators?$', g_val, T)) return(paste0(col, y_group_separator, label))
+    else return(paste0(label, y_group_separator, col))
   }
 
   # Check if the argument for 'direction' is valid
@@ -35,12 +33,6 @@ crosstab_total <- function(
   p_divisor <- dplyr::if_else(format_to_percent == T, 100, 1)
   p_label <- dplyr::if_else(format_to_percent == T, 'Percent', 'Proportion')
 
-  # get_prop <- function(var, total) {
-  #   t <- if_else(total == 0, 0, var / total)
-  #   if(format_to_percent == T) t <- t * 100
-  #   return(round(t, format_precision))
-  # }
-
   t_label <- 'Total'
   if(!is.null(total_label)) {
     t_label <- paste0('pivot_', total_label, y_group_separator, 'Total')
@@ -53,14 +45,14 @@ crosstab_total <- function(
       dplyr::select(dplyr::starts_with('pivot_'), dplyr::contains('Total')) |>
       # replace(is.na(.), 0) |>
       dplyr::mutate_all(~ . * p_divisor) |>
-      dplyr::rename_all(~ tsg_util_get_label(., p_label)) |>
+      dplyr::rename_all(~ get_label(., p_label)) |>
       dplyr::tibble()
 
     df <- .data_piped |>
       janitor::adorn_totals('col', name = t_label) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::matches('^pivot_')),
-        ~ tsg_util_get_label(., 'Frequency')
+        ~ get_label(., 'Frequency')
       ) |>
       dplyr::bind_cols(pct) |>
       janitor::adorn_totals() |>
@@ -76,18 +68,18 @@ crosstab_total <- function(
       ) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::ends_with('_pl')),
-        ~ tsg_util_get_label(., p_label)
+        ~ get_label(., p_label)
       ) |>
       dplyr::rename_at(
         dplyr::vars(dplyr::starts_with('pivot_'), -dplyr::contains(p_label)),
-        ~ tsg_util_get_label(., 'Frequency')
+        ~ get_label(., 'Frequency')
       )
 
     if(!is.null(total_label)) {
       df <- df |>
         dplyr::rename_at(
           dplyr::vars(dplyr::matches('^Total$')),
-          ~ tsg_util_get_label(paste0('pivot_', total_label, y_group_separator, .), 'Frequency')
+          ~ get_label(paste0('pivot_', total_label, y_group_separator, .), 'Frequency')
         )
     }
   }
@@ -95,7 +87,7 @@ crosstab_total <- function(
   df <- df |>
     dplyr::rename_at(
       dplyr::vars(dplyr::matches('^Total$')),
-      ~ tsg_util_get_label('Total', 'Frequency')
+      ~ get_label('Total', 'Frequency')
     )
 
   return(
@@ -109,7 +101,7 @@ crosstab_total <- function(
   )
 }
 
-
+# ------------------------------------------------------------------------------
 crosstab_total_stack <- function(
   data,
   y_group_separator,
@@ -188,7 +180,7 @@ crosstab_total_stack <- function(
 
 }
 
-
+# ------------------------------------------------------------------------------
 crosstab_rename <- function(
   .data_piped,
   replace_na_with = 'Missing',
@@ -216,7 +208,7 @@ crosstab_rename <- function(
   return(df)
 }
 
-
+# ------------------------------------------------------------------------------
 crosstab_inclusion <- function(
   .data_piped,
   y_group_separator,
@@ -252,7 +244,7 @@ crosstab_inclusion <- function(
 
 }
 
-
+# ------------------------------------------------------------------------------
 frequency_inclusion <- function(
   .data_piped,
   excluded_cols,

@@ -27,10 +27,10 @@
 #'
 #' @examples
 #'
-#' dplyr::starwars |> tsg_crosstab(species, sex)
+#' dplyr::starwars |> generate_crosstab(species, sex)
 
 
-tsg_crosstab <- function(
+generate_crosstab <- function(
   .data,
   x,
   y = NULL,
@@ -54,10 +54,10 @@ tsg_crosstab <- function(
   # Check the if input data is valid
   check_input_data_validity(.data)
 
-  # If no agrument passed to y, `tsg_frequency` will be invoked
+  # If no argument passed to y, `generate_frequency` will be invoked
   if(set_as_string({{y}}) == 'NULL') {
     return(
-      .data |> tsg_frequency(
+      .data |> generate_frequency(
         x = {{x}},
         x_group = x_group,
         x_label = x_label,

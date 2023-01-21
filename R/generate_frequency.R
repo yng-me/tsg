@@ -17,12 +17,12 @@
 #'
 #' @examples
 #' mtcars_cyl_freq <- mtcars |>
-#'   tsg_frequency(cyl)
+#'   generate_frequency(cyl)
 #'
 #' mtcars_cyl_freq
 #'
 
-tsg_frequency <- function(
+generate_frequency <- function(
   .data,
   x,
   x_group = NULL,
