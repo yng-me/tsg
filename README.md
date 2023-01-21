@@ -1,6 +1,6 @@
 ## About the package
 
-**`tsg`** stands for "**table summary generator**." As the name suggests, this package is designed to facilitate generation of statistical summary tables with ease. It also adheres to the `tidyverse` specification.
+**`tsg`** stands for "**table summary generator**." As the name suggests, this package is designed to facilitate generation of statistical summary tables with ease. It also adheres to the `tidyverse` specifications.
 
 Features include:
 
@@ -37,12 +37,12 @@ library(tsg)
 
 ## `tsg` core functions
 
-### 1. **`tsg_frequency`**
+### 1. **`generate_frequency`**
 
-**`tsg_frequency`** generates a frequency distribution table (marginal table) of a categorical variable `x` specified in the second argument of the function. It returns five (5) columns at the minimum if `x_group` is not specified. These include (1) categories of `x`, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
+**`generate_frequency`** generates a frequency distribution table (marginal table) of a categorical variable `x` specified in the second argument of the function. It returns five (5) columns at the minimum if `x_group` is not specified. These include (1) categories of `x`, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
 
 ```{r, eval=F}
-tsg_frequency(
+generate_frequency(
   .data,
   x,
   x_group = NULL,
@@ -84,7 +84,7 @@ tsg_frequency(
   <tr>
     <td>`...`</td>
     <td>
-      <span>Accepts valid arguments for `tsg_frequency_inclusion`, such as: </span>
+      <span>Accepts valid arguments for `generate_frequency_inclusion`, such as: </span>
       <ul>
         <li>`exclude_total` (default is `FALSE`)</li>
         <li>`exclude_cumulative` (default is `FALSE`)</li>
@@ -99,7 +99,7 @@ tsg_frequency(
 
 ```{r, warning=F}
 dplyr::starwars |> 
-  tsg_frequency(sex) |>
+  generate_frequency(sex) |>
   gt::gt() |>
   gt::tab_options(table.font.size = 13)
 ```
@@ -108,7 +108,7 @@ dplyr::starwars |>
 
 ```{r, warning=F}
 dplyr::starwars |> 
-  tsg_frequency(
+  generate_frequency(
     x = sex, 
     x_group = 'gender', 
     x_label = 'Sex'
@@ -121,7 +121,7 @@ dplyr::starwars |>
 
 ```{r, warning=F}
 dplyr::starwars |> 
-  tsg_frequency(
+  generate_frequency(
     x = sex, 
     x_group = 'gender', 
     x_as_group = TRUE, 
@@ -135,7 +135,7 @@ dplyr::starwars |>
 
 ```{r, warning=F}
 dplyr::starwars |> 
-  tsg_frequency(
+  generate_frequency(
     x = sex, 
     x_label = 'Sex', 
     sort_frequency = TRUE, 
@@ -149,7 +149,7 @@ dplyr::starwars |>
 
 ```{r, warning=F}
 dplyr::starwars |> 
-  tsg_frequency(
+  generate_frequency(
     x = sex, 
     x_group = c('skin_color', 'gender'), 
     x_label = 'Sex', 
@@ -160,12 +160,12 @@ dplyr::starwars |>
 ```
 
 
-### 2. **`tsg_crosstab`** 
+### 2. **`generate_crosstab`** 
 
-**`tsg_crosstab`** extends the functionality of `tsg_frequency` by allowing you to generate cross-tabulations of two (2) or more categorical variables. 
+**`generate_crosstab`** extends the functionality of `generate_frequency` by allowing you to generate cross-tabulations of two (2) or more categorical variables. 
 
 ```{r, eval=F}
-tsg_crosstab(
+generate_crosstab(
   .data,
   x,
   y,
@@ -216,13 +216,13 @@ tsg_crosstab(
   <tr>
     <td>`...`</td>
     <td>
-      <p>Accepts valid arguments for `tsg_crosstab_inclusion`, such as: </p>
+      <p>Accepts valid arguments for `generate_crosstab_inclusion`, such as: </p>
       <ul>
         <li>`exclude_total` (default is `FALSE`)</li>
         <li>`exclude_frequency` (default is `FALSE`)</li>
         <li>`exclude_proportion` (default is `FALSE`)</li>
       </ul>
-      <p>Also accepts valid arguments for `tsg_crosstab_total`, such as: </p>
+      <p>Also accepts valid arguments for `generate_crosstab_total`, such as: </p>
       <ul>
         <li>`total_by` (default is `row`). Also accepts `col` or `column` for columnwise total (see examples)</li>
         <li>`group_values_by` (default is `statistics`). Also accepts `indicators` as grouping hierarchy for the columns (see example)</li>
@@ -236,7 +236,7 @@ tsg_crosstab(
 
 ```{r}
 dplyr::starwars |> 
-  tsg_crosstab(
+  generate_crosstab(
     x = sex, 
     y = gender
   ) |>
@@ -248,7 +248,7 @@ dplyr::starwars |>
 
 ```{r}
 dplyr::starwars |> 
-  tsg_crosstab(
+  generate_crosstab(
     x = sex, 
     y = gender, 
     y_group_separator = '_',
@@ -258,10 +258,10 @@ dplyr::starwars |>
   gt::tab_options(table.font.size = 13)
 ```
 
-### 3. **`tsg_crosstab_multi_response`**
+### 3. **`generate_crosstab_multi_response`**
 
 ```{r, eval=F}
-tsg_crosstab_multi_response(
+generate_crosstab_multi_response(
   .data,
   x,
   ...,
@@ -279,7 +279,7 @@ tsg_crosstab_multi_response(
 
 ```{r}
 dplyr::starwars |>
-  tsg_crosstab_multi_response(
+  generate_crosstab_multi_response(
     x = homeworld, 
     y = films
   ) |>
@@ -290,7 +290,7 @@ dplyr::starwars |>
 
 ```{r}
 dplyr::starwars |>
-  tsg_crosstab_multi_response(
+  generate_crosstab_multi_response(
     x = name, 
     y = films,
     format_to_percent = FALSE,
@@ -308,7 +308,7 @@ tsg_list(
   list_group,
   x,
   ...,
-  fn = "tsg_frequency",
+  fn = "generate_frequency",
   list_name_overall = "ALL",
   exclude_overall = FALSE,
   collapse_overall = TRUE,
