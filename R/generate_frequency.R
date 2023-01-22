@@ -7,10 +7,9 @@
 #' @param x_label Stubhead label (first column).
 #' @param x_as_group Use row variable as grouping.
 #' @param sort_frequency Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.
-#' @param include_total Whether to include row total
-#' @param include_cumulative Whether to cumulative frequencies
+#' @param include_total Whether to include row total.
+#' @param include_cumulative Whether to cumulative frequencies.
 #' @param exclude_zero_value Whether to drop categories with zero (0) values
-#' @param ... Additional agruments
 #'
 #' @return Returns a frequency table of type \code{tibble} with optional cumulative total and percent.
 #' @export
@@ -31,8 +30,7 @@ generate_frequency <- function(
   x_as_group = FALSE,
   include_total = TRUE,
   include_cumulative = TRUE,
-  exclude_zero_value = FALSE,
-  ...
+  exclude_zero_value = FALSE
 ) {
 
 
@@ -53,11 +51,8 @@ generate_frequency <- function(
 
   if(!is.null(x_group)) {
 
-    if(x_as_group == T) {
-      x_string <- c(x_string, x_group)
-    } else {
-      x_string <- c(x_group, x_string)
-    }
+    if(x_as_group == T) x_string <- c(x_string, x_group)
+    else x_string <- c(x_group, x_string)
 
     df <- .data |>
       select_only(x_group = x_group, NULL, {{x}}) |>
@@ -85,9 +80,7 @@ generate_frequency <- function(
       exclude_zero_value
     )
 
-  if(!is.null(x_label)) {
-    df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
-  }
+  if(!is.null(x_label)) df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
 
   return(df |> dplyr::tibble())
 

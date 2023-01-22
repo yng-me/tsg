@@ -5,7 +5,7 @@ crosstab_total <- function(
   y_group_separator,
   total_by,
   group_values_by,
-  format_to_percent,
+  convert_to_percent,
   format_precision,
   total_label,
   include_frequency,
@@ -30,8 +30,8 @@ crosstab_total <- function(
 
   if(!(tolower(g_val) %in% c('indicators', 'statistics', 'statistic'))) g_val <- 'statistics'
 
-  p_divisor <- dplyr::if_else(format_to_percent == T, 100, 1)
-  p_label <- dplyr::if_else(format_to_percent == T, 'Percent', 'Proportion')
+  p_divisor <- dplyr::if_else(convert_to_percent == T, 100, 1)
+  p_label <- dplyr::if_else(convert_to_percent == T, 'Percent', 'Proportion')
 
   t_label <- 'Total'
   if(!is.null(total_label)) {
@@ -107,7 +107,7 @@ crosstab_total_stack <- function(
   y_group_separator,
   total_by,
   group_values_by,
-  format_to_percent,
+  convert_to_percent,
   format_precision,
   total_label,
   include_frequency,
@@ -142,7 +142,7 @@ crosstab_total_stack <- function(
       y_group_separator,
       total_by,
       group_values_by,
-      format_to_percent,
+      convert_to_percent,
       format_precision,
       total_label = x[1],
       include_frequency,
@@ -163,7 +163,7 @@ crosstab_total_stack <- function(
         y_group_separator,
         total_by,
         group_values_by,
-        format_to_percent,
+        convert_to_percent,
         format_precision,
         total_label = x[i],
         include_frequency,

@@ -13,8 +13,7 @@ generate_frequency(
   x_as_group = FALSE,
   include_total = TRUE,
   include_cumulative = TRUE,
-  exclude_zero_value = FALSE,
-  ...
+  exclude_zero_value = FALSE
 )
 }
 \arguments{
@@ -30,13 +29,11 @@ generate_frequency(
 
 \item{x_as_group}{Use row variable as grouping.}
 
-\item{include_total}{Whether to include row total}
+\item{include_total}{Whether to include row total.}
 
-\item{include_cumulative}{Whether to cumulative frequencies}
+\item{include_cumulative}{Whether to cumulative frequencies.}
 
 \item{exclude_zero_value}{Whether to drop categories with zero (0) values}
-
-\item{...}{Additional agruments}
 }
 \value{
 Returns a frequency table of type \code{tibble} with optional cumulative total and percent.

@@ -2,15 +2,18 @@
 #'
 #' @param .data A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
 #' @param x \strong{Required}. Row variable to be used as categories.
-#' @param ... Columns with binary-coded response. Use tidyselect specification.
+#' @param ... Columns with binary-coded response (generally). Use tidyselect specification.
 #' @param y Column variable to specify for a letter-coded response.
 #' @param y_group_separator Column separator that defines the table hierarchy.
 #' @param x_group Column grouping variable/s.
 #' @param x_label Stubhead label (first column).
 #' @param x_as_group Use row variable as grouping.
 #' @param group_values_by Whether to group column variables by \code{statistics} or \code{indicators}.
-#' @param format_to_percent Whether to format to \code{percent} or \code{proportion}.
 #' @param value_to_count Value used as basis for counting the frequencies.
+#' @param include_frequency Whether to include frequency columns.
+#' @param include_proportion Whether to include proportion/percentage columns.
+#' @param convert_to_percent Whether to format to \code{percent} or \code{proportion}.
+#' @param format_precision Specify the precision of rounding the percent or proportion. Default is \code{2}.
 #'
 #' @return Returns a cross-table of type \code{tibble}
 #' @export
@@ -30,17 +33,20 @@
 
 
 generate_multiple_response <- function(
-    .data,
-    x,
-    ...,
-    y = NULL,
-    x_group = NULL,
-    x_label = get_config('x_label'),
-    x_as_group = FALSE,
-    y_group_separator = '>',
-    format_to_percent = TRUE,
-    group_values_by = 'statistics',
-    value_to_count = 1
+  .data,
+  x,
+  ...,
+  y = NULL,
+  x_group = NULL,
+  x_label = get_config('x_label'),
+  x_as_group = FALSE,
+  y_group_separator = '>',
+  group_values_by = 'statistics',
+  value_to_count = 1,
+  include_frequency = TRUE,
+  include_proportion = TRUE,
+  convert_to_percent = TRUE,
+  format_precision = 2
 ) {
 
   # Check the if input data is valid
@@ -57,8 +63,8 @@ generate_multiple_response <- function(
     else return(paste0(label, y_group_separator, col))
   }
 
-  p_divisor <- dplyr::if_else(format_to_percent == T, 100, 1)
-  p_label <- dplyr::if_else(format_to_percent == T, 'Percent', 'Proportion')
+  p_divisor <- dplyr::if_else(convert_to_percent == T, 100, 1)
+  p_label <- dplyr::if_else(convert_to_percent == T, 'Percent', 'Proportion')
 
   df <- .data |>
     select_only(x_group, y_group = NULL, {{x}}, {{y}}, ...)
@@ -147,6 +153,12 @@ generate_multiple_response <- function(
       ~ get_label(., 'Frequency')
     ) |>
     dplyr::rename((!!as.name(total_name)) := n) |>
+    crosstab_inclusion(
+      y_group_separator,
+      p_label,
+      include_frequency,
+      include_proportion
+    ) |>
     dplyr::tibble()
 
   if(!is.null(x_label)) {

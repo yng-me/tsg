@@ -13,9 +13,12 @@ generate_multiple_response(
   x_label = get_config("x_label"),
   x_as_group = FALSE,
   y_group_separator = ">",
-  format_to_percent = TRUE,
   group_values_by = "statistics",
-  value_to_count = 1
+  value_to_count = 1,
+  include_frequency = TRUE,
+  include_proportion = TRUE,
+  convert_to_percent = TRUE,
+  format_precision = 2
 )
 }
 \arguments{
@@ -23,7 +26,7 @@ generate_multiple_response(
 
 \item{x}{\strong{Required}. Row variable to be used as categories.}
 
-\item{...}{Columns with binary-coded response. Use tidyselect specification.}
+\item{...}{Columns with binary-coded response (generally). Use tidyselect specification.}
 
 \item{y}{Column variable to specify for a letter-coded response.}
 
@@ -35,11 +38,17 @@ generate_multiple_response(
 
 \item{y_group_separator}{Column separator that defines the table hierarchy.}
 
-\item{format_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
-
 \item{group_values_by}{Whether to group column variables by \code{statistics} or \code{indicators}.}
 
 \item{value_to_count}{Value used as basis for counting the frequencies.}
+
+\item{include_frequency}{Whether to include frequency columns.}
+
+\item{include_proportion}{Whether to include proportion/percentage columns.}
+
+\item{convert_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
+
+\item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
 }
 \value{
 Returns a cross-table of type \code{tibble}

@@ -54,9 +54,12 @@ generate_as_list <- function(
 
   f <- eval(as.name(fn))
 
-  list_names <- dplyr::distinct(.data, {{list_group}}) |>
+  list_names <- .data |>
+    dplyr::distinct({{list_group}}) |>
     dplyr::collect() |>
     dplyr::pull({{list_group}})
+
+  list_names <- as.character(list_names)
 
   df <- list()
 
@@ -81,6 +84,7 @@ generate_as_list <- function(
       dplyr::select(-{{list_group}})
 
     if(nrow(df_d) > 0) {
+
       df[[list_names[i]]] <- df_d |> f({{x}}, ...)
     }
   }

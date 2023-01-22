@@ -13,12 +13,12 @@ generate_crosstab(
   x_label = get_config("x_label"),
   y_group_separator = ">",
   x_as_group = FALSE,
+  total_by = "row",
+  group_values_by = "statistics",
   include_frequency = TRUE,
   include_proportion = TRUE,
   include_column_total = TRUE,
-  total_by = "row",
-  group_values_by = "statistics",
-  format_to_percent = TRUE,
+  convert_to_percent = TRUE,
   format_precision = 2,
   total_label = NULL,
   ...
@@ -29,7 +29,7 @@ generate_crosstab(
 
 \item{x}{\strong{Required}. Row variable to be used as categories.}
 
-\item{y}{\strong{Required}. Column variable.}
+\item{y}{Variable to be used as columns (like in pivot_wider). If not supplied, \code{generate_frequency} will used in the function call. \code{NA} will be automatically renamed to \code{Missing}.}
 
 \item{x_group}{Row grouping variable/s.}
 
@@ -41,17 +41,17 @@ generate_crosstab(
 
 \item{x_as_group}{Use row variable as grouping.}
 
-\item{include_frequency}{Whether to include frequency columns.}
-
-\item{include_proportion}{Whether to include proportion/percentage columns.}
-
-\item{include_column_total}{Whether to include column total}
-
 \item{total_by}{Accepts \code{row} | \code{column}. Whether to apply the sum columnwise or rowwise.}
 
 \item{group_values_by}{Accepts \code{statistics} | \code{indicators}.}
 
-\item{format_to_percent}{Whether to format to percent or proportion.}
+\item{include_frequency}{Whether to include frequency columns.}
+
+\item{include_proportion}{Whether to include proportion/percentage columns.}
+
+\item{include_column_total}{Whether to include column total.}
+
+\item{convert_to_percent}{Whether to format to percent or proportion.}
 
 \item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
 

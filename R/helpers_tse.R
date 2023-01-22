@@ -190,8 +190,8 @@ set_export_facade <- function(
 # ------------------------------------------------------------------------------
 extract_column_names <- function(
   df,
-  start_col,
-  start_row,
+  start_col = 1,
+  start_row = 1,
   y_group_separator = '>'
 ) {
 

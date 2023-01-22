@@ -1,3 +1,15 @@
+---
+title: "`tsg` Package"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{`tsg` Package}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(collapse = TRUE, comment = "#>")
+```
 
 ## About the package
 
@@ -15,7 +27,7 @@ The package allows you to:
 
 You may install the `tsg` package either from GitHub or R-CRAN.
 
-```r
+```{r setup, eval=F}
 # Install devtools if not yet installed in your machine
 if(!('devtools' %in% installed.packages()[,'Package'])){
    install.packages('devtools')
@@ -31,7 +43,7 @@ install.packages('tsg')
 
 Then load the package after installation.
 
-```r
+```{r}
 library(tsg)
 ```
 
@@ -42,7 +54,7 @@ library(tsg)
 
 This function allows you to generates a frequency distribution table (marginal table) of a categorical variable `x` specified in its second argument. It returns five (5) columns by default if `x_group` is not specified. These include (1) categories of `x`, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
 
-```r
+```{r, eval=F}
 generate_frequency(
   .data,
   x,
@@ -104,7 +116,7 @@ generate_frequency(
 
 **Example 1.1**: Basic usage
 
-```r
+```{r, warning=F}
 library(palmerpenguins)
 library(gt)
 
@@ -114,7 +126,7 @@ generate_frequency(penguins, species) |> gtx()
 
 **Example 1.2**: Add grouping variable and define label for `x`
 
-```r
+```{r, warning=F}
 penguins |> 
   generate_frequency(
     x = sex, 
@@ -125,7 +137,7 @@ penguins |>
 
 **Example 1.3**: Add grouping variable, use `x` as group, and exclude column total
 
-```r
+```{r, warning=F}
 penguins |> 
   generate_frequency(
     x = sex, 
@@ -137,7 +149,7 @@ penguins |>
 
 **Example 1.4**: Exclude cumulative values and sort the output by frequency
 
-```r
+```{r, warning=F}
 penguins |> 
   generate_frequency(
     x = species, 
@@ -149,7 +161,7 @@ penguins |>
 
 **Example 1.5**: Exclude cumulative values and define multiple grouping variables
 
-```r
+```{r, warning=F}
 dplyr::starwars |> 
   generate_frequency(
     x = sex, 
@@ -164,7 +176,7 @@ dplyr::starwars |>
 
 **`generate_crosstab`** extends the functionality of `generate_frequency` by allowing you to generate cross-tabulations of two (2) or more categorical variables.
 
-```r
+```{r, eval=F}
 generate_crosstab(
   .data,
   x,
@@ -264,7 +276,7 @@ generate_crosstab(
 
 **Example 2.1**: Basic usage
 
-```r
+```{r}
 penguins |> 
   generate_crosstab(
     x = species, 
@@ -274,7 +286,7 @@ penguins |>
 
 **Example 2.2**: Percent/proportion total by column
 
-```r
+```{r}
 penguins |> 
   generate_crosstab(
     x = species, 
@@ -285,7 +297,7 @@ penguins |>
 
 **Example 2.3**: Exclude frequencies
 
-```r
+```{r}
 penguins |> 
   generate_crosstab(
     x = species, 
@@ -296,7 +308,7 @@ penguins |>
 
 **Example 2.4**: Exclude percentages/proportions
 
-```r
+```{r}
 penguins |> 
   generate_crosstab(
     x = species, 
@@ -307,7 +319,7 @@ penguins |>
 
 **Example 2.5**: Add row grouping variable and exclude percentages/proportions
 
-```r
+```{r}
 penguins |> 
   generate_crosstab(
     x = species, 
@@ -319,7 +331,7 @@ penguins |>
 
 **Example 2.6**: Add column grouping variable, exclude frequencies, and convert_to_percent set to `FALSE`.
 
-```r
+```{r}
 penguins |> 
   generate_crosstab(
     x = species, 
@@ -335,7 +347,7 @@ penguins |>
 
 This function allows you to generate summary table from a multiple response category.
 
-```r
+```{r, eval=F}
 generate_multiple_response(
   .data,
   x,
@@ -417,7 +429,7 @@ generate_multiple_response(
 
 **Example 3.1**: Basic usage (extract multiple-letter response)
 
-```r
+```{r}
 
 df <- data.frame(
   category = c("G1", "G1", "G2", "G1", "G2", "G1"),
@@ -432,13 +444,13 @@ df |> generate_multiple_response(category, y = response) |> gtx()
 
 **Example 3.1**: Basic usage (wide format multiple response)
 
-```r
+```{r}
 df |> generate_multiple_response(category, A:C) |> gtx()
 ```
 
 ### 4. **`generate_as_list`**
 
-```r
+```{r, eval=F}
 generate_as_list(
   .data,
   list_group,
@@ -457,7 +469,7 @@ generate_as_list(
 
 **Example 2.1**: Basic usage
 
-```r
+```{r}
 penguins |> 
   generate_as_list(
     list_group = island,
