@@ -351,7 +351,7 @@ This function allows you to generate summary table from a multiple response cate
 generate_multiple_response(
   .data,
   x,
-  ...,
+  pattern = NULL,
   y = NULL,
   x_group = NULL,
   x_label = get_config('x_label'),
@@ -381,7 +381,7 @@ generate_multiple_response(
     <td><b>Required</b>. Variable to be used as categories.</td>
   </tr>
   <tr>
-    <td>`...`</td>
+    <td>`pattern`</td>
     <td>Columns with binary-coded response (generally). Use tidyselect specification.</td>
   </tr>
   <tr>
@@ -429,7 +429,7 @@ generate_multiple_response(
 
 **Example 3.1**: Basic usage (extract multiple-letter response)
 
-```{r}
+```{r, eval=F}
 
 df <- data.frame(
   category = c("G1", "G1", "G2", "G1", "G2", "G1"),
@@ -444,8 +444,8 @@ df |> generate_multiple_response(category, y = response) |> gtx()
 
 **Example 3.1**: Basic usage (wide format multiple response)
 
-```{r}
-df |> generate_multiple_response(category, A:C) |> gtx()
+```{r, eval=F}
+df |> generate_multiple_response(category, pattern = '^[A:C]$') |> gtx()
 ```
 
 ### 4. **`generate_as_list`**

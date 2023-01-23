@@ -2,7 +2,7 @@
 #'
 #' @param .data A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
 #' @param x \strong{Required}. Row variable to be used as categories.
-#' @param ... Columns with binary-coded response (generally). Use tidyselect specification.
+#' @param pattern Columns with binary-coded response (generally). Use tidyselect specification.
 #' @param y Column variable to specify for a letter-coded response.
 #' @param y_group_separator Column separator that defines the table hierarchy.
 #' @param x_group Column grouping variable/s.
@@ -28,7 +28,7 @@
 #'    C = c(0, 1, 0, 1, 0, 1)
 #'  )
 #'
-#' df |> generate_multiple_response(category, A:C)
+#' df |> generate_multiple_response(category, pattern = '^[A:C]$')
 #' df |> generate_multiple_response(category, y = response)
 
 
@@ -54,7 +54,7 @@ generate_multiple_response <- function(
 
   type <- NULL
   n <- NULL
-  `:=` <- NULL
+  # `:=` <- NULL
 
   g_val <- tolower(group_values_by)
 
@@ -131,19 +131,17 @@ generate_multiple_response <- function(
   }
 
   df_cols <- df |>
-    dplyr::select(-1, -n) |>
+    dplyr::ungroup() |>
+    dplyr::select(-dplyr::matches(paste0('^', g, '$')), -n) |>
     names()
-
-  total_name <- get_label('Total', 'Frequency')
 
   df <- df |>
     dplyr::inner_join(join_with, by = g) |>
     janitor::adorn_totals() |>
     dplyr::mutate_at(
-      dplyr::vars(-c(1, n)),
+      dplyr::vars(dplyr::matches(paste0('^', df_cols, '$'))),
       list(percent = ~ (. / n) * p_divisor)
     ) |>
-    dplyr::select(1, n, dplyr::everything()) |>
     dplyr::rename_at(
       dplyr::vars(dplyr::matches('_percent$')),
       ~ get_label(stringr::str_remove(., '_percent$'), p_label)
@@ -152,7 +150,8 @@ generate_multiple_response <- function(
       dplyr::vars(dplyr::matches(paste0('^', df_cols, '$'))),
       ~ get_label(., 'Frequency')
     ) |>
-    dplyr::rename((!!as.name(total_name)) := n) |>
+    dplyr::select(dplyr::matches(paste0('^', g, '$')), n, dplyr::everything()) |>
+    dplyr::rename(Total = n) |>
     crosstab_inclusion(
       y_group_separator,
       p_label,

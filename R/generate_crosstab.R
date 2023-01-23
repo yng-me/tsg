@@ -134,11 +134,28 @@ generate_crosstab <- function(
       format_precision,
       total_label,
       include_frequency,
-      include_proportion,
-      include_column_total
+      include_proportion
     ) |>
     dplyr::tibble() |>
     crosstab_rename(y_group_separator = y_group_separator)
+
+  if(include_column_total == T) {
+    df <- df |>
+      dplyr::rowwise() |>
+      dplyr::mutate(
+        overall_total = rowSums(
+          dplyr::across(
+            dplyr::matches('^(Frequency|Total).*(Total|Frequency)$')
+          ),
+          na.rm = T
+        )
+      ) |>
+      dplyr::select(
+        dplyr::matches(paste0('^', g, '$')),
+        overall_total,
+        dplyr::everything()
+      )
+  }
 
   if(!is.null(x_label)) {
     df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})

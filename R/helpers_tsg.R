@@ -9,8 +9,7 @@ crosstab_total <- function(
   format_precision,
   total_label,
   include_frequency,
-  include_proportion,
-  include_column_total
+  include_proportion
 ) {
 
   `.` <- NULL
@@ -88,17 +87,15 @@ crosstab_total <- function(
     dplyr::rename_at(
       dplyr::vars(dplyr::matches('^Total$')),
       ~ get_label('Total', 'Frequency')
-    )
-
-  return(
-    df |> crosstab_inclusion(
+    ) |>
+    crosstab_inclusion(
       y_group_separator,
       p_label,
       include_frequency,
-      include_proportion,
-      include_column_total
+      include_proportion
     )
-  )
+
+  return(df)
 }
 
 # ------------------------------------------------------------------------------
@@ -111,8 +108,7 @@ crosstab_total_stack <- function(
   format_precision,
   total_label,
   include_frequency,
-  include_proportion,
-  include_column_total
+  include_proportion
 ) {
 
   value <- NULL
@@ -146,8 +142,7 @@ crosstab_total_stack <- function(
       format_precision,
       total_label = x[1],
       include_frequency,
-      include_proportion,
-      include_column_total
+      include_proportion
     ) |>
     dplyr::tibble()
 
@@ -167,8 +162,7 @@ crosstab_total_stack <- function(
         format_precision,
         total_label = x[i],
         include_frequency,
-        include_proportion,
-        include_column_total
+        include_proportion
       ) |>
       dplyr::select(-dplyr::matches(ex_cols)) |>
       dplyr::tibble()
@@ -214,8 +208,7 @@ crosstab_inclusion <- function(
   y_group_separator,
   p_label,
   include_frequency,
-  include_proportion,
-  include_column_total
+  include_proportion
 ) {
 
   if(include_frequency == T & include_proportion == T) {

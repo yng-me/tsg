@@ -147,7 +147,7 @@ penguins |>
 #  generate_multiple_response(
 #    .data,
 #    x,
-#    ...,
+#    pattern = NULL,
 #    y = NULL,
 #    x_group = NULL,
 #    x_label = get_config('x_label'),
@@ -161,20 +161,20 @@ penguins |>
 #    convert_to_percent = TRUE
 #  )
 
-## -----------------------------------------------------------------------------
+## ---- eval=F------------------------------------------------------------------
+#  
+#  df <- data.frame(
+#    category = c("G1", "G1", "G2", "G1", "G2", "G1"),
+#    response = c("AB", "AC", "B", "ABC", "AB", "C"),
+#    A = c(1, 1, 0, 1, 1, 0),
+#    B = c(1, 0, 1, 1, 1, 0),
+#    C = c(0, 1, 0, 1, 0, 1)
+#  )
+#  
+#  df |> generate_multiple_response(category, y = response) |> gtx()
 
-df <- data.frame(
-  category = c("G1", "G1", "G2", "G1", "G2", "G1"),
-  response = c("AB", "AC", "B", "ABC", "AB", "C"),
-  A = c(1, 1, 0, 1, 1, 0),
-  B = c(1, 0, 1, 1, 1, 0),
-  C = c(0, 1, 0, 1, 0, 1)
-) 
-
-df |> generate_multiple_response(category, y = response) |> gtx()
-
-## -----------------------------------------------------------------------------
-df |> generate_multiple_response(category, A:C) |> gtx()
+## ---- eval=F------------------------------------------------------------------
+#  df |> generate_multiple_response(category, pattern = '^[A:C]$') |> gtx()
 
 ## ---- eval=F------------------------------------------------------------------
 #  generate_as_list(

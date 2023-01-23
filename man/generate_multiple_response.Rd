@@ -26,8 +26,6 @@ generate_multiple_response(
 
 \item{x}{\strong{Required}. Row variable to be used as categories.}
 
-\item{...}{Columns with binary-coded response (generally). Use tidyselect specification.}
-
 \item{y}{Column variable to specify for a letter-coded response.}
 
 \item{x_group}{Column grouping variable/s.}
@@ -49,6 +47,8 @@ generate_multiple_response(
 \item{convert_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
 
 \item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
+
+\item{pattern}{Columns with binary-coded response (generally). Use tidyselect specification.}
 }
 \value{
 Returns a cross-table of type \code{tibble}
@@ -66,6 +66,6 @@ df <- data.frame(
    C = c(0, 1, 0, 1, 0, 1)
  )
 
-df |> generate_multiple_response(category, A:C)
+df |> generate_multiple_response(category, pattern = '^[A:C]$')
 df |> generate_multiple_response(category, y = response)
 }

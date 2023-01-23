@@ -13,3 +13,5 @@ inst/doc
 .CSV
 .parquet
 .xlsx
+
+tsg-vignettes.html
