@@ -272,7 +272,7 @@ frequency_inclusion <- function(
         -dplyr::matches(paste0('^', excluded_cols, '$')),
         -dplyr::contains('Cumulative')
       ) |>
-      dplyr::na_if('-') |>
+      convert_to_na('-') |>
       dplyr::mutate_at(dplyr::vars(dplyr::contains('Cumulative')), as.numeric)
   }
 
@@ -282,4 +282,12 @@ frequency_inclusion <- function(
 
   return(df)
 
+}
+
+convert_to_na <- function(.data, value_to_be_replaced = '') {
+  .data |>
+    dplyr::mutate_if(
+      is.character,
+      ~ dplyr::if_else(stringr::str_trim(.) == value_to_be_replaced, NA_character_, .)
+    )
 }

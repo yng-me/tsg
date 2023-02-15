@@ -1,8 +1,8 @@
 #' Generate summary table from a multiple response category
 #'
 #' @param .data A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
+#' @param ... tidyselect columns
 #' @param x \strong{Required}. Row variable to be used as categories.
-#' @param pattern Columns with binary-coded response (generally). Use tidyselect specification.
 #' @param y Column variable to specify for a letter-coded response.
 #' @param y_group_separator Column separator that defines the table hierarchy.
 #' @param x_group Column grouping variable/s.
@@ -27,9 +27,6 @@
 #'    B = c(1, 0, 1, 1, 1, 0),
 #'    C = c(0, 1, 0, 1, 0, 1)
 #'  )
-#'
-#' df |> generate_multiple_response(category, pattern = '^[A:C]$')
-#' df |> generate_multiple_response(category, y = response)
 
 
 generate_multiple_response <- function(
@@ -54,7 +51,7 @@ generate_multiple_response <- function(
 
   type <- NULL
   n <- NULL
-  # `:=` <- NULL
+  `:=` <- NULL
 
   g_val <- tolower(group_values_by)
 
@@ -113,7 +110,7 @@ generate_multiple_response <- function(
 
     df <- df |>
       dplyr::mutate(type = toupper(stringr::str_trim({{y}}))) |>
-      dplyr::na_if('') |>
+      convert_to_na() |>
       dplyr::collect() |>
       dplyr::mutate(type = strsplit(type, split = '')) |>
       tidyr::unnest(type) |>
