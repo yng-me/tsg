@@ -9,7 +9,7 @@ set_as_string <- function(to_str) {
 check_input_data_validity <- function(x) {
   error_message <- ".data input must be a valid .data frame or Arrow format."
   if(is.vector(x) | is.character(x)) stop(error_message)
-  if (!is.data.frame(x) | !is.data.frame(dplyr::collect(x))) stop(error_message)
+  if(!('data.frame' %in% class(x) | 'ArrowObject' %in% class(x))) stop(error_message)
 }
 
 # ------------------------------------------------------------------------------

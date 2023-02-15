@@ -50,24 +50,24 @@ generate_crosstab <- function(
   ...
 ) {
 
-  overall_total = NULL
-
   # Check the if input data is valid
   check_input_data_validity(.data)
 
   # If no argument passed to y, `generate_frequency` will be invoked
   if(set_as_string({{y}}) == 'NULL') {
     return(
-      .data |> generate_frequency(
-        x = {{x}},
-        x_group = x_group,
-        x_label = x_label,
-        x_as_group = x_as_group,
-        ...
-      )
+      .data |>
+        generate_frequency(
+          x = {{x}},
+          x_group = x_group,
+          x_label = x_label,
+          x_as_group = x_as_group,
+          ...
+        )
     )
   }
 
+  overall_total <- NULL
   n <- NULL
   `.` <- NULL
   `:=` <- NULL
