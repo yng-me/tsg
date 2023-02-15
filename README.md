@@ -121,7 +121,7 @@ generate_frequency(
 library(palmerpenguins)
 library(gt)
 
-generate_frequency(penguins, species) |> gtx()
+generate_frequency(penguins, species)
 
 ```
 
@@ -133,7 +133,7 @@ penguins |>
     x = sex, 
     x_group = 'species', 
     x_label = 'Sex'
-  ) |> gtx()
+  )
 ```
 
 **Example 1.3**: Add grouping variable, use `x` as group, and exclude column total
@@ -145,7 +145,7 @@ penguins |>
     x_group = 'species', 
     x_as_group = TRUE, 
     include_total = FALSE
-  ) |> gtx()
+  )
 ```
 
 **Example 1.4**: Exclude cumulative values and sort the output by frequency
@@ -157,7 +157,7 @@ penguins |>
     x_label = 'Species', 
     sort_frequency = TRUE, 
     include_cumulative = FALSE
-  ) |> gtx()
+  )
 ```
 
 **Example 1.5**: Exclude cumulative values and define multiple grouping variables
@@ -169,7 +169,7 @@ dplyr::starwars |>
     x_group = c('skin_color', 'gender'), 
     x_label = 'Sex', 
     include_cumulative = FALSE
-  ) |> gtx()
+  )
 ```
 
 
@@ -282,7 +282,7 @@ penguins |>
   generate_crosstab(
     x = species, 
     y = sex
-  ) |> gtx()
+  )
 ```
 
 **Example 2.2**: Percent/proportion total by column
@@ -293,7 +293,7 @@ penguins |>
     x = species, 
     y = sex,
     total_by = 'column'
-  ) |> gtx()
+  )
 ```
 
 **Example 2.3**: Exclude frequencies
@@ -304,7 +304,7 @@ penguins |>
     x = species, 
     y = sex,
     include_frequency = F
-  ) |> gtx()
+  )
 ```
 
 **Example 2.4**: Exclude percentages/proportions
@@ -315,7 +315,7 @@ penguins |>
     x = species, 
     y = sex,
     include_proportion = F
-  ) |> gtx()
+  )
 ```
 
 **Example 2.5**: Add row grouping variable and exclude percentages/proportions
@@ -327,7 +327,7 @@ penguins |>
     y = sex, 
     x_group = 'island',
     include_proportion = F
-  ) |> gtx()
+  )
 ```
 
 **Example 2.6**: Add column grouping variable, exclude frequencies, and convert_to_percent set to `FALSE`.
@@ -340,7 +340,7 @@ penguins |>
     y_group = 'island',
     convert_to_percent = F,
     include_frequency = F
-  ) |> gtx()
+  )
 ```
 
 
@@ -440,13 +440,13 @@ df <- data.frame(
   C = c(0, 1, 0, 1, 0, 1)
 ) 
 
-df |> generate_multiple_response(category, y = response) |> gtx()
+df |> generate_multiple_response(category, y = response)
 ```
 
 **Example 3.1**: Basic usage (wide format multiple response)
 
 ```r
-df |> generate_multiple_response(category, A:C) |> gtx()
+df |> generate_multiple_response(category, A:C)
 ```
 
 ### 4. **`generate_as_list`**
