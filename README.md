@@ -1,16 +1,18 @@
 
 ## About the package
 
+<br>
+
 TODO:
+
 - duplicate name
-- _individual title worksheet_
 - sort column name
-- _call collect() internally_
-- _source note_
-- save_as_excel() applies to all data
+- [DONE] _individual title worksheet_
+- [DONE] _call collect() internally_
+- [DONE] _source note_
+- [DONE] _save_as_excel() applies to all data_
 
-
-
+<br>
 
 **`tsg`** stands for "**table summary generator**." This package is designed to facilitate generation of statistical summary tables with ease. It also adheres to the `tidyverse` specifications.
 
