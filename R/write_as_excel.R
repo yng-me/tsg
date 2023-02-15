@@ -5,10 +5,10 @@
 #' @param sheet Tab/sheet name.
 #' @param title Table title.
 #' @param description Table description.
-#' @param options Formatting options.
-#' @param start_col Column position to start write the data.
 #' @param footnote Table footnote.
 #' @param source_note Table footnote.
+#' @param start_col Column position to start write the data.
+#' @param options Formatting options.
 #' @param y_group_separator Column separator that defines the table hierarchy.
 #' @param save_as_excel Whether to save/export the table as Excel.
 #' @param filename Name of file to specify with .xlsx extension.
@@ -32,13 +32,13 @@
 
 write_as_excel <- function(
   .data,
-  wb,
+  wb = NULL,
   sheet = set_sheet_name(wb),
   title = NULL,
   description = NULL,
-  start_col = 2,
   footnote = NULL,
   source_note = NULL,
+  start_col = 2,
   options = get_config('facade'),
   y_group_separator = '>',
   save_as_excel = FALSE,
@@ -56,6 +56,11 @@ write_as_excel <- function(
 
   start_row_init <- 3
   start_row <- start_row_init
+
+  if(!exists('wb') | is.null(wb)) {
+    wb <- openxlsx::createWorkbook()
+    openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 12)
+  }
 
   if(sheet %in% names(wb)) {
     openxlsx::removeWorksheet(wb = wb, sheet = sheet)
@@ -252,6 +257,7 @@ write_as_excel <- function(
 
   row_length <- nrow(.data) + start_row + row_depth
   col_length <- ncol(.data) + start_col - 1
+  start_row_note <- row_length + 2
 
   if(!is.null(footnote)) {
     openxlsx::writeData(
@@ -259,7 +265,20 @@ write_as_excel <- function(
       sheet = sheet,
       x = footnote,
       startCol = start_col,
-      startRow = row_length + 2
+      startRow = start_row_note
+    )
+  }
+
+  if(!is.null(source_note)) {
+    if(!is.null(footnote)) {
+      start_row_note <- start_row_note + 2
+    }
+    openxlsx::writeData(
+      wb = wb,
+      sheet = sheet,
+      x = source_note,
+      startCol = start_col,
+      startRow = start_row_note
     )
   }
 
@@ -272,6 +291,7 @@ write_as_excel <- function(
     start_col = start_col,
     end_row = row_length,
     end_col = col_length,
+    start_row_note = start_row_note,
     options = options
   )
 

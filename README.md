@@ -3,10 +3,10 @@
 
 TODO:
 - duplicate name
-- individual title worksheet
+- _individual title worksheet_
 - sort column name
 - _call collect() internally_
-- source note
+- _source note_
 - save_as_excel() applies to all data
 
 

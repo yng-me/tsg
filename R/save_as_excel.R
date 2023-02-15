@@ -1,11 +1,12 @@
 #' Save tables into Excel
 #'
 #' @param .list list of data frames to be exported. Each element will be written in its own sheet/tab.
-#' @param filename Filename with .xlsx extension; e.g., 'my_workbook.xlsx'
+#' @param filename File name with \code{.xlsx} extension; e.g., \code{'my_workbook.xlsx'}
 #' @param formatted Whether to apply default formatting/styling.
 #' @param overwrite Whether to overwrite the existing file.
 #' @param export_settings Use exporting settings to apply custom rendering.
-#' @param include_table_list Whether to include a summary of list of tables generated
+#' @param title Title of the table.
+#' @param include_table_list (IGNORED) Whether to include a summary of list of tables generated
 #' @param tab_variable_name Column name to be used as tab/sheet name.
 #' @param ... Additional arguments
 #'
@@ -19,6 +20,7 @@ save_as_excel <- function(
   filename = NULL,
   formatted = TRUE,
   overwrite = TRUE,
+  title = NULL,
   export_settings = NULL,
   include_table_list = TRUE,
   tab_variable_name = 'tab_name',
@@ -32,7 +34,7 @@ save_as_excel <- function(
   value <- NULL
 
   if(is.null(filename)) {
-    filename <- 'tsg_list.xlsx'
+    filename <- 'Book 1.xlsx'
     wd <- getwd()
     print_file_location <- paste0('File location: ', wd, '/', filename)
   }
@@ -59,11 +61,19 @@ save_as_excel <- function(
     names(.list) <- df_sheet_names
 
     for(i in seq_along(df_sheet_names)) {
+
+      if(!is.null(title)) {
+        title_i <- paste0(title, ': ', df_sheet_names[i])
+      } else {
+        title_i <- df_sheet_names[i]
+      }
+
       write_as_excel(
         .list[[df_sheet_names[i]]],
         wb = wb,
         sheet = df_sheet_names[i],
-        title = df_sheet_names[i]
+        title = title_i,
+        ...
       )
     }
 
@@ -74,7 +84,7 @@ save_as_excel <- function(
   }
 
   if(!is.null(print_file_location)) {
-    print(print_file_location)
+    cat(print_file_location)
   }
 
 }

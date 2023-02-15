@@ -24,6 +24,7 @@ set_export_facade <- function(
   start_col,
   end_row,
   end_col,
+  start_row_note,
   options = NULL
 ) {
 
@@ -34,6 +35,7 @@ set_export_facade <- function(
 
   options_default$title <- openxlsx::createStyle(
     fontSize = 13,
+    indent = 0,
     textDecoration = 'bold'
   )
 
@@ -85,6 +87,11 @@ set_export_facade <- function(
   options_default$footnote <- openxlsx::createStyle(
     fontSize = 10,
     textDecoration = 'italic'
+  )
+
+  options_default$source_note <- openxlsx::createStyle(
+    fontSize = 10,
+    textDecoration = c('italic', 'bold')
   )
 
   options <- c(options, options_default)
@@ -180,6 +187,15 @@ set_export_facade <- function(
     ...,
     style = options$footnote,
     rows = end_row + 2,
+    cols = start_col,
+    gridExpand =  T,
+    stack =  T
+  )
+
+  openxlsx::addStyle(
+    ...,
+    style = options$source_note,
+    rows = start_row_note,
     cols = start_col,
     gridExpand =  T,
     stack =  T

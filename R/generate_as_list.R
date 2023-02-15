@@ -12,8 +12,13 @@
 #' @param exclude_overall Whether to exclude the overall (aggregate) table (first table) in the list.
 #' @param collapse_overall Whether to conform the structure of the first table with the rest in the list.
 #' @param save_as_excel \code{Bolean}. Whether to save the output in Excel. Default is \code{FALSE}.
+#' @param title Title of table to be applied for each sheet.
+#' @param description Table description.
+#' @param footnote Table footnote.
+#' @param source_note Table footnote.
 #' @param formatted Whether to apply formatting for the Excel output. Default is \code{FALSE}.
 #' @param filename Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.
+#' @param y_group_separator Column separator that defines the table hierarchy.
 #'
 #' @return Returns a list of tables aggregated based on values defined in \code{list_group}.
 #' @export
@@ -40,8 +45,13 @@ generate_as_list <- function(
   exclude_overall = FALSE,
   collapse_overall = TRUE,
   save_as_excel = FALSE,
+  title = NULL,
+  description = NULL,
+  footnote = NULL,
+  source_note = NULL,
   formatted = TRUE,
-  filename = NULL
+  filename = NULL,
+  y_group_separator = '>'
 ) {
 
   value <- NULL
@@ -94,7 +104,12 @@ generate_as_list <- function(
   if(save_as_excel == T) {
     df |> save_as_excel(
       formatted = formatted,
-      filename = filename
+      filename = filename,
+      title = title,
+      description = description,
+      footnote = footnote,
+      source_note = source_note,
+      y_group_separator = y_group_separator
     )
   }
 
