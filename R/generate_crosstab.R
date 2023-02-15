@@ -50,6 +50,7 @@ generate_crosstab <- function(
   ...
 ) {
 
+  overall_total = NULL
 
   # Check the if input data is valid
   check_input_data_validity(.data)
