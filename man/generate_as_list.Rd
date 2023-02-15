@@ -14,8 +14,13 @@ generate_as_list(
   exclude_overall = FALSE,
   collapse_overall = TRUE,
   save_as_excel = FALSE,
+  title = NULL,
+  description = NULL,
+  footnote = NULL,
+  source_note = NULL,
   formatted = TRUE,
-  filename = NULL
+  filename = NULL,
+  y_group_separator = ">"
 )
 }
 \arguments{
@@ -37,9 +42,19 @@ generate_as_list(
 
 \item{save_as_excel}{\code{Bolean}. Whether to save the output in Excel. Default is \code{FALSE}.}
 
+\item{title}{Title of table to be applied for each sheet.}
+
+\item{description}{Table description.}
+
+\item{footnote}{Table footnote.}
+
+\item{source_note}{Table footnote.}
+
 \item{formatted}{Whether to apply formatting for the Excel output. Default is \code{FALSE}.}
 
 \item{filename}{Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.}
+
+\item{y_group_separator}{Column separator that defines the table hierarchy.}
 }
 \value{
 Returns a list of tables aggregated based on values defined in \code{list_group}.

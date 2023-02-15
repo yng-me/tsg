@@ -6,13 +6,13 @@
 \usage{
 write_as_excel(
   .data,
-  wb,
+  wb = NULL,
   sheet = set_sheet_name(wb),
   title = NULL,
   description = NULL,
-  start_col = 2,
   footnote = NULL,
   source_note = NULL,
+  start_col = 2,
   options = get_config("facade"),
   y_group_separator = ">",
   save_as_excel = FALSE,
@@ -32,11 +32,11 @@ write_as_excel(
 
 \item{description}{Table description.}
 
-\item{start_col}{Column position to start write the data.}
-
 \item{footnote}{Table footnote.}
 
 \item{source_note}{Table footnote.}
+
+\item{start_col}{Column position to start write the data.}
 
 \item{options}{Formatting options.}
 

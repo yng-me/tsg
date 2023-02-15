@@ -9,6 +9,7 @@ save_as_excel(
   filename = NULL,
   formatted = TRUE,
   overwrite = TRUE,
+  title = NULL,
   export_settings = NULL,
   include_table_list = TRUE,
   tab_variable_name = "tab_name",
@@ -18,15 +19,17 @@ save_as_excel(
 \arguments{
 \item{.list}{list of data frames to be exported. Each element will be written in its own sheet/tab.}
 
-\item{filename}{Filename with .xlsx extension; e.g., 'my_workbook.xlsx'}
+\item{filename}{File name with \code{.xlsx} extension; e.g., \code{'my_workbook.xlsx'}}
 
 \item{formatted}{Whether to apply default formatting/styling.}
 
 \item{overwrite}{Whether to overwrite the existing file.}
 
+\item{title}{Title of the table.}
+
 \item{export_settings}{Use exporting settings to apply custom rendering.}
 
-\item{include_table_list}{Whether to include a summary of list of tables generated}
+\item{include_table_list}{(IGNORED) Whether to include a summary of list of tables generated}
 
 \item{tab_variable_name}{Column name to be used as tab/sheet name.}
 
