@@ -7,7 +7,7 @@
 generate_as_list(
   .data,
   list_group,
-  x,
+  indicator,
   ...,
   fn = "generate_crosstab",
   list_name_overall = "ALL",
@@ -20,7 +20,8 @@ generate_as_list(
   source_note = NULL,
   formatted = TRUE,
   filename = NULL,
-  y_group_separator = ">"
+  y_group_separator = ">",
+  distinct_stub_head = F
 )
 }
 \arguments{
@@ -28,7 +29,7 @@ generate_as_list(
 
 \item{list_group}{\strong{Required}. A factor or categorical variable from \code{.data} to be used grouping for the list generated.}
 
-\item{x}{\strong{Required}. column name of the variable to be used as categories.}
+\item{indicator}{\strong{Required}. column name of the variable to be used as categories.}
 
 \item{...}{Accepts valid arguments of the selected function in \code{fn}.}
 
@@ -55,6 +56,8 @@ generate_as_list(
 \item{filename}{Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.}
 
 \item{y_group_separator}{Column separator that defines the table hierarchy.}
+
+\item{distinct_stub_head}{Whether to use \code{indicator} variable as x (if \code{FALSE}) or y (if \code{TRUE})}
 }
 \value{
 Returns a list of tables aggregated based on values defined in \code{list_group}.

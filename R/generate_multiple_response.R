@@ -14,6 +14,7 @@
 #' @param include_proportion Whether to include proportion/percentage columns.
 #' @param convert_to_percent Whether to format to \code{percent} or \code{proportion}.
 #' @param format_precision Specify the precision of rounding the percent or proportion. Default is \code{2}.
+#' @param recode Whether to recode the variable name first.
 #'
 #' @return Returns a cross-table of type \code{tibble}
 #' @export
@@ -43,7 +44,9 @@ generate_multiple_response <- function(
   include_frequency = TRUE,
   include_proportion = TRUE,
   convert_to_percent = TRUE,
-  format_precision = 2
+  format_precision = 2,
+  recode = TRUE,
+  clean_name = TRUE
 ) {
 
   # Check the if input data is valid
@@ -82,14 +85,38 @@ generate_multiple_response <- function(
   y_as_str <- set_as_string({{y}})
 
   if(y_as_str == 'NULL') {
-    df <- df |>
-      create_group(g) |>
-      dplyr::collect() |>
-      dplyr::mutate_at(
-        dplyr::vars(...),
-        ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
-      ) |>
-      dplyr::summarise_at(dplyr::vars(...), ~ sum(., na.rm = T))
+
+    if(recode == T) {
+      df <- df |>
+        dplyr::rename_at(
+          dplyr::vars(...),
+          ~ paste0('<<', toupper(stringr::str_sub(., 5, 5)), '>>')
+        ) |>
+        create_group(g) |>
+        dplyr::collect() |>
+        dplyr::mutate_at(
+          dplyr::vars(dplyr::matches('^<<[A-Z]>>$')),
+          ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
+        ) |>
+        dplyr::summarise_at(
+          dplyr::vars(dplyr::matches('^<<[A-Z]>>$')),
+          ~ sum(., na.rm = T)
+        )
+
+    } else {
+
+      df <- df |>
+        create_group(g) |>
+        dplyr::collect() |>
+        dplyr::mutate_at(
+          dplyr::vars(...),
+          ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
+        ) |>
+        dplyr::summarise_at(
+          dplyr::vars(...),
+          ~ sum(., na.rm = T)
+        )
+    }
 
   } else if(typeof(df[[y_as_str]]) == 'list') {
 
@@ -115,6 +142,7 @@ generate_multiple_response <- function(
       dplyr::mutate(type = strsplit(type, split = '')) |>
       tidyr::unnest(type) |>
       dplyr::filter(!is.na(type), grepl('^[A-Z]$', type)) |>
+      dplyr::mutate(type = paste0('<<', type, '>>')) |>
       create_group(g, type) |>
       dplyr::count() |>
       dplyr::ungroup() |>
@@ -159,6 +187,11 @@ generate_multiple_response <- function(
 
   if(!is.null(x_label)) {
     df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
+  }
+
+  if(clean_name == T) {
+    df <- df |>
+      dplyr::rename_all(~ stringr::str_remove_all(., '<<|>>'))
   }
 
   return(df)

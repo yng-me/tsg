@@ -18,7 +18,9 @@ generate_multiple_response(
   include_frequency = TRUE,
   include_proportion = TRUE,
   convert_to_percent = TRUE,
-  format_precision = 2
+  format_precision = 2,
+  recode = TRUE,
+  clean_name = TRUE
 )
 }
 \arguments{
@@ -49,6 +51,8 @@ generate_multiple_response(
 \item{convert_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
 
 \item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
+
+\item{recode}{Whether to recode the variable name first.}
 }
 \value{
 Returns a cross-table of type \code{tibble}

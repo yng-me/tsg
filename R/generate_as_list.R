@@ -5,7 +5,7 @@
 #'
 #' @param .data \strong{Required}. A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
 #' @param list_group \strong{Required}. A factor or categorical variable from \code{.data} to be used grouping for the list generated.
-#' @param x \strong{Required}. column name of the variable to be used as categories.
+#' @param indicator \strong{Required}. column name of the variable to be used as categories.
 #' @param ... Accepts valid arguments of the selected function in \code{fn}.
 #' @param fn Accepts \code{generate_frequency} | \code{generate_crosstab}. The default value is \code{generate_frequency}.
 #' @param list_name_overall Accepts a string that will be used as name/label for the first list. The default value is \code{All}.
@@ -19,6 +19,7 @@
 #' @param formatted Whether to apply formatting for the Excel output. Default is \code{FALSE}.
 #' @param filename Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.
 #' @param y_group_separator Column separator that defines the table hierarchy.
+#' @param distinct_stub_head Whether to use \code{indicator} variable as x (if \code{FALSE}) or y (if \code{TRUE})
 #'
 #' @return Returns a list of tables aggregated based on values defined in \code{list_group}.
 #' @export
@@ -38,7 +39,7 @@
 generate_as_list <- function(
   .data,
   list_group,
-  x,
+  indicator,
   ...,
   fn = 'generate_crosstab',
   list_name_overall = 'ALL',
@@ -51,7 +52,8 @@ generate_as_list <- function(
   source_note = NULL,
   formatted = TRUE,
   filename = NULL,
-  y_group_separator = '>'
+  y_group_separator = '>',
+  distinct_stub_head = F
 ) {
 
   value <- NULL
@@ -64,12 +66,22 @@ generate_as_list <- function(
 
   f <- eval(as.name(fn))
 
-  list_names <- .data |>
-    dplyr::distinct({{list_group}}) |>
-    dplyr::collect() |>
-    dplyr::pull({{list_group}})
+  if(distinct_stub_head == T) {
 
-  list_names <- as.character(list_names)
+    list_names <- list_group
+    exclude_overall <- TRUE
+    collapse_overall <- TRUE
+
+  } else {
+
+    list_names <- .data |>
+      dplyr::distinct({{list_group}}) |>
+      dplyr::collect() |>
+      dplyr::pull({{list_group}})
+
+    list_names <- as.character(list_names)
+
+  }
 
   df <- list()
 
@@ -77,25 +89,41 @@ generate_as_list <- function(
 
     if(collapse_overall == T) {
       df_all <- .data |>
-        f({{x}}, x_as_group = !collapse_overall, ...)
+        f({{indicator}}, x_as_group = !collapse_overall, ...)
 
     } else {
       df_all <- .data |>
-        dplyr::select(-{{x}}) |>
+        dplyr::select(-{{indicator}}) |>
         f({{list_group}}, x_as_group = !collapse_overall, ...)
     }
 
     df[[list_name_overall]] <- df_all
   }
 
-  for(i in 1:length(list_names)) {
-    df_d <- .data |>
-      dplyr::filter({{list_group}} == list_names[i]) |>
-      dplyr::select(-{{list_group}})
+  if(distinct_stub_head == T) {
 
-    if(nrow(df_d) > 0) {
+    for(i in 1:length(list_names[[1]])) {
 
-      df[[list_names[i]]] <- df_d |> f({{x}}, ...)
+      x <- list_names[[2]][i]
+      x_label <- list_names[[1]][i]
+
+      df[[x_label]]  <- .data |>
+        f(!!as.name(x), {{indicator}}, x_label = x_label, ...)
+
+    }
+
+  } else {
+
+    for(i in 1:length(list_names)) {
+
+      df_d <- .data |>
+        dplyr::filter({{list_group}} == list_names[i]) |>
+        dplyr::select(-{{list_group}})
+
+      if(nrow(dplyr::compute(df_d)) > 0) {
+
+        df[[list_names[i]]] <- df_d |> f({{indicator}}, ...)
+      }
     }
   }
 
