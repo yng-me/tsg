@@ -253,8 +253,33 @@ write_as_excel <- function(
       colNames = F,
       ...
     )
-  }
 
+    # FINAL MERGE
+    last_merges <- merge_colnames |> dplyr::filter(str_trim(value) == '')
+    if(nrow(last_merges) > 0) {
+      for(li in 1:nrow(last_merges)) {
+
+        row_merge_final_from <- start_row + last_merges$row_from[li] - 3
+        row_merge_final_to <- start_row + last_merges$row_from[li] - 2
+
+        openxlsx::removeCellMerge(
+          wb = wb,
+          sheet = sheet,
+          cols = last_merges$col_from[li],
+          rows = row_merge_final_from
+        )
+
+        openxlsx::mergeCells(
+          wb = wb,
+          sheet = sheet,
+          cols = last_merges$col_from[li],
+          rows = row_merge_final_from:row_merge_final_to
+        )
+
+      }
+    }
+
+  }
 
   row_length <- nrow(.data) + start_row + row_depth
   col_length <- ncol(.data) + start_col - 1

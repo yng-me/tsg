@@ -127,20 +127,6 @@ set_export_facade <- function(
     stack = T
   )
 
-  # Decimal
-  if(length(decimal_format_cols) > 0) {
-
-    openxlsx::createStyle(
-      ...,
-      style = options$decimal,
-      cols = decimal_format_cols,
-      rows = end_row_header:end_row,
-      gridExpand = T,
-      stack = T
-    )
-
-  }
-
   openxlsx::addStyle(
     ...,
     style = options$style_indent,
@@ -221,6 +207,20 @@ set_export_facade <- function(
     gridExpand =  T,
     stack =  T
   )
+
+  # Decimal
+  if(length(decimal_format_cols) > 0) {
+
+    openxlsx::addStyle(
+      ...,
+      style = options$decimal,
+      rows = end_row_header:end_row,
+      cols = decimal_format_cols,
+      gridExpand = T,
+      stack = T
+    )
+
+  }
 
 }
 
