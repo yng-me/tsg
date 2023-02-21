@@ -43,6 +43,7 @@ write_as_excel <- function(
   y_group_separator = '>',
   save_as_excel = FALSE,
   filename = NULL,
+  format_precision = 2,
   overwrite = TRUE,
   ...
 ) {
@@ -292,6 +293,8 @@ write_as_excel <- function(
     end_row = row_length,
     end_col = col_length,
     start_row_note = start_row_note,
+    decimal_format_cols = which(grepl('percent|proportion', names(.data), ignore.case = T)) + 1,
+    format_precision = format_precision,
     options = options
   )
 
@@ -303,5 +306,7 @@ write_as_excel <- function(
       overwrite = overwrite
     )
   }
+
+  return(.data)
 
 }

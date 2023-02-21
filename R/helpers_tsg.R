@@ -24,7 +24,10 @@ crosstab_total <- function(
   # Check if the argument for 'direction' is valid
   if(!(tolower(total_by) %in% c('row', 'col', 'column'))) {
     total_by <- 'row'
-    warning("You have entered invalid agrument for 'total_by' parameter. It reverts back to default value: 'row'.")
+    warning(
+      "You have entered invalid agrument for 'total_by' parameter.
+       It reverts back to default value: 'row'."
+    )
   }
 
   if(!(tolower(g_val) %in% c('indicators', 'statistics', 'statistic'))) g_val <- 'statistics'
@@ -34,7 +37,8 @@ crosstab_total <- function(
 
   t_label <- 'Total'
   if(!is.null(total_label)) {
-    t_label <- paste0('pivot_', total_label, y_group_separator, 'Total')
+    # t_label <- paste0('pivot_', total_label, y_group_separator, 'Total')
+    t_label <- total_label
   }
 
   if(tolower(total_by) == 'col' | total_by == 'column') {
@@ -183,21 +187,23 @@ crosstab_rename <- function(
 
   `.` <- NULL
 
-  df <- .data_piped |> dplyr::rename_at(
-    dplyr::vars(dplyr::contains('pivot_')),
-    ~ stringr::str_remove_all(., 'pivot_|_pl')
-  ) |>
+  df <- .data_piped |>
+    dplyr::rename_at(
+      dplyr::vars(dplyr::contains('pivot_')),
+      ~ stringr::str_remove_all(., 'pivot_|_pl')
+    ) |>
     dplyr::rename_at(
       dplyr::vars(dplyr::matches(paste0(y_group_separator, 'NA|NA', y_group_separator))),
       ~ stringr::str_remove(stringr::str_replace(., 'NA', replace_na_with), 'NA')
-    )
-
-  df_names_sorted <- paste0('^', stringr::str_subset(sort(names(df)), y_group_separator), '$')
-
-  df <- df |>
-    dplyr::select(!dplyr::contains(y_group_separator), dplyr::matches(df_names_sorted)) |>
-    # dplyr::rename_all(~ stringr::str_remove_all(., '^\\d+ - ')) |>
+    ) |>
     dplyr::tibble()
+
+  # df_names_sorted <- paste0('^', stringr::str_subset(sort(names(df)), y_group_separator), '$')
+
+  # df <- df |>
+    # dplyr::select(!dplyr::contains(y_group_separator), dplyr::matches(df_names_sorted)) |>
+    # dplyr::rename_all(~ stringr::str_remove_all(., '^\\d+ - ')) |>
+    # dplyr::tibble()
 
   return(df)
 }
@@ -288,6 +294,10 @@ convert_to_na <- function(.data, value_to_be_replaced = '') {
   .data |>
     dplyr::mutate_if(
       is.character,
-      ~ dplyr::if_else(stringr::str_trim(.) == value_to_be_replaced, NA_character_, .)
+      ~ dplyr::if_else(
+        stringr::str_trim(.) == value_to_be_replaced,
+        NA_character_,
+        .
+      )
     )
 }

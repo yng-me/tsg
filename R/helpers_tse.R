@@ -25,6 +25,8 @@ set_export_facade <- function(
   end_row,
   end_col,
   start_row_note,
+  decimal_format_cols = NULL,
+  format_precision = 2,
   options = NULL
 ) {
 
@@ -32,6 +34,11 @@ set_export_facade <- function(
 
   options_default$first_col_width <- 20
   options_default$row_height <- 20
+
+  options_default$decimal <- openxlsx::createStyle(
+    indent = 1,
+    numFmt = paste0('#,#0.', paste0(rep(0, as.integer(format_precision)), collapse = ''))
+  )
 
   options_default$title <- openxlsx::createStyle(
     fontSize = 13,
@@ -119,6 +126,20 @@ set_export_facade <- function(
     gridExpand = T,
     stack = T
   )
+
+  # Decimal
+  if(length(decimal_format_cols) > 0) {
+
+    openxlsx::createStyle(
+      ...,
+      style = options$decimal,
+      cols = decimal_format_cols,
+      rows = end_row_header:end_row,
+      gridExpand = T,
+      stack = T
+    )
+
+  }
 
   openxlsx::addStyle(
     ...,

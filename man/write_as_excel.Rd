@@ -17,6 +17,7 @@ write_as_excel(
   y_group_separator = ">",
   save_as_excel = FALSE,
   filename = NULL,
+  format_precision = 2,
   overwrite = TRUE,
   ...
 )

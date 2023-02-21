@@ -107,6 +107,7 @@ generate_crosstab <- function(
         values_from = n,
         values_fill = 0,
         names_sep = y_group_separator,
+        names_sort = T,
         names_prefix = 'pivot_'
       )
 
@@ -119,6 +120,7 @@ generate_crosstab <- function(
       tidyr::pivot_wider(
         names_from = {{y}},
         values_from = n,
+        names_sort = T,
         values_fill = 0,
         names_sep = y_group_separator,
         names_prefix = 'pivot_'
@@ -140,22 +142,27 @@ generate_crosstab <- function(
     dplyr::tibble() |>
     crosstab_rename(y_group_separator = y_group_separator)
 
-  if(include_column_total == T) {
+  # if(include_column_total == T) {
+  #   df <- df |>
+  #     dplyr::rowwise() |>
+  #     dplyr::mutate(
+  #       overall_total = rowSums(
+  #         dplyr::across(
+  #           dplyr::matches('^(Frequency|Total).*(Total|Frequency)$')
+  #         ),
+  #         na.rm = T
+  #       )
+  #     ) |>
+  #     dplyr::select(
+  #       dplyr::matches(paste0('^', g, '$')),
+  #       Total = overall_total,
+  #       dplyr::everything()
+  #     )
+  # }
+
+  if(include_column_total == F) {
     df <- df |>
-      dplyr::rowwise() |>
-      dplyr::mutate(
-        overall_total = rowSums(
-          dplyr::across(
-            dplyr::matches('^(Frequency|Total).*(Total|Frequency)$')
-          ),
-          na.rm = T
-        )
-      ) |>
-      dplyr::select(
-        dplyr::matches(paste0('^', g, '$')),
-        overall_total,
-        dplyr::everything()
-      )
+      dplyr::select(-dplyr::matches('^(Frequency|Total).*(>Total|>Frequency)$'))
   }
 
   if(!is.null(x_label)) {

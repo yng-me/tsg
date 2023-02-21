@@ -9,7 +9,12 @@ set_as_string <- function(to_str) {
 check_input_data_validity <- function(x) {
   error_message <- ".data input must be a valid .data frame or Arrow format. Try calling `collect()` first."
   if(is.vector(x) | is.character(x)) stop(error_message)
-  if(!('data.frame' %in% class(x) | 'ArrowObject' %in% class(x))) stop(error_message)
+  if(
+    !('data.frame' %in% class(x) |
+      'arrow_dplyr_query' %in% class(x) |
+      'ArrowObject' %in% class(x)
+    )
+  ) { stop(error_message) }
 }
 
 # ------------------------------------------------------------------------------
@@ -60,9 +65,9 @@ get_config <- function(label) {
 
   x <- NULL
 
-  if(exists('tsg_config')) {
-    config <- eval(as.name('tsg_config'))
-    x <- config[[label]]
+  if(exists('config')) {
+    config <- eval(as.name('config'))
+    x <- config$tsg_config[[label]]
   }
   return(x)
 }
