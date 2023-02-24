@@ -32,18 +32,14 @@ set_export_facade <- function(
 
   options_default <- list()
 
-  options_default$first_col_width <- 20
+  options_default$col_width_first <- 35
+  options_default$col_width_all <- 20
   options_default$row_height <- 20
+  options_default$row_height_header <- 35
 
   options_default$decimal <- openxlsx::createStyle(
     indent = 1,
     numFmt = paste0('#,#0.', paste0(rep(0, as.integer(format_precision)), collapse = ''))
-  )
-
-  options_default$title <- openxlsx::createStyle(
-    fontSize = 13,
-    indent = 0,
-    textDecoration = 'bold'
   )
 
   options_default$style_indent <- openxlsx::createStyle(
@@ -91,33 +87,32 @@ set_export_facade <- function(
     borderStyle = 'double'
   )
 
-  options_default$footnote <- openxlsx::createStyle(
-    fontSize = 10,
-    textDecoration = 'italic'
-  )
-
-  options_default$source_note <- openxlsx::createStyle(
-    fontSize = 10,
-    textDecoration = c('italic', 'bold')
-  )
-
   options <- c(options, options_default)
 
   # Default width of the first column
   start_col_width <- start_col - 1
-  openxlsx::setColWidths(
-    ...,
-    cols = 1:start_col,
-    widths = c(rep(2, start_col_width), options$first_col_width)
-  )
+  start_col_plus <- start_col + 1
 
-  openxlsx::setRowHeights(
-    ...,
-    rows = 1:end_row,
-    heights = options$row_height
-  )
+  # Start col
+  openxlsx::setColWidths(..., cols = 1:start_col_width, widths = rep(2, start_col_width))
+  openxlsx::setColWidths(..., cols = start_col, widths = options$col_width_first)
+
+  # Middle cols
+  openxlsx::setColWidths(..., cols = start_col_plus:end_col, widths = options$col_width_all)
+
+  # End col
+  if(!is.null(options$col_width_last) | length(is.na(options$col_width_last)) > 0) {
+    openxlsx::setColWidths(..., cols = end_col, widths = options$col_width_last)
+  }
 
   end_row_header <- header_depth + start_row - 1
+  start_row_tb <- start_row + 1
+
+
+  openxlsx::setRowHeights(..., rows = 1, heights = 15)
+  openxlsx::setRowHeights(..., rows = start_row:end_row_header, heights = options$row_height_header)
+  openxlsx::setRowHeights(..., rows = start_row_tb:end_row, heights = options$row_height)
+
   openxlsx::addStyle(
     ...,
     style = options$style_header,
@@ -130,7 +125,7 @@ set_export_facade <- function(
   openxlsx::addStyle(
     ...,
     style = options$style_indent,
-    rows = 1:end_row,
+    rows = start_row:end_row,
     cols = start_col:end_col,
     gridExpand = T,
     stack = T
@@ -183,26 +178,12 @@ set_export_facade <- function(
 
   openxlsx::addStyle(
     ...,
-    style = options$title,
-    rows = start_row_init,
-    cols = start_col,
-    gridExpand =  T,
-    stack =  T
-  )
-
-  openxlsx::addStyle(
-    ...,
-    style = options$footnote,
-    rows = end_row + 2,
-    cols = start_col,
-    gridExpand =  T,
-    stack =  T
-  )
-
-  openxlsx::addStyle(
-    ...,
-    style = options$source_note,
-    rows = start_row_note,
+    style = openxlsx::createStyle(
+      textDecoration = NULL,
+      fontColour = '#07403b',
+      fontSize = 9
+    ),
+    rows = 1,
     cols = start_col,
     gridExpand =  T,
     stack =  T

@@ -109,8 +109,8 @@ rename_from_dictionary <- function(data, join_ref_by = 'value') {
 
 # ------------------------------------------------------------------------------
 # Select only columns included in the tabulation
-select_only <- function(data, x_group = NULL, y_group = NULL, ...) {
-  data |> dplyr::select(
+select_only <- function(.data, x_group = NULL, y_group = NULL, ...) {
+  .data |> dplyr::select(
     dplyr::matches(paste0('^', x_group, '$')),
     dplyr::matches(paste0('^', y_group, '$')),
     ...

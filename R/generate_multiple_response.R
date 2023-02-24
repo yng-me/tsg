@@ -15,6 +15,8 @@
 #' @param convert_to_percent Whether to format to \code{percent} or \code{proportion}.
 #' @param format_precision Specify the precision of rounding the percent or proportion. Default is \code{2}.
 #' @param recode Whether to recode the variable name first.
+#' @param total_label
+#' @param clean_name
 #'
 #' @return Returns a cross-table of type \code{tibble}
 #' @export
@@ -45,6 +47,7 @@ generate_multiple_response <- function(
   include_proportion = TRUE,
   convert_to_percent = TRUE,
   format_precision = 2,
+  total_label = NULL,
   recode = TRUE,
   clean_name = TRUE
 ) {
@@ -187,6 +190,14 @@ generate_multiple_response <- function(
 
   if(!is.null(x_label)) {
     df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
+  }
+
+  if(!is.null(total_label)) {
+    df <- df |>
+      dplyr::rename_at(
+        dplyr::vars(dplyr::matches('Total')),
+        ~ stringr::str_replace(., 'Total', total_label)
+      )
   }
 
   if(clean_name == T) {
