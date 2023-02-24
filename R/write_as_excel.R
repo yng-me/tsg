@@ -14,6 +14,10 @@
 #' @param filename Name of file to specify with .xlsx extension.
 #' @param overwrite Whether to overwrite the existing file.
 #' @param ... \code{openxlsx} workbook object and sheet name.
+#' @param append_to_existing_sheet
+#' @param subtitle
+#' @param start_row
+#' @param format_precision
 #'
 #' @return A formatted workbook object.
 #' @export
@@ -34,11 +38,14 @@ write_as_excel <- function(
   .data,
   wb = NULL,
   sheet = set_sheet_name(wb),
+  append_to_existing_sheet = F,
   title = NULL,
+  subtitle = NULL,
   description = NULL,
   footnote = NULL,
   source_note = NULL,
   start_col = 2,
+  start_row = 2,
   options = get_config('facade'),
   y_group_separator = '>',
   save_as_excel = FALSE,
@@ -55,25 +62,32 @@ write_as_excel <- function(
   r <- NULL
   value <- NULL
 
-  start_row_init <- 3
-  start_row <- start_row_init
+  start_row_init <- start_row
+  restart_row <- start_row_init
 
   if(!exists('wb') | is.null(wb)) {
     wb <- openxlsx::createWorkbook()
     openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 12)
   }
 
-  if(sheet %in% names(wb)) {
+
+  col_length <- ncol(.data) + start_col - 1
+  col_range <- start_col:col_length
+
+  if(sheet %in% names(wb) & append_to_existing_sheet == F) {
     openxlsx::removeWorksheet(wb = wb, sheet = sheet)
     warning('Overwrite existing sheet with the same sheet name provided.')
   }
 
-  openxlsx::addWorksheet(
-    wb = wb,
-    sheet = sheet,
-    gridLines = F,
-    ...
-  )
+  if(!(sheet %in% names(wb)) & append_to_existing_sheet == F) {
+
+    openxlsx::addWorksheet(
+      wb = wb,
+      sheet = sheet,
+      gridLines = F,
+      ...
+    )
+  }
 
   if(!is.null(title)) {
     openxlsx::writeData(
@@ -81,27 +95,101 @@ write_as_excel <- function(
       sheet = sheet,
       x = title,
       startCol = start_col,
-      startRow = start_row,
+      startRow = restart_row,
       ...
     )
-    start_row <- start_row + 1
+
+    openxlsx::mergeCells(
+      wb = wb,
+      sheet = sheet,
+      cols = start_col:col_length,
+      rows = restart_row
+    )
+
+    openxlsx::addStyle(
+      wb = wb,
+      sheet = sheet,
+      style = openxlsx::createStyle(
+        fontSize = 13,
+        indent = 0,
+        textDecoration = 'bold'
+      ),
+      rows = restart_row,
+      cols = start_col,
+      gridExpand =  T,
+      stack =  T
+    )
+
+    openxlsx::setRowHeights(
+      wb = wb,
+      sheet = sheet,
+      rows = restart_row,
+      heights = 30
+    )
+
+    restart_row <- restart_row + 1
+
   }
+
   if(!is.null(description)) {
     openxlsx::writeData(
       wb = wb,
       sheet = sheet,
       x = description,
       startCol = start_col,
-      startRow = start_row,
+      startRow = restart_row,
       ...
     )
-    start_row <- start_row + 1
+
+    openxlsx::mergeCells(
+      wb = wb,
+      sheet = sheet,
+      cols = start_col:col_length,
+      rows = restart_row
+    )
+
+    restart_row <- restart_row + 1
+  }
+
+  if(!is.null(subtitle)) {
+    openxlsx::writeData(
+      wb = wb,
+      sheet = sheet,
+      x = subtitle,
+      startCol = start_col,
+      startRow = restart_row + 1,
+      ...
+    )
+
+    openxlsx::addStyle(
+      wb = wb,
+      sheet = sheet,
+      style = openxlsx::createStyle(
+        fontSize = 12,
+        indent = 0,
+        valign = 'center',
+        textDecoration = 'bold'
+      ),
+      rows = restart_row + 1,
+      cols = start_col,
+      gridExpand =  T,
+      stack =  T
+    )
+
+    openxlsx::setRowHeights(
+      wb = wb,
+      sheet = sheet,
+      rows = restart_row + 1,
+      heights = 35
+    )
+
+    restart_row <- restart_row + 1
   }
 
   merge_colnames <- extract_column_names(
     .data,
     start_col = start_col,
-    start_row = start_row,
+    start_row = restart_row,
     y_group_separator = y_group_separator
   )
 
@@ -114,7 +202,7 @@ write_as_excel <- function(
       sheet = sheet,
       x = .data,
       startCol = start_col,
-      startRow = row_depth + start_row,
+      startRow = row_depth + restart_row,
       borders = 'all',
       borderStyle = 'dashed',
       borderColour = 'gray',
@@ -131,7 +219,7 @@ write_as_excel <- function(
       sheet = sheet,
       x = .data,
       startCol = start_col,
-      startRow = row_depth_all + start_row,
+      startRow = row_depth_all + restart_row,
       colNames = F,
       borders = 'all',
       borderStyle = 'dashed',
@@ -145,12 +233,12 @@ write_as_excel <- function(
 
       row_from <- merge_rows$depth[m]
 
-      row_range <- row_from:row_depth + start_row
+      row_range <- row_from:row_depth + restart_row
       openxlsx::writeData(
         wb = wb,
         sheet = sheet,
         x = merge_rows$value[m],
-        startRow = row_from + start_row,
+        startRow = row_from + restart_row,
         startCol = merge_rows$col_from[m],
         ...
       )
@@ -165,7 +253,7 @@ write_as_excel <- function(
 
     # TOP COLUMN HEADER
     top_col <- merge_colnames |>
-      dplyr::filter(row_from == start_row, depth > 1) |>
+      dplyr::filter(row_from == restart_row, depth > 1) |>
       dplyr::mutate(col_to = col_from + r - 1) |>
       dplyr::distinct(value, .keep_all = T)
 
@@ -178,7 +266,7 @@ write_as_excel <- function(
         wb = wb,
         sheet = sheet,
         x = top_col$value[i],
-        startRow = start_row + 1,
+        startRow = restart_row + 1,
         startCol = top_col$col_from[i],
         ...
       )
@@ -187,7 +275,7 @@ write_as_excel <- function(
         wb = wb,
         sheet = sheet,
         cols = top_col_from:top_col_to,
-        rows = start_row + 1
+        rows = restart_row + 1
       )
     }
 
@@ -196,7 +284,7 @@ write_as_excel <- function(
 
       for(j in 2:row_depth_inner) {
 
-        inner <- merge_colnames |> dplyr::filter(row_from == j + start_row - 1)
+        inner <- merge_colnames |> dplyr::filter(row_from == j + restart_row - 1)
 
         inner_seq <- tibble::as_tibble_col(
           increment_inner_depth(inner$value),
@@ -219,7 +307,7 @@ write_as_excel <- function(
           sheet = sheet,
           x = t(inner$value),
           startCol = min(inner$col_from),
-          startRow = j + start_row,
+          startRow = j + restart_row,
           colNames = F,
           ...
         )
@@ -233,7 +321,7 @@ write_as_excel <- function(
             wb = wb,
             sheet = sheet,
             cols = inner_col_from:inner_col_to,
-            rows = j + start_row
+            rows = j + restart_row
           )
         }
 
@@ -242,14 +330,14 @@ write_as_excel <- function(
 
     # BOTTOM COLUMN HEADER
     bottom_col <- merge_colnames |>
-      dplyr::filter(row_from == row_depth + start_row - 1)
+      dplyr::filter(row_from == row_depth + restart_row - 1)
 
     openxlsx::writeData(
       wb = wb,
       sheet = sheet,
       x = t(bottom_col$value),
       startCol = min(bottom_col$col_from),
-      startRow = row_depth + start_row,
+      startRow = row_depth + restart_row,
       colNames = F,
       ...
     )
@@ -259,8 +347,8 @@ write_as_excel <- function(
     if(nrow(last_merges) > 0) {
       for(li in 1:nrow(last_merges)) {
 
-        row_merge_final_from <- start_row + last_merges$row_from[li] - 3
-        row_merge_final_to <- start_row + last_merges$row_from[li] - 2
+        row_merge_final_from <- restart_row + last_merges$row_from[li] - 3
+        row_merge_final_to <- restart_row + last_merges$row_from[li] - 2
 
         openxlsx::removeCellMerge(
           wb = wb,
@@ -281,8 +369,7 @@ write_as_excel <- function(
 
   }
 
-  row_length <- nrow(.data) + start_row + row_depth
-  col_length <- ncol(.data) + start_col - 1
+  row_length <- nrow(.data) + restart_row + row_depth
   start_row_note <- row_length + 2
 
   if(!is.null(footnote)) {
@@ -293,6 +380,20 @@ write_as_excel <- function(
       startCol = start_col,
       startRow = start_row_note
     )
+
+    # openxlsx::addStyle(
+    #   wb = wb,
+    #   sheet = sheet,
+    #   style = openxlsx::createStyle(
+    #     fontSize = 10,
+    #     textDecoration = 'italic'
+    #   ),
+    #   rows = start_row_note,
+    #   cols = start_col,
+    #   gridExpand =  T,
+    #   stack =  T
+    # )
+
   }
 
   if(!is.null(source_note)) {
@@ -306,6 +407,20 @@ write_as_excel <- function(
       startCol = start_col,
       startRow = start_row_note
     )
+
+    # openxlsx::addStyle(
+    #   wb = wb,
+    #   sheet = sheet,
+    #   style = openxlsx::createStyle(
+    #     fontSize = 10,
+    #     textDecoration = c('italic', 'bold')
+    #   ),
+    #   rows = start_row_note,
+    #   cols = start_col,
+    #   gridExpand =  T,
+    #   stack =  T
+    # )
+
   }
 
   set_export_facade(
@@ -313,7 +428,7 @@ write_as_excel <- function(
     sheet = sheet,
     header_depth = row_depth,
     start_row_init = start_row_init,
-    start_row = start_row + 1,
+    start_row = restart_row + 1,
     start_col = start_col,
     end_row = row_length,
     end_col = col_length,
@@ -332,6 +447,10 @@ write_as_excel <- function(
     )
   }
 
-  return(.data)
+  return(
+    list(
+      start_row = start_row_note - 1
+    )
+  )
 
 }

@@ -19,6 +19,7 @@ generate_multiple_response(
   include_proportion = TRUE,
   convert_to_percent = TRUE,
   format_precision = 2,
+  total_label = NULL,
   recode = TRUE,
   clean_name = TRUE
 )
@@ -53,6 +54,8 @@ generate_multiple_response(
 \item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
 
 \item{recode}{Whether to recode the variable name first.}
+
+\item{clean_name}{}
 }
 \value{
 Returns a cross-table of type \code{tibble}
