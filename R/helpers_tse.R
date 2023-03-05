@@ -35,12 +35,12 @@ set_export_facade <- function(
   options_default$col_width_first <- 35
   options_default$col_width_all <- 20
   options_default$row_height <- 20
-  options_default$row_height_header <- 35
+  options_default$row_height_header <- 30
 
-  options_default$decimal <- openxlsx::createStyle(
-    indent = 1,
-    numFmt = paste0('#,#0.', paste0(rep(0, as.integer(format_precision)), collapse = ''))
-  )
+  # options_default$decimal <- openxlsx::createStyle(
+  #   indent = 1,
+  #   numFmt = paste0('#,#0.', paste0(rep(0, as.integer(format_precision)), collapse = ''))
+  # )
 
   options_default$style_indent <- openxlsx::createStyle(
     indent = 1,
@@ -98,7 +98,12 @@ set_export_facade <- function(
   openxlsx::setColWidths(..., cols = start_col, widths = options$col_width_first)
 
   # Middle cols
-  openxlsx::setColWidths(..., cols = start_col_plus:end_col, widths = options$col_width_all)
+  if(length(options$col_width_all) > length(start_col_plus:end_col)) {
+    col_width_all_fit <- options$col_width_all[1:length(start_col_plus:end_col)]
+  } else {
+    col_width_all_fit <- options$col_width_all
+  }
+  openxlsx::setColWidths(..., cols = start_col_plus:end_col, widths = col_width_all_fit)
 
   # End col
   if(!is.null(options$col_width_last) | length(is.na(options$col_width_last)) > 0) {
@@ -106,11 +111,14 @@ set_export_facade <- function(
   }
 
   end_row_header <- header_depth + start_row - 1
-  start_row_tb <- start_row + 1
+  start_row_tb <- end_row_header + 1
 
 
   openxlsx::setRowHeights(..., rows = 1, heights = 15)
   openxlsx::setRowHeights(..., rows = start_row:end_row_header, heights = options$row_height_header)
+  openxlsx::setRowHeights(..., rows = start_row_tb:end_row, heights = options$row_height)
+
+  # if(!is.null())
   openxlsx::setRowHeights(..., rows = start_row_tb:end_row, heights = options$row_height)
 
   openxlsx::addStyle(
@@ -192,14 +200,31 @@ set_export_facade <- function(
   # Decimal
   if(length(decimal_format_cols) > 0) {
 
-    openxlsx::addStyle(
-      ...,
-      style = options$decimal,
-      rows = end_row_header:end_row,
-      cols = decimal_format_cols,
-      gridExpand = T,
-      stack = T
-    )
+    add_decimal_style <- function(cols, precise) {
+      openxlsx::addStyle(
+        ...,
+        style = openxlsx::createStyle(
+          indent = 1,
+          numFmt = paste0('#,#0.', paste0(rep(0, as.integer(precise)), collapse = ''))
+        ),
+        rows = end_row_header:end_row,
+        cols = cols + start_col - 1,
+        gridExpand = T,
+        stack = T
+      )
+    }
+
+    if(inherits(decimal_format_cols, 'list')) {
+
+      for(d in 1:length(format_precision)) {
+        add_decimal_style(decimal_format_cols[[d]], format_precision[d])
+      }
+
+    } else {
+
+      add_decimal_style(decimal_format_cols, format_precision)
+
+    }
 
   }
 
@@ -245,3 +270,106 @@ set_sheet_name <- function(wb) {
   sheet <- paste0('Sheet ', length(names(wb)) + 1)
   return(sheet)
 }
+
+
+# ------------------------------------------------------------------------------
+add_superscript <- function(
+    wb,
+    texto,
+    size = '10',
+    colour = '000000',
+    font = 'Arial',
+    family = '2',
+    bold = FALSE,
+    italic = FALSE,
+    underlined = FALSE
+) {
+
+
+  #finds the string that you want to update
+  stringToUpdate <- which(
+    sapply(
+      wb$sharedStrings,
+      function(x) {
+        grep(pattern = '~.*~', x)
+      }
+    ) == 1)
+
+
+  #splits the text into normal text, superscript and subcript
+  #normal_text <- str_split(texto, "\\[.*\\]|~.*~") %>% pluck(1) %>% purrr::discard(~ . == "")
+  normal_text <- str_split(texto, "~.*~") %>% pluck(1) %>% purrr::discard(~ . == "")
+
+  #sub_sup_text <- str_extract_all(texto, "\\[.*\\]|~.*~") %>% pluck(1)
+  sub_sup_text <- str_extract_all(texto, "~.*~") %>% pluck(1)
+
+  if (length(normal_text) > length(sub_sup_text)) {
+    sub_sup_text <- c(sub_sup_text, "")
+  } else if (length(sub_sup_text) > length(normal_text)) {
+    normal_text <- c(normal_text, "")
+  }
+  # this is the separated text which will be used next
+  texto_separado <- map2(normal_text, sub_sup_text, ~ c(.x, .y)) %>%
+    reduce(c) %>%
+    purrr::discard(~ . == "")
+
+  #formatting instructions
+
+  sz    <- paste('<sz val =\"',size,'\"/>', sep = '')
+  color   <- paste('<color rgb =\"',colour,'\"/>', sep = '')
+  rFont <- paste('<rFont val =\"',font,'\"/>', sep = '')
+  fam   <- paste('<family val =\"',family,'\"/>', sep = '')
+
+  #if its sub or sup adds the corresponding xml code
+  sub_sup_no <- function(texto) {
+
+    #if(str_detect(texto, "\\[.*\\]")){
+    #  return('<vertAlign val=\"subscript\"/>')
+    if (str_detect(texto, "~.*~")) {
+      return('<vertAlign val=\"superscript\"/>')
+    } else {
+      return('')
+    }
+  }
+
+  #get text from normal text, sub and sup
+  get_text_sub_sup <- function(texto) {
+    str_remove_all(texto, "~")
+  }
+
+  #formating
+  if(bold){
+    bld <- '<b/>'
+  } else{bld <- ''}
+
+  if(italic){
+    itl <- '<i/>'
+  } else{itl <- ''}
+
+  if(underlined){
+    uld <- '<u/>'
+  } else{uld <- ''}
+
+  #get all properties from one element of texto_separado
+
+  get_all_properties <- function(texto) {
+
+    paste0(
+      '<r><rPr>',
+      sub_sup_no(texto),
+      '</rPr><t xml:space="preserve">',
+      get_text_sub_sup(texto),
+      '</t></r>'
+    )
+  }
+
+  # use above function in texto_separado
+  newString <- map(texto_separado, ~ get_all_properties(.)) %>%
+    reduce(paste, sep = "") %>%
+    {c("<si>", ., "</si>")} %>%
+    reduce(paste, sep = "")
+
+  # replace initial text
+  wb$sharedStrings[stringToUpdate] <- newString
+}
+

@@ -18,6 +18,7 @@
 #' @param subtitle
 #' @param start_row
 #' @param format_precision
+#' @param cols_with_decimal_format
 #'
 #' @return A formatted workbook object.
 #' @export
@@ -49,6 +50,7 @@ write_as_excel <- function(
   options = get_config('facade'),
   y_group_separator = '>',
   save_as_excel = FALSE,
+  cols_with_decimal_format = NULL,
   filename = NULL,
   format_precision = 2,
   overwrite = TRUE,
@@ -423,6 +425,10 @@ write_as_excel <- function(
 
   }
 
+  if(is.null(cols_with_decimal_format)) {
+    cols_with_decimal_format <- which(grepl('percent|proportion', names(.data), ignore.case = T))
+  }
+
   set_export_facade(
     wb = wb,
     sheet = sheet,
@@ -433,7 +439,7 @@ write_as_excel <- function(
     end_row = row_length,
     end_col = col_length,
     start_row_note = start_row_note,
-    decimal_format_cols = which(grepl('percent|proportion', names(.data), ignore.case = T)) + 1,
+    decimal_format_cols = cols_with_decimal_format,
     format_precision = format_precision,
     options = options
   )
