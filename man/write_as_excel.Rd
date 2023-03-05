@@ -19,6 +19,7 @@ write_as_excel(
   options = get_config("facade"),
   y_group_separator = ">",
   save_as_excel = FALSE,
+  cols_with_decimal_format = NULL,
   filename = NULL,
   format_precision = 2,
   overwrite = TRUE,
@@ -47,6 +48,8 @@ write_as_excel(
 \item{y_group_separator}{Column separator that defines the table hierarchy.}
 
 \item{save_as_excel}{Whether to save/export the table as Excel.}
+
+\item{cols_with_decimal_format}{}
 
 \item{filename}{Name of file to specify with .xlsx extension.}
 
