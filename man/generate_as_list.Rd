@@ -69,12 +69,12 @@ It uses any \code{tsg_*} valid functions as calculator to generate desired tabul
 }
 \examples{
 mtcars_by_cyl_freq <- mtcars |>
-  generate_as_list(list_group = cyl, x = am)
+  generate_as_list(list_group = cyl, indicator = am)
 
 mtcars_by_cyl_freq
 
 mtcars_by_cyl_prop <- mtcars |>
-  generate_as_list(list_group = cyl, x = am, gear, fn = 'generate_crosstab')
+  generate_as_list(list_group = cyl, indicator = am, gear, fn = 'generate_crosstab')
 
 mtcars_by_cyl_prop
 }

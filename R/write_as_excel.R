@@ -14,11 +14,11 @@
 #' @param filename Name of file to specify with .xlsx extension.
 #' @param overwrite Whether to overwrite the existing file.
 #' @param ... \code{openxlsx} workbook object and sheet name.
-#' @param append_to_existing_sheet
-#' @param subtitle
-#' @param start_row
-#' @param format_precision
-#' @param cols_with_decimal_format
+#' @param append_to_existing_sheet Whether to create new worksheet or append data to existing worksheet.
+#' @param subtitle Table subtitle
+#' @param start_row Start row in Excel to write the data
+#' @param cols_with_decimal_format Columns to apply decimal formatting
+#' @param format_precision Number of decimal place/s to apply for numeric data
 #'
 #' @return A formatted workbook object.
 #' @export
@@ -345,7 +345,7 @@ write_as_excel <- function(
     )
 
     # FINAL MERGE
-    last_merges <- merge_colnames |> dplyr::filter(str_trim(value) == '')
+    last_merges <- merge_colnames |> dplyr::filter(stringr::str_trim(value) == '')
     if(nrow(last_merges) > 0) {
       for(li in 1:nrow(last_merges)) {
 

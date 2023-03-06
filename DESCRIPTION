@@ -1,7 +1,7 @@
 Package: tsg
 Type: Package
 Title: Table Summary Generator
-Version: 0.1.1
+Version: 0.1.2
 Author: Bhas Abdulsamad <connect@bhasabdulsamad.com>
 Maintainer: The package maintainer <connect@bhasabdulsamad.com>
 Description: Generate table summary with ease. 

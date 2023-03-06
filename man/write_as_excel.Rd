@@ -33,7 +33,11 @@ write_as_excel(
 
 \item{sheet}{Tab/sheet name.}
 
+\item{append_to_existing_sheet}{Whether to create new worksheet or append data to existing worksheet.}
+
 \item{title}{Table title.}
+
+\item{subtitle}{Table subtitle}
 
 \item{description}{Table description.}
 
@@ -43,15 +47,19 @@ write_as_excel(
 
 \item{start_col}{Column position to start write the data.}
 
+\item{start_row}{Start row in Excel to write the data}
+
 \item{options}{Formatting options.}
 
 \item{y_group_separator}{Column separator that defines the table hierarchy.}
 
 \item{save_as_excel}{Whether to save/export the table as Excel.}
 
-\item{cols_with_decimal_format}{}
+\item{cols_with_decimal_format}{Columns to apply decimal formatting}
 
 \item{filename}{Name of file to specify with .xlsx extension.}
+
+\item{format_precision}{Number of decimal place/s to apply for numeric data}
 
 \item{overwrite}{Whether to overwrite the existing file.}
 

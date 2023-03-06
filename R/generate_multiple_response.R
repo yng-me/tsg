@@ -15,8 +15,8 @@
 #' @param convert_to_percent Whether to format to \code{percent} or \code{proportion}.
 #' @param format_precision Specify the precision of rounding the percent or proportion. Default is \code{2}.
 #' @param recode Whether to recode the variable name first.
-#' @param total_label
-#' @param clean_name
+#' @param total_label Column name for the total.
+#' @param clean_name Whether to output a clean column name.
 #'
 #' @return Returns a cross-table of type \code{tibble}
 #' @export
