@@ -53,9 +53,11 @@ generate_multiple_response(
 
 \item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
 
+\item{total_label}{Column name for the total.}
+
 \item{recode}{Whether to recode the variable name first.}
 
-\item{clean_name}{}
+\item{clean_name}{Whether to output a clean column name.}
 }
 \value{
 Returns a cross-table of type \code{tibble}
