@@ -1,26 +1,26 @@
 #' @title Generate frequency table
 #' @description Generate a frequency table with optional cumulative total and percent.
 #'
-#' @param .data A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
+#' @param .data A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.
 #' @param x \strong{Required}. Variable to be used as categories.
-#' @param x_group Accepts a vector of string/character as grouping variables.
+#' @param x_group Accepts a vector of string/character as grouping variables present in the input \code{.data.}
 #' @param x_label Stubhead label (first column).
-#' @param x_as_group Use row variable as grouping.
+#' @param x_as_group Use \code{x} variable as top level grouping.
 #' @param sort_frequency Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.
 #' @param include_total Whether to include row total.
-#' @param include_cumulative Whether to cumulative frequencies.
+#' @param include_cumulative Whether to include cumulative frequencies.
 #' @param exclude_zero_value Whether to drop categories with zero (0) values
 #'
 #' @return Returns a frequency table of type \code{tibble}.
 #' @export
 #'
 #' @examples
+#'
 #' library(palmerpenguins)
 #'
 #' # Example 1: Basic usage
 #'
 #' generate_frequency(penguins, species)
-#'
 #'
 #' # Example 2: Add grouping variable and define label for x
 #'
@@ -31,7 +31,6 @@
 #'     x_label = 'Sex'
 #'    )
 #'
-#'
 #' # Example 3: Add grouping variable, use x as group, and exclude column total
 #'
 #' penguins |>
@@ -41,7 +40,6 @@
 #'     x_as_group = TRUE,
 #'     include_total = FALSE
 #'  )
-#'
 #'
 #' # Example 4: Exclude cumulative values and sort the output by frequency
 #'
@@ -66,6 +64,7 @@ generate_frequency <- function(
   exclude_zero_value = FALSE
 ) {
 
+  # Check if input data is valid
   check_input_data_validity(.data)
 
   Percent <- NULL
@@ -74,13 +73,16 @@ generate_frequency <- function(
   n <- NULL
   `:=` <- NULL
 
+  # convert x variable into its string representation
   x_string <- set_as_string({{x}})
 
+  # Compute frequency distribution
   df <- .data |>
     dplyr::count({{x}}) |>
     dplyr::collect() |>
     dplyr::mutate(percent = n / sum(n))
 
+  # Check if grouping is specified
   if(!is.null(x_group)) {
 
     if(x_as_group == T) x_string <- c(x_string, x_group)
@@ -95,10 +97,12 @@ generate_frequency <- function(
       dplyr::mutate(percent = n / sum(n))
   }
 
+  # Whether to sort the frequency
   if(sort_frequency == T) {
     df <- df |> dplyr::arrange(dplyr::desc(n))
   }
 
+  # Check what to include/exclude in the final output
   df <- df |> dplyr::mutate(Percent := percent * 100) |>
     dplyr::select(
       dplyr::matches(paste0('^', x_string, '$')),
@@ -112,9 +116,13 @@ generate_frequency <- function(
       exclude_zero_value
     )
 
-  if(!is.null(x_label)) df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
+  # Check if stub head label is specified
+  if(!is.null(x_label)) {
+    df <- df |>
+      dplyr::rename((!!as.name(x_label)) := {{x}})
+  }
 
-  return(df |> dplyr::tibble())
+  return(dplyr::tibble(df))
 
 }
 
