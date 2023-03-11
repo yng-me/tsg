@@ -8,13 +8,13 @@ set_as_string <- function(to_str) {
 # Check if valid input data
 check_input_data_validity <- function(x) {
   error_message <- ".data input must be a valid .data frame or Arrow format. Try calling `collect()` first."
+
   if(is.vector(x) | is.character(x)) stop(error_message)
-  if(
-    !('data.frame' %in% class(x) |
-      'arrow_dplyr_query' %in% class(x) |
-      'ArrowObject' %in% class(x)
+  if(!(inherits(x, 'data.frame') |
+      inherits(x, 'ArrowObject') |
+      inherits(x, 'arrow_dplyr_query')
     )
-  ) { stop(error_message) }
+  ) stop(error_message)
 }
 
 # ------------------------------------------------------------------------------

@@ -36,15 +36,48 @@ generate_frequency(
 \item{exclude_zero_value}{Whether to drop categories with zero (0) values}
 }
 \value{
-Returns a frequency table of type \code{tibble} with optional cumulative total and percent.
+Returns a frequency table of type \code{tibble}.
 }
 \description{
 Generate a frequency table with optional cumulative total and percent.
 }
 \examples{
-mtcars_cyl_freq <- mtcars |>
-  generate_frequency(cyl)
+library(palmerpenguins)
 
-mtcars_cyl_freq
+# Example 1: Basic usage
+
+generate_frequency(penguins, species)
+
+
+# Example 2: Add grouping variable and define label for x
+
+penguins |>
+  generate_frequency(
+    x = sex,
+    x_group = 'species',
+    x_label = 'Sex'
+   )
+
+
+# Example 3: Add grouping variable, use x as group, and exclude column total
+
+penguins |>
+  generate_frequency(
+    x = sex,
+    x_group = 'species',
+    x_as_group = TRUE,
+    include_total = FALSE
+ )
+
+
+# Example 4: Exclude cumulative values and sort the output by frequency
+
+penguins |>
+  generate_frequency(
+   x = species,
+   x_label = 'Species',
+   sort_frequency = TRUE,
+   include_cumulative = FALSE
+ )
 
 }

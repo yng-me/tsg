@@ -3,16 +3,6 @@
 
 <br>
 
-TODO:
-
-- duplicate name
-- sort column name
-- [DONE] _individual title worksheet_
-- [DONE] _call collect() internally_
-- [DONE] _source note_
-- [DONE] _save_as_excel() applies to all data_
-
-<br>
 
 **`tsg`** stands for "**table summary generator**." This package is designed to facilitate generation of statistical summary tables with ease. It also adheres to the `tidyverse` specifications.
 
@@ -20,7 +10,7 @@ The package allows you to:
 
 - generate frequency tables, cross-tabulations (2-way table or more);
 - extract multiple-letter response variable from survey data;
-- include percent distribution (which is default) in the generated tables;
+- include frequency and/or percent distributions in the generated tables;
 - specify whether the 'percent to total' is computed by row (default) or by column;
 - export Excel file with default formatting/styling which is can also be customized.
 
