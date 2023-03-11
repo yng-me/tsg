@@ -1,6 +1,9 @@
-# ------------------------------------------------------------------------------
+# get_crosstab_total <- function(.data, ...) {
+#   UseMethod('get_crosstab_total')
+# }
 
-crosstab_total <- function(
+# ------------------------------------------------------------------------------
+get_crosstab_total <- function(
   .data_piped,
   y_group_separator,
   total_by,
@@ -36,6 +39,7 @@ crosstab_total <- function(
   p_label <- dplyr::if_else(convert_to_percent == T, 'Percent', 'Proportion')
 
   t_label <- 'Total'
+
   if(!is.null(total_label)) {
     # t_label <- paste0('pivot_', total_label, y_group_separator, 'Total')
     t_label <- total_label
@@ -46,7 +50,6 @@ crosstab_total <- function(
       janitor::adorn_totals('col', name = t_label) |>
       janitor::adorn_percentages('col', na.rm = T, dplyr::matches('^pivot_|Total')) |>
       dplyr::select(dplyr::starts_with('pivot_'), dplyr::contains('Total')) |>
-      # replace(is.na(.), 0) |>
       dplyr::mutate_all(~ . * p_divisor) |>
       dplyr::rename_all(~ get_label(., p_label)) |>
       dplyr::tibble()
@@ -81,8 +84,8 @@ crosstab_total <- function(
     if(!is.null(total_label)) {
       df <- df |>
         dplyr::rename_at(
-          dplyr::vars(dplyr::matches('^Total$')),
-          ~ get_label(paste0('pivot_', total_label, y_group_separator, .), 'Frequency')
+          dplyr::vars(dplyr::matches('Total$')),
+          ~ get_label(paste0('pivot_', t_label, y_group_separator, .), 'Frequency')
         )
     }
   }
@@ -103,7 +106,7 @@ crosstab_total <- function(
 }
 
 # ------------------------------------------------------------------------------
-crosstab_total_stack <- function(
+get_crosstab_total_stack <- function(
   data,
   y_group_separator,
   total_by,
@@ -116,6 +119,8 @@ crosstab_total_stack <- function(
 ) {
 
   value <- NULL
+
+  print('here')
 
   cols <- dplyr::as_tibble(names(data)) |>
     dplyr::filter(grepl('pivot_', value))
@@ -138,7 +143,7 @@ crosstab_total_stack <- function(
       dplyr::starts_with(paste0('pivot_', x[1], y_group_separator))
     ) |>
     dplyr::mutate_at(dplyr::vars(dplyr::matches(ex_cols)), as.character) |>
-    crosstab_total(
+    get_crosstab_total(
       y_group_separator,
       total_by,
       group_values_by,
@@ -158,7 +163,7 @@ crosstab_total_stack <- function(
         dplyr::starts_with(paste0('pivot_', x[i], y_group_separator))
       ) |>
       dplyr::mutate_at(dplyr::vars(dplyr::matches(ex_cols)), as.character) |>
-      crosstab_total(
+      get_crosstab_total(
         y_group_separator,
         total_by,
         group_values_by,
@@ -301,3 +306,4 @@ convert_to_na <- function(.data, value_to_be_replaced = '') {
       )
     )
 }
+

@@ -426,7 +426,9 @@ write_as_excel <- function(
   }
 
   if(is.null(cols_with_decimal_format)) {
-    cols_with_decimal_format <- which(grepl('percent|proportion', names(.data), ignore.case = T))
+    cols_with_decimal_format <- which(
+      grepl('percent|proportion|[%]', names(.data), ignore.case = T)
+    )
   }
 
   set_export_facade(

@@ -11,13 +11,14 @@ generate_crosstab(
   x_group = NULL,
   y_group = NULL,
   x_label = get_config("x_label"),
-  y_group_separator = ">",
   x_as_group = FALSE,
+  y_group_separator = ">",
   total_by = "row",
   group_values_by = "statistics",
   include_frequency = TRUE,
   include_proportion = TRUE,
   include_column_total = TRUE,
+  include_row_total = TRUE,
   convert_to_percent = TRUE,
   format_precision = 2,
   total_label = NULL,
@@ -25,11 +26,11 @@ generate_crosstab(
 )
 }
 \arguments{
-\item{.data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{.data}{A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.}
 
-\item{x}{\strong{Required}. Row variable to be used as categories.}
+\item{x}{\strong{Required}. Variable to be used as categories.}
 
-\item{y}{Variable to be used as columns (like in pivot_wider). If not supplied, \code{generate_frequency} will used in the function call. \code{NA} will be automatically renamed to \code{Missing}.}
+\item{y}{Variable to be used as columns (like in \code{pivot_wider}). If not supplied, \code{generate_frequency} will used in the function call. \code{NA} will be automatically renamed to \code{Missing}.}
 
 \item{x_group}{Row grouping variable/s.}
 
@@ -37,33 +38,35 @@ generate_crosstab(
 
 \item{x_label}{Stubhead label (first column).}
 
-\item{y_group_separator}{Column separator that defines the table hierarchy.}
+\item{x_as_group}{Use \code{x} variable as top level grouping.}
 
-\item{x_as_group}{Use row variable as grouping.}
+\item{y_group_separator}{Column separator that defines the table hierarchy. Default is \code{>}.}
 
 \item{total_by}{Accepts \code{row} | \code{column}. Whether to apply the sum columnwise or rowwise.}
 
 \item{group_values_by}{Accepts \code{statistics} | \code{indicators}.}
 
-\item{include_frequency}{Whether to include frequency columns.}
+\item{include_frequency}{Whether to include frequency columns. Default is \code{TRUE}.}
 
-\item{include_proportion}{Whether to include proportion/percentage columns.}
+\item{include_proportion}{Whether to include proportion/percentage columns. Default is \code{TRUE}.}
 
-\item{include_column_total}{Whether to include column total.}
+\item{include_column_total}{Whether to include column total. Default is \code{TRUE}.}
 
-\item{convert_to_percent}{Whether to format to percent or proportion.}
+\item{include_row_total}{Whether to include row total. Default is \code{TRUE}.}
+
+\item{convert_to_percent}{Whether to format to percent or proportion. Default is \code{TRUE}.}
 
 \item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
 
 \item{total_label}{Whether to rename the column total.}
 
-\item{...}{Additional arguments}
+\item{...}{Additional agruments.}
 }
 \value{
 Returns a cross-table of type \code{tibble}
 }
 \description{
-The function can generate a cross-tabulation that supports more than one (1) variable specified in the column.
+This function extends the functionality of \code{generate_frequency} by allowing you to generate cross-tabulations of two (2) or more categorical variables.
 }
 \examples{
 

@@ -220,7 +220,7 @@ generate_crosstab(
   </tr>
   <tr>
     <td>`x_as_group`</td>
-    <td>Use `x` as top-level grouping. Applicable only if `x_group` is specified.</td>
+    <td>Use `x` variable as top level grouping</td>
   </tr>
   <tr>
     <td>`y_group_separator`</td>
