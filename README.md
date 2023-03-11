@@ -1,5 +1,5 @@
 
-## About the package
+## About the `tsg` package
 
 <br>
 
@@ -67,7 +67,7 @@ generate_frequency(
     <td>`.data`</td>
     <td>
       <b>Required</b>. 
-      A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
+      A data frame, data frame extension (e.g. a `tibble`), a lazy data frame (e.g. from `dbplyr` or `dtplyr`), or Arrow data format.
     </td>
   </tr>
   <tr>
@@ -76,19 +76,19 @@ generate_frequency(
   </tr>
   <tr>
     <td>`x_group`</td>
-    <td>Accepts a vector of column names as characters (in quote) as grouping variables.</td>
+    <td>Accepts a vector of string/character as grouping variables present in the input `.data`.</td>
   </tr>
   <tr>
     <td>`x_label`</td>
     <td>Stubhead label or label for `x`.</td>
   </tr>
   <tr>
-    <td>`sort_frequency`</td>
-    <td>Whether to sort the output. If set to `TRUE`, the frequency will be sorted in descending order.</td>
+    <td>`x_as_group`</td>
+    <td>Use `x` variable as top level grouping</td>
   </tr>
   <tr>
-    <td>`x_as_group`</td>
-    <td>Use `x` as top-level grouping. Applicable only if `x_group` is specified.</td>
+    <td>`sort_frequency`</td>
+    <td>Whether to sort the output. If set to `TRUE`, the frequency will be sorted in descending order.</td>
   </tr>
   <tr>
     <td>`include_total`</td>
@@ -109,7 +109,6 @@ generate_frequency(
 
 ```r
 library(palmerpenguins)
-library(gt)
 
 generate_frequency(penguins, species)
 

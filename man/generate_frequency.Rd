@@ -17,37 +17,37 @@ generate_frequency(
 )
 }
 \arguments{
-\item{.data}{A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.}
+\item{.data}{A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.}
 
 \item{x}{\strong{Required}. Variable to be used as categories.}
 
-\item{x_group}{Accepts a vector of string/character as grouping variables.}
+\item{x_group}{Accepts a vector of string/character as grouping variables present in the input \code{.data.}}
 
 \item{x_label}{Stubhead label (first column).}
 
 \item{sort_frequency}{Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.}
 
-\item{x_as_group}{Use row variable as grouping.}
+\item{x_as_group}{Use \code{x} variable as top level grouping.}
 
 \item{include_total}{Whether to include row total.}
 
-\item{include_cumulative}{Whether to cumulative frequencies.}
+\item{include_cumulative}{Whether to include cumulative frequencies.}
 
 \item{exclude_zero_value}{Whether to drop categories with zero (0) values}
 }
 \value{
-Returns a frequency table of type \code{tibble}.
+\code{generate_frequency} returns five (5) columns by default if \code{x_group} is not specified. These include (1) categories of \code{x}, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
 }
 \description{
-Generate a frequency table with optional cumulative total and percent.
+This function allows you to generates a frequency distribution table (marginal table) of a categorical variable \code{x} specified in its second argument.
 }
 \examples{
+
 library(palmerpenguins)
 
 # Example 1: Basic usage
 
 generate_frequency(penguins, species)
-
 
 # Example 2: Add grouping variable and define label for x
 
@@ -58,7 +58,6 @@ penguins |>
     x_label = 'Sex'
    )
 
-
 # Example 3: Add grouping variable, use x as group, and exclude column total
 
 penguins |>
@@ -68,7 +67,6 @@ penguins |>
     x_as_group = TRUE,
     include_total = FALSE
  )
-
 
 # Example 4: Exclude cumulative values and sort the output by frequency
 
