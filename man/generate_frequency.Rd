@@ -7,10 +7,8 @@
 generate_frequency(
   .data,
   x,
-  x_group = NULL,
   label_stub = get_config("label_stub"),
   sort_frequency = FALSE,
-  x_as_group = FALSE,
   include_total = TRUE,
   include_cumulative = TRUE,
   exclude_zero_value = FALSE
@@ -21,19 +19,19 @@ generate_frequency(
 
 \item{x}{\strong{Required}. Variable to be used as categories.}
 
-\item{x_group}{Accepts a vector of string/character as grouping variables present in the input \code{.data.}}
-
 \item{label_stub}{Stubhead label (first column).}
 
 \item{sort_frequency}{Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.}
-
-\item{x_as_group}{Use \code{x} variable as top level grouping.}
 
 \item{include_total}{Whether to include row total.}
 
 \item{include_cumulative}{Whether to include cumulative frequencies.}
 
 \item{exclude_zero_value}{Whether to drop categories with zero (0) values}
+
+\item{x_group}{Accepts a vector of string/character as grouping variables present in the input \code{.data.}}
+
+\item{x_as_group}{Use \code{x} variable as top level grouping.}
 }
 \value{
 \code{generate_frequency} returns five (5) columns by default if \code{x_group} is not specified. These include (1) categories of \code{x}, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.

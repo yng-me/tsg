@@ -5,7 +5,7 @@
 #' @param .data A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.
 #' @param x \strong{Required}. Variable to be used as categories.
 #' @param ... Tidy-select column names.
-#' @param total_by Accepts \code{row} | \code{column}. Whether to apply the sum columnwise or rowwise.
+#' @param total_by_col Whether to apply the sum columnwise if \code{TRUE} or rowwise \code{FALSE}. Default is \code{FALSE}
 #' @param total_option CURRENTLY IGNORE. For future implementation.
 #' @param include_frequency Whether to include frequency columns. Default is \code{TRUE}.
 #' @param include_proportion Whether to include proportion/percentage columns. Default is \code{TRUE}.
@@ -31,8 +31,7 @@ generate_crosstab <- function(
     .data,
     x,
     ...,
-    weights = NULL,
-    total_by = 'row',
+    total_by_col = FALSE,
     total_option = 'default',
     include_frequency = TRUE,
     include_proportion = TRUE,
@@ -44,11 +43,17 @@ generate_crosstab <- function(
     label_stub = get_config('label_stub'),
     label_total = 'Total',
     label_subtotal = NULL,
+    weights = NULL,
     names_separator = '>'
 ) {
 
   # Check the if input data is valid
   check_input_data_validity(.data)
+
+  grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
+  grouping_col_names <- names(dplyr::collect(grouping_cols))
+
+  .df_selected <- .data |> dplyr::select(any_of(grouping_col_names), {{x}}, ...)
 
   `:=` <- NULL
   `.` <- NULL
@@ -57,7 +62,7 @@ generate_crosstab <- function(
 
   expr <- rlang::expr(c(...))
   cols_to_pivot <- tidyselect::eval_select(
-    expr, data = dplyr::collect(.data)
+    expr, data = dplyr::collect(.df_selected)
   )
 
   if(rlang::dots_n(...) == 0) {
@@ -87,7 +92,7 @@ generate_crosstab <- function(
         dplyr::everything()
       )
 
-    if(total_by == 'col') {
+    if(total_by_col) {
       df <- .df |>
         dplyr::mutate_at(
           dplyr::vars(dplyr::matches('^Frequency')),
@@ -168,10 +173,10 @@ generate_crosstab <- function(
         w <- get_current_col(k = p_label)
 
         .df <- .df |>
-          dplyr::mutate(t = total_by) |>
+          dplyr::mutate(total_by_col = total_by_col) |>
           dplyr::mutate(
             (!!as.name(w$sub)) := dplyr::if_else(
-              t == 'col',
+              total_by_col,
               p_multiplier * (!!as.name(v$sub) / sum(!!as.name(v$sub))),
               rowSums(dplyr::select(., dplyr::matches(w$subtotal)))
             )
@@ -217,16 +222,13 @@ generate_crosstab <- function(
       .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{x}})
     }
 
-    if(total_by == 'col') .df <- .df |> janitor::adorn_totals()
+    if(total_by_col) .df <- .df |> janitor::adorn_totals()
 
     return(.df)
 
   }
 
-  grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
-  grouping_col_names <- names(dplyr::collect(grouping_cols))
-
-  cross_tab <- .data |>
+  cross_tab <- .df_selected |>
     dplyr::group_by({{x}}, ..., .add = T) |>
     dplyr::count(name = 'Frequency') |>
     dplyr::ungroup() |>

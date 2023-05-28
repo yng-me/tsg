@@ -3,9 +3,7 @@
 #'
 #' @param .data A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.
 #' @param x \strong{Required}. Variable to be used as categories.
-#' @param x_group Accepts a vector of string/character as grouping variables present in the input \code{.data.}
 #' @param label_stub Stubhead label (first column).
-#' @param x_as_group Use \code{x} variable as top level grouping.
 #' @param sort_frequency Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.
 #' @param include_total Whether to include row total.
 #' @param include_cumulative Whether to include cumulative frequencies.
@@ -39,8 +37,10 @@ generate_frequency <- function(
   grouping_col_names <- names(dplyr::collect(grouping_cols))
   first_cols <- c(grouping_col_names, set_as_string({{x}}))
 
+  .df_selected <- .data |> dplyr::select(any_of(grouping_col_names), {{x}})
+
   # Compute frequency distribution
-  df <- .data |>
+  df <- .df_selected |>
     dplyr::count({{x}}) |>
     dplyr::collect() |>
     dplyr::mutate(percent = n / sum(n))

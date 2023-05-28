@@ -58,10 +58,8 @@ This function allows you to generates a frequency distribution table (marginal t
 generate_frequency(
   .data,
   x,
-  x_group = NULL,
   label_stub = get_config('label_stub'),
   sort_frequency = FALSE,
-  x_as_group = FALSE,
   include_total = TRUE,
   include_cumulative = TRUE,
   exclude_zero_value = FALSE
@@ -84,20 +82,12 @@ generate_frequency(
     <td><b>Required</b>. Variable to be used as categories.</td>
   </tr>
   <tr>
-    <td>`x_group`</td>
-    <td>Accepts a vector of column names as characters (in quote) as grouping variables.</td>
-  </tr>
-  <tr>
     <td>`label_stub`</td>
     <td>Stubhead label or label for `x`.</td>
   </tr>
   <tr>
     <td>`sort_frequency`</td>
     <td>Whether to sort the output. If set to `TRUE`, the frequency will be sorted in descending order.</td>
-  </tr>
-  <tr>
-    <td>`x_as_group`</td>
-    <td>Use `x` as top-level grouping. Applicable only if `x_group` is specified.</td>
   </tr>
   <tr>
     <td>`include_total`</td>
@@ -118,6 +108,7 @@ generate_frequency(
 
 ```{r, warning=F}
 library(palmerpenguins)
+library(dplyr)
 library(gt)
 ```
 
@@ -127,19 +118,17 @@ library(gt)
 penguins |> 
   generate_frequency(
     x = sex, 
-    x_group = 'species', 
     label_stub = 'Sex'
   )
 ```
 
-**Example 1.3**: Add grouping variable, use `x` as group, and exclude column total
+**Example 1.3**: Add grouping variable, and exclude column total
 
 ```{r, warning=F}
 penguins |> 
+  group_by(species) |>
   generate_frequency(
     x = sex, 
-    x_group = 'species', 
-    x_as_group = TRUE, 
     include_total = FALSE
   )
 ```
@@ -160,9 +149,9 @@ penguins |>
 
 ```{r, warning=F}
 dplyr::starwars |> 
+  group_by(skin_color, gender) |> 
   generate_frequency(
     x = sex, 
-    x_group = c('skin_color', 'gender'), 
     label_stub = 'Sex', 
     include_cumulative = FALSE
   )
@@ -177,21 +166,21 @@ dplyr::starwars |>
 generate_crosstab(
   .data,
   x,
-  y = NULL,
-  x_group = NULL,
-  y_group = NULL,
-  label_stub = get_config('label_stub'),
-  y_group_separator = '>',
-  x_as_group = FALSE,
-  total_by = 'row',
-  group_values_by = 'statistics',
+  ...,
+  total_by_col = FALSE,
+  total_option = 'default',
   include_frequency = TRUE,
   include_proportion = TRUE,
   include_column_total = TRUE,
+  include_row_total = TRUE,
+  include_subtotal = FALSE,
   convert_to_percent = TRUE,
-  format_precision = 2,
-  total_label = NULL,
-  ...
+  decimal_precision = NULL,
+  label_stub = get_config('label_stub'),
+  label_total = 'Total',
+  label_subtotal = NULL,
+  weights = NULL,
+  names_separator = '>'
 ) 
 ```
 
@@ -209,49 +198,36 @@ generate_crosstab(
     <td><b>Required</b>. Variable to be used as categories.</td>
   </tr>
   <tr>
-    <td>`y`</td>
-    <td>Variable to be used as columns (like in pivot_wider). If not supplied, `generate_frequency` will used in the function call. 
-    </td>
+    <td>`...`</td>
+    <td>Tidy-select column names.</td>
   </tr>
   <tr>
-    <td>`x_group`</td>
-    <td>Accepts a vector of string/character as grouping variables.</td>
+    <td>`total_by_col`</td>
+    <td>Accepts `TRUE` | `FALSE`. Whether to apply the sum columnwise if `TRUE` or rowwise `FALSE`. Default is `FALSE`.</td>
   </tr>
   <tr>
-    <td>`y_group`</td>
-    <td>Accepts a vector of string/character as grouping variables in the column.</td>
-  </tr>
-  <tr>
-    <td>`label_stub`</td>
-    <td>Stubhead label or label for `x`.</td>
-  </tr>
-  <tr>
-    <td>`x_as_group`</td>
-    <td>Use `x` as top-level grouping. Applicable only if `x_group` is specified.</td>
-  </tr>
-  <tr>
-    <td>`y_group_separator`</td>
-    <td>A character string that defines the column separator to be used to show table hierarchy.</td>
-  </tr>
-  <tr>
-    <td>`total_by`</td>
-    <td>Accepts `row` | `column`. Whether to apply the sum columnwise or rowwise.</td>
-  </tr>
-  <tr>
-    <td>`group_values_by`</td>
-    <td>Accepts `statistics` | `indicators`.</td>
+    <td>`total_option`</td>
+    <td>*[CURRENTLY IGNORE]*. For future implementation.</td>
   </tr>
   <tr>
     <td>`include_frequency`</td>
-    <td>Whether to include frequency columns.</td>
+    <td>Whether to include frequency columns. Default is `TRUE`</td>
   </tr>
   <tr>
     <td>`include_proportion`</td>
-    <td>Whether to include proportion/percentage columns.</td>
+    <td>Whether to include proportion/percentage columns. Default is `TRUE`</td>
   </tr>
   <tr>
     <td>`include_column_total`</td>
-    <td>Whether to include column total.</td>
+    <td>Whether to include column total. Default is `TRUE`.</td>
+  </tr>
+  <tr>
+    <td>`include_row_total`</td>
+    <td>Whether to include row total. Default is `TRUE`</td>
+  </tr>
+  <tr>
+    <td>`include_subtotal`</td>
+    <td>Whether to include subtotal. Default is `FALSE`</td>
   </tr>
   <tr>
     <td>`convert_to_percent`</td>
@@ -262,12 +238,20 @@ generate_crosstab(
     <td>*[Not yet implemented]* Specify the precision of rounding the percent or proportion. Default is `2`.</td>
   </tr>
   <tr>
-    <td>`total_label`</td>
+    <td>`label_stub`</td>
+    <td>Stubhead label or label for `x`.</td>
+  </tr>
+  <tr>
+    <td>`label_total`</td>
     <td>Whether to rename the column total.</td>
   </tr>
   <tr>
-    <td>`...`</td>
-    <td>Valid arguments for `generate_frequency`.</td>
+    <td>`weight`</td>
+    <td>*[CURRENTLY IGNORE]*. For future implementation.</td>
+  </tr>
+  <tr>
+    <td>`names_separator`</td>
+    <td>A character string that defines the column separator to be used to show table hierarchy.</td>
   </tr>
 </table>
 
@@ -276,8 +260,8 @@ generate_crosstab(
 ```{r}
 penguins |> 
   generate_crosstab(
-    x = species, 
-    y = sex
+    species, 
+    sex
   )
 ```
 
@@ -286,9 +270,9 @@ penguins |>
 ```{r}
 penguins |> 
   generate_crosstab(
-    x = species, 
-    y = sex,
-    total_by = 'column'
+    species, 
+    sex,
+    total_by_col = TRUE
   )
 ```
 
@@ -297,8 +281,8 @@ penguins |>
 ```{r}
 penguins |> 
   generate_crosstab(
-    x = species, 
-    y = sex,
+    species, 
+    sex,
     include_frequency = F
   )
 ```
@@ -308,8 +292,8 @@ penguins |>
 ```{r}
 penguins |> 
   generate_crosstab(
-    x = species, 
-    y = sex,
+    species, 
+    sex,
     include_proportion = F
   )
 ```
@@ -318,10 +302,10 @@ penguins |>
 
 ```{r}
 penguins |> 
+  group_by(island) |>
   generate_crosstab(
-    x = species, 
-    y = sex, 
-    x_group = 'island',
+    species, 
+    sex, 
     include_proportion = F
   )
 ```
@@ -330,10 +314,10 @@ penguins |>
 
 ```{r}
 penguins |> 
+  group_by(island) |>
   generate_crosstab(
-    x = species, 
-    y = sex, 
-    y_group = 'island',
+    species, 
+    sex, 
     convert_to_percent = F,
     include_frequency = F
   )
@@ -348,18 +332,18 @@ This function allows you to generate summary table from a multiple response cate
 generate_multiple_response(
   .data,
   x,
-  pattern = NULL,
-  y = NULL,
-  x_group = NULL,
-  label_stub = get_config('label_stub'),
-  x_as_group = FALSE,
-  y_group_separator = '>',
-  group_values_by = 'statistics',
+  ...,
   value_to_count = 1,
   include_frequency = TRUE,
   include_proportion = TRUE,
+  convert_to_percent = TRUE,
   format_precision = 2,
-  convert_to_percent = TRUE
+  label_stub = get_config('label_stub'),
+  label_total = NULL,
+  names_separator = '>',
+  recode = TRUE,
+  recode_variable_position = 5,
+  clean_name = TRUE
 ) 
 ```
 
@@ -378,32 +362,12 @@ generate_multiple_response(
     <td><b>Required</b>. Variable to be used as categories.</td>
   </tr>
   <tr>
-    <td>`pattern`</td>
-    <td>Columns with binary-coded response (generally). Use tidyselect specification.</td>
+    <td>`...`</td>
+    <td>tidyselect columns. If only one variable is specified, it will be treated as letter-coded response; otherwise, it will be parsed as columns with binary-coded response.</td>
   </tr>
   <tr>
-    <td>`y`</td>
-    <td>Column variable to specify for a letter-coded response.</td>
-  </tr>
-  <tr>
-    <td>`x_group`</td>
-    <td>Accepts a vector of string/character as grouping variables.</td>
-  </tr>
-  <tr>
-    <td>`label_stub`</td>
-    <td>Stubhead label or label for `x`.</td>
-  </tr>
-  <tr>
-    <td>`x_as_group`</td>
-    <td>Use `x` as top-level grouping. Applicable only if `x_group` is specified.</td>
-  </tr>
-  <tr>
-    <td>`y_group_separator`</td>
-    <td>A character string that defines the column separator to be used to show table hierarchy.</td>
-  </tr>
-  <tr>
-    <td>`group_values_by`</td>
-    <td>Accepts `statistics` | `indicators`.</td>
+    <td>`value_to_count`</td>
+    <td>Value used as basis for counting the frequencies.</td>
   </tr>
   <tr>
     <td>`include_frequency`</td>
@@ -421,6 +385,30 @@ generate_multiple_response(
     <td>`format_precision`</td>
     <td>*[Not yet implemented]* Specify the precision of rounding the percent or proportion. Default is `2`.</td>
   </tr>
+  <tr>
+    <td>`label_stub`</td>
+    <td>Stubhead label or label for `x`.</td>
+  </tr>
+  <tr>
+    <td>`label_total`</td>
+    <td>Whether to rename the column total.</td>
+  </tr>
+  <tr>
+    <td>`recode`</td>
+    <td>Whether to recode the variable name first.</td>
+  </tr>
+  <tr>
+    <td>`recode_variable_position`</td>
+    <td>Indicate the position of letter of variable that uniquely identifies each variable. Default value is `5`</td>
+  </tr>
+  <tr>
+    <td>`clean_name`</td>
+    <td>Whether to output a clean column name.</td>
+  </tr>
+  <tr>
+    <td>`names_separator`</td>
+    <td>A character string that defines the column separator to be used to show table hierarchy.</td>
+  </tr>
 </table>
 
 
@@ -429,6 +417,7 @@ generate_multiple_response(
 ```{r, eval=F}
 
 df <- data.frame(
+  group = c("A1", "A2", "A1", "A1", "A2", "A2"),
   category = c("G1", "G1", "G2", "G1", "G2", "G1"),
   response = c("AB", "AC", "B", "ABC", "AB", "C"),
   A = c(1, 1, 0, 1, 1, 0),
@@ -436,13 +425,15 @@ df <- data.frame(
   C = c(0, 1, 0, 1, 0, 1)
 ) 
 
-df |> generate_multiple_response(category, y = response)
+df |> 
+  group_by(group) |>
+  generate_multiple_response(category, response)
 ```
 
 **Example 3.1**: Basic usage (wide format multiple response)
 
 ```{r, eval=F}
-df |> generate_multiple_response(category, pattern = '^[A:C]$')
+df |> generate_multiple_response(category, matches('^[A-C]$'), recode_variable_position = 1)
 ```
 
 ### 4. **`generate_as_list`**

@@ -44,12 +44,12 @@ frequency_inclusion <- function(
 
 }
 
-convert_to_na <- function(.data, value_to_be_replaced = '') {
+convert_to_na <- function(.data, to = '') {
   .data |>
     dplyr::mutate_if(
       is.character,
       ~ dplyr::if_else(
-        stringr::str_trim(.) == value_to_be_replaced,
+        stringr::str_trim(.) == to,
         NA_character_,
         .
       )
