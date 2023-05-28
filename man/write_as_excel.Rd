@@ -17,7 +17,7 @@ write_as_excel(
   start_col = 2,
   start_row = 2,
   options = get_config("facade"),
-  y_group_separator = ">",
+  names_separator = ">",
   save_as_excel = FALSE,
   cols_with_decimal_format = NULL,
   filename = NULL,
@@ -51,7 +51,7 @@ write_as_excel(
 
 \item{options}{Formatting options.}
 
-\item{y_group_separator}{Column separator that defines the table hierarchy.}
+\item{names_separator}{Column separator that defines the table hierarchy.}
 
 \item{save_as_excel}{Whether to save/export the table as Excel.}
 

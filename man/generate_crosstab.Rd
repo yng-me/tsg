@@ -7,22 +7,21 @@
 generate_crosstab(
   .data,
   x,
-  y = NULL,
-  x_group = NULL,
-  y_group = NULL,
-  x_label = get_config("x_label"),
-  x_as_group = FALSE,
-  y_group_separator = ">",
+  ...,
+  weights = NULL,
   total_by = "row",
-  group_values_by = "statistics",
+  total_option = "default",
   include_frequency = TRUE,
   include_proportion = TRUE,
   include_column_total = TRUE,
   include_row_total = TRUE,
+  include_subtotal = FALSE,
   convert_to_percent = TRUE,
-  format_precision = 2,
-  total_label = NULL,
-  ...
+  decimal_precision = NULL,
+  label_stub = get_config("label_stub"),
+  label_total = "Total",
+  label_subtotal = NULL,
+  names_separator = ">"
 )
 }
 \arguments{
@@ -30,21 +29,13 @@ generate_crosstab(
 
 \item{x}{\strong{Required}. Variable to be used as categories.}
 
-\item{y}{Variable to be used as columns (like in \code{pivot_wider}). If not supplied, \code{generate_frequency} will used in the function call. \code{NA} will be automatically renamed to \code{Missing}.}
+\item{...}{Tidy-select column names.}
 
-\item{x_group}{Row grouping variable/s.}
-
-\item{y_group}{Column grouping variable/s.}
-
-\item{x_label}{Stubhead label (first column).}
-
-\item{x_as_group}{Use \code{x} variable as top level grouping.}
-
-\item{y_group_separator}{Column separator that defines the table hierarchy. Default is \code{>}.}
+\item{weights}{Weights to be applied in the aggregation.}
 
 \item{total_by}{Accepts \code{row} | \code{column}. Whether to apply the sum columnwise or rowwise.}
 
-\item{group_values_by}{Accepts \code{statistics} | \code{indicators}.}
+\item{total_option}{CURRENTLY IGNORE. For future implementation.}
 
 \item{include_frequency}{Whether to include frequency columns. Default is \code{TRUE}.}
 
@@ -54,21 +45,23 @@ generate_crosstab(
 
 \item{include_row_total}{Whether to include row total. Default is \code{TRUE}.}
 
+\item{include_subtotal}{Whether to include subtotal. Default is \code{FALSE}.}
+
 \item{convert_to_percent}{Whether to format to percent or proportion. Default is \code{TRUE}.}
 
-\item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
+\item{decimal_precision}{Specify the precision of rounding the percent or proportion.}
 
-\item{total_label}{Whether to rename the column total.}
+\item{label_stub}{Stubhead label (first column).}
 
-\item{...}{Additional agruments.}
+\item{label_total}{Label for the overall total.}
+
+\item{label_subtotal}{Label for the subtotal.}
+
+\item{names_separator}{Column separator that defines the table hierarchy.}
 }
 \value{
 Returns a cross-table of type \code{tibble}
 }
 \description{
 This function extends the functionality of \code{generate_frequency} by allowing you to generate cross-tabulations of two (2) or more categorical variables.
-}
-\examples{
-
-dplyr::starwars |> generate_crosstab(species, sex)
 }

@@ -235,7 +235,7 @@ extract_column_names <- function(
   df,
   start_col = 1,
   start_row = 1,
-  y_group_separator = '>'
+  names_separator = '>'
 ) {
 
   value <- NULL
@@ -246,7 +246,7 @@ extract_column_names <- function(
 
   dplyr::as_tibble(names(df)) |>
     dplyr::mutate(
-      value = stringr::str_split(value, y_group_separator),
+      value = stringr::str_split(value, names_separator),
       col_from = 1:n()
     ) |>
     dplyr::mutate(col_from = col_from + start_col - 1) |>

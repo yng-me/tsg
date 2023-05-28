@@ -10,9 +10,9 @@ generate_multiple_response(
   ...,
   y = NULL,
   x_group = NULL,
-  x_label = get_config("x_label"),
+  label_stub = get_config("label_stub"),
   x_as_group = FALSE,
-  y_group_separator = ">",
+  names_separator = ">",
   group_values_by = "statistics",
   value_to_count = 1,
   include_frequency = TRUE,
@@ -35,11 +35,11 @@ generate_multiple_response(
 
 \item{x_group}{Column grouping variable/s.}
 
-\item{x_label}{Stubhead label (first column).}
+\item{label_stub}{Stubhead label (first column).}
 
 \item{x_as_group}{Use row variable as grouping.}
 
-\item{y_group_separator}{Column separator that defines the table hierarchy.}
+\item{names_separator}{Column separator that defines the table hierarchy.}
 
 \item{group_values_by}{Whether to group column variables by \code{statistics} or \code{indicators}.}
 
@@ -51,7 +51,7 @@ generate_multiple_response(
 
 \item{convert_to_percent}{Whether to format to \code{percent} or \code{proportion}.}
 
-\item{format_precision}{Specify the precision of rounding the percent or proportion. Default is \code{2}.}
+\item{format_precision}{Specify the precision of rounding the percent or proportion.}
 
 \item{total_label}{Column name for the total.}
 

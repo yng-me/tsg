@@ -8,7 +8,7 @@ generate_frequency(
   .data,
   x,
   x_group = NULL,
-  x_label = get_config("x_label"),
+  label_stub = get_config("label_stub"),
   sort_frequency = FALSE,
   x_as_group = FALSE,
   include_total = TRUE,
@@ -23,7 +23,7 @@ generate_frequency(
 
 \item{x_group}{Accepts a vector of string/character as grouping variables present in the input \code{.data.}}
 
-\item{x_label}{Stubhead label (first column).}
+\item{label_stub}{Stubhead label (first column).}
 
 \item{sort_frequency}{Whether to sort the output. If set to \code{TRUE}, the frequency will be sorted in descending order.}
 
@@ -40,42 +40,4 @@ generate_frequency(
 }
 \description{
 This function allows you to generates a frequency distribution table (marginal table) of a categorical variable \code{x} specified in its second argument.
-}
-\examples{
-
-library(palmerpenguins)
-
-# Example 1: Basic usage
-
-generate_frequency(penguins, species)
-
-# Example 2: Add grouping variable and define label for x
-
-penguins |>
-  generate_frequency(
-    x = sex,
-    x_group = 'species',
-    x_label = 'Sex'
-   )
-
-# Example 3: Add grouping variable, use x as group, and exclude column total
-
-penguins |>
-  generate_frequency(
-    x = sex,
-    x_group = 'species',
-    x_as_group = TRUE,
-    include_total = FALSE
- )
-
-# Example 4: Exclude cumulative values and sort the output by frequency
-
-penguins |>
-  generate_frequency(
-   x = species,
-   x_label = 'Species',
-   sort_frequency = TRUE,
-   include_cumulative = FALSE
- )
-
 }

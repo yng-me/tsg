@@ -9,7 +9,7 @@
 #' @param source_note Table footnote.
 #' @param start_col Column position to start write the data.
 #' @param options Formatting options.
-#' @param y_group_separator Column separator that defines the table hierarchy.
+#' @param names_separator Column separator that defines the table hierarchy.
 #' @param save_as_excel Whether to save/export the table as Excel.
 #' @param filename Name of file to specify with .xlsx extension.
 #' @param overwrite Whether to overwrite the existing file.
@@ -48,7 +48,7 @@ write_as_excel <- function(
   start_col = 2,
   start_row = 2,
   options = get_config('facade'),
-  y_group_separator = '>',
+  names_separator = '>',
   save_as_excel = FALSE,
   cols_with_decimal_format = NULL,
   filename = NULL,
@@ -192,7 +192,7 @@ write_as_excel <- function(
     .data,
     start_col = start_col,
     start_row = restart_row,
-    y_group_separator = y_group_separator
+    names_separator = names_separator
   )
 
   row_depth <- max(merge_colnames$depth)

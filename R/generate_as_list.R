@@ -18,23 +18,13 @@
 #' @param source_note Table footnote.
 #' @param formatted Whether to apply formatting for the Excel output. Default is \code{FALSE}.
 #' @param filename Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.
-#' @param y_group_separator Column separator that defines the table hierarchy.
+#' @param names_separator Column separator that defines the table hierarchy.
 #' @param distinct_stub_head Whether to use \code{indicator} variable as x (if \code{FALSE}) or y (if \code{TRUE})
 #'
 #' @return Returns a list of tables aggregated based on values defined in \code{list_group}.
 #' @export
 #'
 #' @examples
-#' mtcars_by_cyl_freq <- mtcars |>
-#'   generate_as_list(list_group = cyl, indicator = am)
-#'
-#' mtcars_by_cyl_freq
-#'
-#' mtcars_by_cyl_prop <- mtcars |>
-#'   generate_as_list(list_group = cyl, indicator = am, gear, fn = 'generate_crosstab')
-#'
-#' mtcars_by_cyl_prop
-
 
 generate_as_list <- function(
   .data,
@@ -52,7 +42,7 @@ generate_as_list <- function(
   source_note = NULL,
   formatted = TRUE,
   filename = NULL,
-  y_group_separator = '>',
+  names_separator = '>',
   distinct_stub_head = F
 ) {
 
@@ -61,10 +51,13 @@ generate_as_list <- function(
 
   if(!(fn %in% valid_fn)) {
     fn <- 'generate_frequency'
-    warning("You have entered invalid agrument for 'func' parameter. It only accepts: 'generate_crosstab' | 'generate_frequency' | 'generate_multiple_response'")
+    warning(
+      "You have entered invalid agrument for 'func' parameter.
+      It only accepts: 'generate_crosstab' | 'generate_frequency' | 'generate_multiple_response'"
+    )
   }
 
-  f <- eval(as.name(fn))
+  func <- eval(as.name(fn))
 
   if(distinct_stub_head == T) {
 
@@ -89,12 +82,12 @@ generate_as_list <- function(
 
     if(collapse_overall == T) {
       df_all <- .data |>
-        f({{indicator}}, x_as_group = !collapse_overall, ...)
+        func({{indicator}}, ...)
 
     } else {
       df_all <- .data |>
         dplyr::select(-{{indicator}}) |>
-        f({{list_group}}, x_as_group = !collapse_overall, ...)
+        func({{list_group}}, ...)
     }
 
     df[[list_name_overall]] <- df_all
@@ -105,10 +98,10 @@ generate_as_list <- function(
     for(i in 1:length(list_names[[1]])) {
 
       x <- list_names[[2]][i]
-      x_label <- list_names[[1]][i]
+      label_stub <- list_names[[1]][i]
 
-      df[[x_label]]  <- .data |>
-        f(!!as.name(x), {{indicator}}, x_label = x_label, ...)
+      df[[label_stub]]  <- .data |>
+        func(!!as.name(x), {{indicator}}, ..., label_stub = label_stub)
 
     }
 
@@ -122,7 +115,8 @@ generate_as_list <- function(
 
       if(nrow(dplyr::compute(df_d)) > 0) {
 
-        df[[list_names[i]]] <- df_d |> f({{indicator}}, ...)
+        df[[list_names[i]]] <- df_d |>
+          func({{indicator}}, ...)
       }
     }
   }
@@ -130,15 +124,16 @@ generate_as_list <- function(
   df <- Filter(Negate(is.null), df)
 
   if(save_as_excel == T) {
-    df |> save_as_excel(
-      formatted = formatted,
-      filename = filename,
-      title = title,
-      description = description,
-      footnote = footnote,
-      source_note = source_note,
-      y_group_separator = y_group_separator
-    )
+    df |>
+      save_as_excel(
+        formatted = formatted,
+        filename = filename,
+        title = title,
+        description = description,
+        footnote = footnote,
+        source_note = source_note,
+        names_separator = names_separator
+      )
   }
 
   return(df)

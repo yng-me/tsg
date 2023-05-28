@@ -4,18 +4,18 @@
 #' @param ... tidyselect columns
 #' @param x \strong{Required}. Row variable to be used as categories.
 #' @param y Column variable to specify for a letter-coded response.
-#' @param y_group_separator Column separator that defines the table hierarchy.
+#' @param names_separator Column separator that defines the table hierarchy.
 #' @param x_group Column grouping variable/s.
-#' @param x_label Stubhead label (first column).
 #' @param x_as_group Use row variable as grouping.
 #' @param group_values_by Whether to group column variables by \code{statistics} or \code{indicators}.
 #' @param value_to_count Value used as basis for counting the frequencies.
 #' @param include_frequency Whether to include frequency columns.
 #' @param include_proportion Whether to include proportion/percentage columns.
 #' @param convert_to_percent Whether to format to \code{percent} or \code{proportion}.
-#' @param format_precision Specify the precision of rounding the percent or proportion. Default is \code{2}.
-#' @param recode Whether to recode the variable name first.
+#' @param format_precision Specify the precision of rounding the percent or proportion.
+#' @param label_stub Stubhead label (first column).
 #' @param total_label Column name for the total.
+#' @param recode Whether to recode the variable name first.
 #' @param clean_name Whether to output a clean column name.
 #'
 #' @return Returns a cross-table of type \code{tibble}
@@ -38,9 +38,9 @@ generate_multiple_response <- function(
   ...,
   y = NULL,
   x_group = NULL,
-  x_label = get_config('x_label'),
+  label_stub = get_config('label_stub'),
   x_as_group = FALSE,
-  y_group_separator = '>',
+  names_separator = '>',
   group_values_by = 'statistics',
   value_to_count = 1,
   include_frequency = TRUE,
@@ -62,8 +62,8 @@ generate_multiple_response <- function(
   g_val <- tolower(group_values_by)
 
   get_label <- function(col, label) {
-    if(g_val == 'indicators' | g_val == 'indicator') return(paste0(col, y_group_separator, label))
-    else return(paste0(label, y_group_separator, col))
+    if(g_val == 'indicators' | g_val == 'indicator') return(paste0(col, names_separator, label))
+    else return(paste0(label, names_separator, col))
   }
 
   p_divisor <- dplyr::if_else(convert_to_percent == T, 100, 1)
@@ -160,14 +160,14 @@ generate_multiple_response <- function(
 
   df_cols <- df |>
     dplyr::ungroup() |>
-    dplyr::select(-dplyr::matches(paste0('^', g, '$')), -n) |>
+    dplyr::select(-dplyr::any_of(g), -n) |>
     names()
 
   df <- df |>
     dplyr::inner_join(join_with, by = g) |>
     janitor::adorn_totals() |>
     dplyr::mutate_at(
-      dplyr::vars(dplyr::matches(paste0('^', df_cols, '$'))),
+      dplyr::vars(dplyr::any_of(df_cols)),
       list(percent = ~ (. / n) * p_divisor)
     ) |>
     dplyr::rename_at(
@@ -175,21 +175,21 @@ generate_multiple_response <- function(
       ~ get_label(stringr::str_remove(., '_percent$'), p_label)
     ) |>
     dplyr::rename_at(
-      dplyr::vars(dplyr::matches(paste0('^', df_cols, '$'))),
+      dplyr::vars(dplyr::any_if(df_cols)),
       ~ get_label(., 'Frequency')
     ) |>
-    dplyr::select(dplyr::matches(paste0('^', g, '$')), n, dplyr::everything()) |>
-    dplyr::rename(Total = n) |>
-    crosstab_inclusion(
-      y_group_separator,
-      p_label,
-      include_frequency,
-      include_proportion
-    ) |>
-    dplyr::tibble()
+    dplyr::select(dplyr::any_of(g), n, dplyr::everything()) |>
+    dplyr::rename(Total = n)# |>
+    # crosstab_inclusion(
+    #   names_separator,
+    #   p_label,
+    #   include_frequency,
+    #   include_proportion
+    # ) |>
+    # dplyr::tibble()
 
-  if(!is.null(x_label)) {
-    df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
+  if(!is.null(label_stub)) {
+    df <- df |> dplyr::rename((!!as.name(label_stub)) := {{x}})
   }
 
   if(!is.null(total_label)) {

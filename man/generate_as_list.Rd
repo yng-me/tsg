@@ -20,7 +20,7 @@ generate_as_list(
   source_note = NULL,
   formatted = TRUE,
   filename = NULL,
-  y_group_separator = ">",
+  names_separator = ">",
   distinct_stub_head = F
 )
 }
@@ -55,7 +55,7 @@ generate_as_list(
 
 \item{filename}{Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.}
 
-\item{y_group_separator}{Column separator that defines the table hierarchy.}
+\item{names_separator}{Column separator that defines the table hierarchy.}
 
 \item{distinct_stub_head}{Whether to use \code{indicator} variable as x (if \code{FALSE}) or y (if \code{TRUE})}
 }
@@ -66,15 +66,4 @@ Returns a list of tables aggregated based on values defined in \code{list_group}
 This function allows you to generate summary tables based on a defined grouping or aggregation.
 You can optionally return table values in either frequency or proportion/percentage or both.
 It uses any \code{tsg_*} valid functions as calculator to generate desired tabulation structure.
-}
-\examples{
-mtcars_by_cyl_freq <- mtcars |>
-  generate_as_list(list_group = cyl, indicator = am)
-
-mtcars_by_cyl_freq
-
-mtcars_by_cyl_prop <- mtcars |>
-  generate_as_list(list_group = cyl, indicator = am, gear, fn = 'generate_crosstab')
-
-mtcars_by_cyl_prop
 }
