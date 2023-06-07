@@ -59,16 +59,106 @@ set_config <- function(config_file, cwd = NULL) {
   return(config)
 }
 
+
+# ------------------------------------------------------------------------------
+get_factor <- function(.data, x, y) {
+
+  `:=` <- NULL
+  new_variable_name <- NULL
+  value <- NULL
+  list_name <- NULL
+  valueset <- NULL
+
+
+  if(exists('refs')) {
+    if(!exists('selected_input')) {
+      selected_input <- 'hp'
+    }
+
+    x_v <- refs[[selected_input]]$data_dictionary |>
+      dplyr::mutate(value = dplyr::if_else(!is.na(new_variable_name), new_variable_name, value)) |>
+      dplyr::select(value, valueset) |>
+      dplyr::filter(value == x) |>
+      dplyr::pull(valueset)
+
+    if(length(x_v) > 0) {
+
+      x_vs <- refs[[selected_input]]$valueset |>
+        dplyr::filter(list_name == x_v[1])
+
+      if(nrow(x_vs) > 0) {
+
+        if(grepl('\\d+', x_vs$value[1])) {
+          x_vs <- x_vs |>
+            dplyr::mutate(value = as.integer(value))
+        }
+
+        .data <- .data |>
+          dplyr::mutate(!!as.name(x) := factor(!!as.name(x), x_vs$value, x_vs$label))
+      }
+
+    }
+
+    if(y != 'NULL') {
+
+      y_v <- refs[[selected_input]]$data_dictionary |>
+        dplyr::mutate(value = dplyr::if_else(!is.na(new_variable_name), new_variable_name, value)) |>
+        dplyr::select(value, valueset) |>
+        dplyr::filter(value == y) |>
+        dplyr::pull(valueset)
+
+      if(length(y_v) > 0) {
+
+        y_vs <- refs[[selected_input]]$valueset |>
+          dplyr::filter(list_name == y_v[1])
+
+        if(nrow(y_vs) > 0) {
+          if(grepl('\\d+', y_vs$value[1])) {
+            y_vs <- y_vs |>
+              dplyr::mutate(value = as.integer(value))
+          }
+
+        .data <- .data |>
+          dplyr::mutate(!!as.name(y) := factor(!!as.name(y), y_vs$value, y_vs$label))
+        }
+
+      }
+    }
+
+  }
+
+  return(.data)
+
+}
+
+
 # ------------------------------------------------------------------------------
 # Get user configuration
-get_config <- function(label) {
+get_config <- function(y) {
 
   x <- NULL
+  new_variable_name <- NULL
+  value <- NULL
+  label <- NULL
 
-  if(exists('config')) {
-    config <- eval(as.name('config'))
-    x <- config$tsg_config[[label]]
+  if(exists('refs')) {
+
+    if(!exists('selected_input')) {
+      selected_input <- 'hp'
+    }
+
+    x_label <- refs[[selected_input]]$data_dictionary |>
+      dplyr::mutate(value = dplyr::if_else(!is.na(new_variable_name), new_variable_name, value)) |>
+      dplyr::select(value, label) |>
+      dplyr::filter(value == y) |>
+      dplyr::pull(label)
+
+    if(length(x_label) > 0) {
+      x <- x_label[1]
+    }
+
   }
+
   return(x)
 }
 

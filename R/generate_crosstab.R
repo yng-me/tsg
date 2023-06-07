@@ -36,7 +36,7 @@ generate_crosstab <- function(
   y = NULL,
   x_group = NULL,
   y_group = NULL,
-  x_label = get_config('x_label'),
+  x_label = get_config(set_as_string({{x}})),
   y_group_separator = '>',
   x_as_group = FALSE,
   total_by = 'row',
@@ -52,6 +52,9 @@ generate_crosstab <- function(
 
   # Check the if input data is valid
   check_input_data_validity(.data)
+
+  # set factor
+  .data <- .data |> get_factor(set_as_string({{x}}), set_as_string({{y}}))
 
   # If no argument passed to y, `generate_frequency` will be invoked
   if(set_as_string({{y}}) == 'NULL') {

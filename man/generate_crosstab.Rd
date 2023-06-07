@@ -10,7 +10,11 @@ generate_crosstab(
   y = NULL,
   x_group = NULL,
   y_group = NULL,
-  x_label = get_config("x_label"),
+  x_label = get_config(set_as_string({
+     {
+         x
+     }
+ })),
   y_group_separator = ">",
   x_as_group = FALSE,
   total_by = "row",
