@@ -25,7 +25,7 @@ generate_frequency <- function(
   .data,
   x,
   x_group = NULL,
-  x_label = get_config('x_label'),
+  x_label = get_config(set_as_string({{x}})),
   sort_frequency = FALSE,
   x_as_group = FALSE,
   include_total = TRUE,

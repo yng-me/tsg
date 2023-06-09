@@ -38,7 +38,7 @@ generate_multiple_response <- function(
   ...,
   y = NULL,
   x_group = NULL,
-  x_label = get_config('x_label'),
+  x_label = get_config(set_as_string({{x}})),
   x_as_group = FALSE,
   y_group_separator = '>',
   group_values_by = 'statistics',
