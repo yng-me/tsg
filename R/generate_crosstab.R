@@ -46,6 +46,7 @@ generate_crosstab <- function(
   include_column_total = TRUE,
   convert_to_percent = TRUE,
   format_precision = 2,
+  exclude_zero_value = TRUE,
   total_label = NULL,
   ...
 ) {
@@ -125,6 +126,7 @@ generate_crosstab <- function(
         values_from = n,
         names_sort = T,
         values_fill = 0,
+        names_expand = exclude_zero_value,
         names_sep = y_group_separator,
         names_prefix = 'pivot_'
       ) |>
