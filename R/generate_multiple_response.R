@@ -185,7 +185,8 @@ generate_multiple_response <- function(
       p_label,
       include_frequency,
       include_proportion
-    ) |>
+    ) |> 
+    dplyr::mutate({{x}} := dplyr::if_else(!is.na({{x}}), {{x}}, 'Not reported') |>
     dplyr::tibble()
 
   if(!is.null(x_label)) {
