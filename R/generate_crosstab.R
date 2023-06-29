@@ -145,6 +145,7 @@ generate_crosstab <- function(
       include_proportion
     ) |>
     dplyr::tibble() |>
+    dplyr::mutate({{x}} := dplyr::if_else(!is.na({{x}}), {{x}}, 'Not reported') |>
     crosstab_rename(y_group_separator = y_group_separator)
 
   # if(include_column_total == T) {
