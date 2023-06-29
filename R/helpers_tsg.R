@@ -181,7 +181,7 @@ crosstab_total_stack <- function(
 # ------------------------------------------------------------------------------
 crosstab_rename <- function(
   .data_piped,
-  replace_na_with = 'Missing',
+  replace_na_with = 'Not reported',
   y_group_separator
 ) {
 
