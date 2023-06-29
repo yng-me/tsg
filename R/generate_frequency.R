@@ -73,6 +73,7 @@ generate_frequency <- function(
       Frequency := n,
       Percent
     ) |>
+    dplyr::mutate({{x}} := dplyr::if_else(!is.na({{x}}), {{x}}, 'Not reported') |>
     frequency_inclusion(
       excluded_cols = x_string,
       include_total,
