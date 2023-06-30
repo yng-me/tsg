@@ -175,6 +175,6 @@ generate_crosstab <- function(
     df <- df |> dplyr::rename((!!as.name(x_label)) := {{x}})
   }
 
-  return(df)
+  return(df |> dplyr::select(-dplyr::any_of('pl')))
 }
 
