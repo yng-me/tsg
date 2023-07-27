@@ -372,7 +372,7 @@ write_as_excel <- function(
   }
 
   row_length <- nrow(.data) + restart_row + row_depth
-  start_row_note <- row_length + 2
+  start_row_note <- row_length + 1
 
   if(!is.null(footnote)) {
     openxlsx::writeData(
@@ -383,18 +383,18 @@ write_as_excel <- function(
       startRow = start_row_note
     )
 
-    # openxlsx::addStyle(
-    #   wb = wb,
-    #   sheet = sheet,
-    #   style = openxlsx::createStyle(
-    #     fontSize = 10,
-    #     textDecoration = 'italic'
-    #   ),
-    #   rows = start_row_note,
-    #   cols = start_col,
-    #   gridExpand =  T,
-    #   stack =  T
-    # )
+    openxlsx::addStyle(
+      wb = wb,
+      sheet = sheet,
+      style = openxlsx::createStyle(
+        fontSize = 10,
+        textDecoration = 'italic'
+      ),
+      rows = start_row_note,
+      cols = start_col,
+      gridExpand =  T,
+      stack =  T
+    )
 
   }
 
