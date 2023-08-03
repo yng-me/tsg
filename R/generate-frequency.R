@@ -37,7 +37,8 @@ generate_frequency <- function(
   grouping_col_names <- names(dplyr::collect(grouping_cols))
   first_cols <- c(grouping_col_names, set_as_string({{x}}))
 
-  .df_selected <- .data |> dplyr::select(any_of(grouping_col_names), {{x}})
+  .df_selected <- .data |>
+    dplyr::select(dplyr::any_of(grouping_col_names), {{x}})
 
   # Compute frequency distribution
   df <- .df_selected |>

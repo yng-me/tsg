@@ -3,6 +3,7 @@
 #' @description This function extends the functionality of \code{generate_frequency} by allowing you to generate cross-tabulations of two (2) or more categorical variables.
 
 #' @param .data A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.
+#'
 #' @param x \strong{Required}. Variable to be used as categories.
 #' @param ... Tidy-select column names.
 #' @param total_by_col Whether to apply the sum columnwise if \code{TRUE} or rowwise \code{FALSE}. Default is \code{FALSE}
@@ -11,7 +12,8 @@
 #' @param include_proportion Whether to include proportion/percentage columns. Default is \code{TRUE}.
 #' @param include_column_total Whether to include column total. Default is \code{TRUE}.
 #' @param include_row_total Whether to include row total. Default is \code{TRUE}.
-#' @param include_subtotal Whether to include subtotal. Default is \code{FALSE}.
+#' @param include_subtotal CURRENTLY IGNORE Whether to include subtotal. Default is \code{FALSE}.
+#' @param include_zero_value Whether to drop columns with zero (0) values
 #' @param convert_to_percent Whether to format to percent or proportion. Default is \code{TRUE}.
 #' @param decimal_precision Specify the precision of rounding the percent or proportion.
 #' @param label_stub Stubhead label (first column).
@@ -38,6 +40,7 @@ generate_crosstab <- function(
     include_column_total = TRUE,
     include_row_total = TRUE,
     include_subtotal = FALSE,
+    include_zero_value = FALSE,
     convert_to_percent = TRUE,
     decimal_precision = NULL,
     label_stub = get_config('label_stub'),
@@ -96,8 +99,9 @@ generate_crosstab <- function(
       df <- .df |>
         dplyr::mutate_at(
           dplyr::vars(dplyr::matches('^Frequency')),
-          list(pv = ~ p_multiplier * (. / sum(.)))
-        )
+          list(pv = ~ p_multiplier * (. / sum(., na.rm = T)))
+        ) |>
+        dplyr::mutate_if(is.numeric, ~ dplyr::if_else(is.nan(.), 0, .))
     }
 
     if(is.null(decimal_precision) & is.numeric(decimal_precision)) {
@@ -121,68 +125,31 @@ generate_crosstab <- function(
 
   add_subtotal <- function(.df) {
 
-    if(include_subtotal == F) return(.df)
+    dots_name <- .data |>
+      dplyr::ungroup() |>
+      dplyr::select(...) |>
+      names()
+
+    if(include_subtotal == F && length(dots_name) < 2) return(.df)
+
     if(is.null(label_subtotal)) label_subtotal <- 'Subtotal'
 
-    get_cols <- function(x) {
-      stringr::str_flatten(x[-h], collapse = names_separator)
-    }
+    m <- dots_name[c(1:(length(dots_name) - 1))]
 
-    get_unique_cols <- function(x) {
-      v <- x[-h]
-      v[-c(1:i)]
-    }
+    for(k in seq_along(m)) {
 
-    df_names <- names(.df)[grepl(names_separator, names(.df))]
-    categories <- stringr::str_split(df_names, names_separator)
-    h <- length(categories[[1]])
-    levels <- h - 1
-    col_first <- categories[[1]][h]
+      s <- unique(.data[[m[k]]])
 
-    cols_to_subtotal <- unique(
-      unlist(lapply(categories, get_cols))
-    )
+      print(as.character(s))
 
-    for(i in 1:levels) {
-
-      unique_categories <- unique(
-        unlist(lapply(categories, get_unique_cols))
-      )
-
-      for(j in seq_along(unique_categories)) {
-
-        get_current_col <- function(k) {
-          selected <- paste0(k, names_separator, unique_categories[j])
-          list(
-            subtotal =  paste0('^', selected),
-            sub = paste0(selected, names_separator, label_subtotal),
-            before = paste0(selected, names_separator, col_first)
-          )
-        }
-
-        v <- get_current_col(k = 'Frequency')
+      for(j in seq_along(s)) {
 
         .df <- .df |>
           dplyr::mutate(
-            (!!as.name(v$sub)) := rowSums(
-              dplyr::select(., dplyr::matches(v$subtotal))
-            )
-          ) |>
-          dplyr::relocate((!!as.name(v$sub)), .before = !!as.name(v$before))
-
-        w <- get_current_col(k = p_label)
-
-        .df <- .df |>
-          dplyr::mutate(total_by_col = total_by_col) |>
-          dplyr::mutate(
-            (!!as.name(w$sub)) := dplyr::if_else(
-              total_by_col,
-              p_multiplier * (!!as.name(v$sub) / sum(!!as.name(v$sub))),
-              rowSums(dplyr::select(., dplyr::matches(w$subtotal)))
-            )
-          ) |>
-          dplyr::relocate((!!as.name(w$sub)), .before = !!as.name(w$before)) |>
-          dplyr::select(-t)
+            !!as.name(paste0('Frequency>', s[j], '>', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Frequency>', s[j])))),
+            !!as.name(paste0('Percent>', s[j], '>', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Percent>', s[j]))))
+          )# |>
+          # dplyr::select(1, 2, dplyr::starts_with('Frequency'), starts_with('Percent'))
       }
     }
 
@@ -217,7 +184,7 @@ generate_crosstab <- function(
     if(include_column_total == F) {
       .df <- .df |> dplyr::select(-dplyr::matches('^Total'))
     }
-    if(include_row_total == F) .df <- .df |> dplyr::filter({{x}} != 'Total')
+    if(include_row_total == F) .df <- .df |> dplyr::filter({{x}} != 'Total' | is.na({{x}}))
     if(!is.null(label_stub)) {
       .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{x}})
     }
@@ -227,6 +194,8 @@ generate_crosstab <- function(
     return(.df)
 
   }
+
+  # if(include_subtotal) include_zero_value <- TRUE
 
   cross_tab <- .df_selected |>
     dplyr::group_by({{x}}, ..., .add = T) |>
@@ -239,10 +208,11 @@ generate_crosstab <- function(
       names_sep = names_separator,
       names_sort = T,
       values_fill = 0,
+      names_expand = include_zero_value,
       names_prefix = paste0('Frequency', names_separator)
     ) |>
     add_total() |>
-    add_subtotal() |>
+    add_subtotal()
     set_inclusion() |>
     dplyr::select(dplyr::any_of(grouping_col_names), dplyr::everything())
 

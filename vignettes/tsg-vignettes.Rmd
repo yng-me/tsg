@@ -174,6 +174,7 @@ generate_crosstab(
   include_column_total = TRUE,
   include_row_total = TRUE,
   include_subtotal = FALSE,
+  include_zero_value = FALSE,
   convert_to_percent = TRUE,
   decimal_precision = NULL,
   label_stub = get_config('label_stub'),
@@ -228,6 +229,10 @@ generate_crosstab(
   <tr>
     <td>`include_subtotal`</td>
     <td>Whether to include subtotal. Default is `FALSE`</td>
+  </tr>
+  <tr>
+    <td>`include_zero_value`</td>
+    <td>Whether to drop columns with zero (0) values. Default is `FALSE`</td>
   </tr>
   <tr>
     <td>`convert_to_percent`</td>
@@ -434,34 +439,4 @@ df |>
 
 ```{r, eval=F}
 df |> generate_multiple_response(category, matches('^[A-C]$'), recode_variable_position = 1)
-```
-
-### 4. **`generate_as_list`**
-
-```{r, eval=F}
-generate_as_list(
-  .data,
-  list_group,
-  x,
-  ...,
-  fn = 'generate_crosstab',
-  list_name_overall = 'ALL',
-  exclude_overall = FALSE,
-  collapse_overall = TRUE,
-  save_as_excel = FALSE,
-  formatted = TRUE,
-  filename = NULL
-)
-```
-
-
-**Example 2.1**: Basic usage
-
-```{r}
-penguins |> 
-  generate_as_list(
-    list_group = island,
-    x = species, 
-    sex
-  )
 ```

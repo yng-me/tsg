@@ -58,7 +58,7 @@ generate_multiple_response <- function(
   grouping_col_names <- names(dplyr::collect(grouping_cols))
 
   .df_selected <- .data |>
-    dplyr::select(any_of(grouping_col_names), {{x}}, ...)
+    dplyr::select(dplyr::any_of(grouping_col_names), {{x}}, ...)
 
 
   p_label <- dplyr::if_else(convert_to_percent, 'Percent', 'Proportion')
