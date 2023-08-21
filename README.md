@@ -3,8 +3,6 @@
 
 <br>
 
-xhttps://observablehq.com/@observablehq/plot-state-population-change?intent=fork#cell-5
-
 TODO:
 
 - duplicate name
