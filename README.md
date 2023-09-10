@@ -53,7 +53,7 @@ library(tsg)
 
 ### 1. **`generate_frequency`**
 
-This function allows you to generates a frequency distribution table (marginal table) of a categorical variable `x` specified in its second argument. It returns five (5) columns by default if `x_group` is not specified. These include (1) categories of `x`, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
+This function allows you to generate a frequency distribution table (marginal table) of a categorical variable `x` specified in its second argument. It returns five (5) columns by default if `x_group` is not specified. These include (1) categories of `x`, (2) frequency of each category, (3) percent to total, (4) cumulative frequency, and (5) cumulative percent to total.
 
 ```r
 generate_frequency(
