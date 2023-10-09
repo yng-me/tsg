@@ -3,6 +3,38 @@
 
 <br>
 
+# Replace this value based on the directory of the hacked files
+hacked_folder <- '~/Desktop/rcbms-temp'
+
+folder_with_tab <- paste0(hacked_folder, '/justification-with-extra-tab/')
+if(!dir.exists(folder_with_tab)) dir.create(folder_with_tab)
+
+excel_files <- list.files(
+    hacked_folder, 
+    full.names = T, 
+    recursive = T, 
+    ignore.case = T,
+    pattern = '\\.xlsx$'
+  ) |> 
+  dplyr::as_tibble() |> 
+  dplyr::filter(!grepl('~\\$', value)) |> 
+  dplyr::pull(value)
+
+justification_files_with_extra_tabs <- list()
+
+for(i in seq_along(excel_files)) {
+  file <- excel_files[i]
+  workbook <- openxlsx::loadWorkbook(file)
+  worksheet <- openxlsx::sheets(workbook)
+  if(length(worksheet) > 2) {
+    justification_files_with_extra_tabs <- file 
+    file.copy(file,  folder_with_tab)
+    if(!grepl('/justification-with-extra-tab/', file)) file.remove(file)
+  }
+}
+
+
+
 TODO:
 
 - duplicate name
