@@ -72,7 +72,7 @@ generate_frequency(
 
 <table>
   <tr>
-    <td>`.data`</td>
+    <td><code>.data</code></td>
     <td>
       <b>Required</b>. 
       A data frame, data frame extension (e.g. a tibble), a lazy data frame (e.g. from dbplyr or dtplyr), or Arrow data format.
