@@ -79,35 +79,35 @@ generate_frequency(
     </td>
   </tr>
   <tr>
-    <td>`x`</td>
+    <td><code>x</code></td>
     <td><b>Required</b>. Variable to be used as categories.</td>
   </tr>
   <tr>
-    <td>`x_group`</td>
+    <td><code>x_group</code></td>
     <td>Accepts a vector of column names as characters (in quote) as grouping variables.</td>
   </tr>
   <tr>
-    <td>`x_label`</td>
-    <td>Stubhead label or label for `x`.</td>
+    <td><code>x_label</code></td>
+    <td>Stubhead label or label for <code>x</code>.</td>
   </tr>
   <tr>
-    <td>`sort_frequency`</td>
-    <td>Whether to sort the output. If set to `TRUE`, the frequency will be sorted in descending order.</td>
+    <td><code>sort_frequency</code></td>
+    <td>Whether to sort the output. If set to <code>TRUE</code>, the frequency will be sorted in descending order.</td>
   </tr>
   <tr>
-    <td>`x_as_group`</td>
-    <td>Use `x` as top-level grouping. Applicable only if `x_group` is specified.</td>
+    <td><code>x_as_group</code></td>
+    <td>Use <code>x</code> as top-level grouping. Applicable only if <code>x_group</code> is specified.</td>
   </tr>
   <tr>
-    <td>`include_total`</td>
+    <td><code>include_total</code></td>
     <td>Whether to include row total.</td>
   </tr>
    <tr>
-    <td>`include_cumulative`</td>
+    <td><code>include_cumulative</code></td>
     <td>Whether to cumulative frequencies.</td>
   </tr>
    <tr>
-    <td>`exclude_zero_value`</td>
+    <td><code>exclude_zero_value</code></td>
     <td>Whether to drop categories with zero (0) values</td>
   </tr>
 </table>
