@@ -1,6 +1,6 @@
-df <- palmerpenguins::penguins
 
-test_that("correct dimensions are retured correctly, considering columns with all zero values are romoved", {
+test_that("Dimensions are retured correctly where columns with all zero values are romoved", {
+  df <- palmerpenguins::penguins
   expect_equal(ncol(generate_crosstab(df, sex)), 5)
   expect_equal(ncol(generate_crosstab(df, sex, species)), 8)
   expect_equal(df |> generate_crosstab(sex, species, island) |> dim(), c(4, 12))

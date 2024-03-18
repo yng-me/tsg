@@ -4,7 +4,7 @@
 
 #' @param .data A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.
 #'
-#' @param x \strong{Required}. Variable to be used as categories.
+#' @param .x \strong{Required}. Variable to be used as categories.
 #' @param ... Tidy-select column names.
 #' @param total_by_col Whether to apply the sum columnwise if \code{TRUE} or rowwise \code{FALSE}. Default is \code{FALSE}
 #' @param total_option CURRENTLY IGNORE. For future implementation.
@@ -30,49 +30,54 @@
 #'
 
 generate_crosstab <- function(
-    .data,
-    x,
-    ...,
-    total_by_col = FALSE,
-    total_option = 'default',
-    include_frequency = TRUE,
-    include_proportion = TRUE,
-    include_column_total = TRUE,
-    include_row_total = TRUE,
-    include_subtotal = FALSE,
-    include_zero_value = FALSE,
-    convert_to_percent = TRUE,
-    decimal_precision = NULL,
-    label_stub = get_config('label_stub'),
-    label_total = 'Total',
-    label_subtotal = NULL,
-    weights = NULL,
-    names_separator = '>'
+  .data,
+  .x,
+  ...,
+  total_by_col = FALSE,
+  total_option = 'default',
+  include_frequency = TRUE,
+  include_proportion = TRUE,
+  include_column_total = TRUE,
+  include_row_total = TRUE,
+  include_subtotal = FALSE,
+  include_zero_value = FALSE,
+  convert_to_percent = TRUE,
+  decimal_precision = NULL,
+  label_stub = get_config('label_stub'),
+  label_total = 'Total',
+  label_subtotal = NULL,
+  names_separator = '__',
+  weights = NULL
 ) {
 
   # Check the if input data is valid
   check_input_data_validity(.data)
+  if("ArrowObject" %in% .data | "arrow_dplyr_query" %in% .data) {
+    .data <- .data |> dplyr::collect()
+  }
 
   grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
   grouping_col_names <- names(dplyr::collect(grouping_cols))
 
-  .df_selected <- .data |> dplyr::select(any_of(grouping_col_names), {{x}}, ...)
+  df_selected <- .data |>
+    dplyr::select(any_of(grouping_col_names), {{.x}}, ...)
 
   `:=` <- NULL
   `.` <- NULL
-  Total <- NULL
-  Frequency <- NULL
+  total <- NULL
+  frequency <- NULL
 
-  expr <- rlang::expr(c(...))
+  expr_cols <- rlang::expr(c(...))
   cols_to_pivot <- tidyselect::eval_select(
-    expr, data = dplyr::collect(.df_selected)
+    expr = expr_cols,
+    data = dplyr::collect(df_selected)
   )
 
   if(rlang::dots_n(...) == 0) {
     return(
       .data |>
         generate_frequency(
-          x = {{x}},
+          x = {{.x}},
           label_stub = label_stub
         )
     )
@@ -90,7 +95,7 @@ generate_crosstab <- function(
         list(pv = ~ p_multiplier * (. / Total))
       ) |>
       dplyr::select(
-        {{x}},
+        {{.x}},
         Total,
         dplyr::everything()
       )
@@ -184,9 +189,9 @@ generate_crosstab <- function(
     if(include_column_total == F) {
       .df <- .df |> dplyr::select(-dplyr::matches('^Total'))
     }
-    if(include_row_total == F) .df <- .df |> dplyr::filter({{x}} != 'Total' | is.na({{x}}))
+    if(include_row_total == F) .df <- .df |> dplyr::filter({{.x}} != 'Total' | is.na({{.x}}))
     if(!is.null(label_stub)) {
-      .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{x}})
+      .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{.x}})
     }
 
     if(total_by_col) .df <- .df |> janitor::adorn_totals()
@@ -195,10 +200,8 @@ generate_crosstab <- function(
 
   }
 
-  # if(include_subtotal) include_zero_value <- TRUE
-
-  cross_tab <- .df_selected |>
-    dplyr::group_by({{x}}, ..., .add = T) |>
+  cross_tab <- df_selected |>
+    dplyr::group_by({{.x}}, ..., .add = T) |>
     dplyr::count(name = 'Frequency') |>
     dplyr::ungroup() |>
     dplyr::collect() |>
@@ -212,7 +215,7 @@ generate_crosstab <- function(
       names_prefix = paste0('Frequency', names_separator)
     ) |>
     add_total() |>
-    add_subtotal()
+    add_subtotal() |>
     set_inclusion() |>
     dplyr::select(dplyr::any_of(grouping_col_names), dplyr::everything())
 

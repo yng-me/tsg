@@ -7,7 +7,7 @@ set_as_string <- function(to_str) {
 # ------------------------------------------------------------------------------
 # Check if valid input data
 check_input_data_validity <- function(x) {
-  error_message <- ".data input must be a valid .data frame or Arrow format. Try calling `collect()` first."
+  error_message <- ".data input must be a valid .data frame or Arrow format."
 
   if(is.vector(x) | is.character(x)) stop(error_message)
   if(!(inherits(x, 'data.frame') |
