@@ -1,4 +1,4 @@
-Package: tsg
+Package: tsgx
 Type: Package
 Title: Table Summary Generator
 Version: 0.1.4

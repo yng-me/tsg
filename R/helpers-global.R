@@ -67,7 +67,7 @@ get_config <- function(label) {
 
   if(exists('config')) {
     config <- eval(as.name('config'))
-    x <- config$tsg_config[[label]]
+    x <- config$tsgx_config[[label]]
   }
   return(x)
 }
@@ -87,8 +87,8 @@ rename_from_dictionary <- function(data, join_ref_by = 'value') {
   label <- NULL
   config <- NULL
 
-  if(exists('tsg_config')) {
-    config <- eval(as.name('tsg_config'))
+  if(exists('tsgx_config')) {
+    config <- eval(as.name('tsgx_config'))
     refs <- config$data_dictionary
   }
 

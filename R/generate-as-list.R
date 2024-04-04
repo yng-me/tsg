@@ -1,7 +1,7 @@
 #' @title Generate summary tables as a list based on defined grouping or aggregation
 #' @description This function allows you to generate summary tables based on a defined grouping or aggregation.
 #' You can optionally return table values in either frequency or proportion/percentage or both.
-#' It uses any \code{tsg_*} valid functions as calculator to generate desired tabulation structure.
+#' It uses any \code{tsgx_*} valid functions as calculator to generate desired tabulation structure.
 #'
 #' @param .data \strong{Required}. A .data frame, .data frame extension (e.g. a tibble), a lazy .data frame (e.g. from dbplyr or dtplyr), or Arrow .data format.
 #' @param list_group \strong{Required}. A factor or categorical variable from \code{.data} to be used grouping for the list generated.
@@ -17,7 +17,7 @@
 #' @param footnote Table footnote.
 #' @param source_note Table footnote.
 #' @param formatted Whether to apply formatting for the Excel output. Default is \code{FALSE}.
-#' @param filename Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.
+#' @param filename Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsgx_list.xlsx} as a filename and will be saved in the current working directory.
 #' @param names_separator Column separator that defines the table hierarchy.
 #' @param distinct_stub_head Whether to use \code{indicator} variable as x (if \code{FALSE}) or y (if \code{TRUE})
 #'

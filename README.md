@@ -1,10 +1,10 @@
 
-## About the `tsg` package
+## About the `tsgx` package
 
 <br>
 
 
-**`tsg`** stands for "**table summary generator**." This package is designed to facilitate generation of statistical summary tables with ease. It also adheres to the `tidyverse` specifications.
+**`tsgx`** stands for "**table summary generator**." This package is designed to facilitate generation of statistical summary tables with ease. It also adheres to the `tidyverse` specifications.
 
 The package allows you to:
 
@@ -16,7 +16,7 @@ The package allows you to:
 
 ## Installation
 
-You may install the `tsg` package either from GitHub or R-CRAN.
+You may install the `tsgx` package either from GitHub or R-CRAN.
 
 ```r
 # Install devtools if not yet installed in your machine
@@ -25,21 +25,21 @@ if(!('devtools' %in% installed.packages()[,'Package'])){
 }
 
 # Install the package from GitHub
-devtools::install_github('yng-me/tsg')
+devtools::install_github('yng-me/tsgx')
 
 # Install via R-CRAN
-install.packages('tsg')
+install.packages('tsgx')
 
 ```
 
 Then load the package after installation.
 
 ```r
-library(tsg)
+library(tsgx)
 ```
 
 
-## `tsg` core functions
+## `tsgx` core functions
 
 ### 1. **`generate_frequency`**
 

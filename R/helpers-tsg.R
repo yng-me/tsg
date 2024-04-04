@@ -3,7 +3,7 @@ frequency_inclusion <- function(
   excluded_cols,
   include_total,
   include_cumulative,
-  exclude_zero_value
+  include_zero_value
 ) {
 
   Frequency <- NULL
@@ -36,7 +36,7 @@ frequency_inclusion <- function(
       dplyr::mutate_at(dplyr::vars(dplyr::contains('Cumulative')), as.numeric)
   }
 
-  if(exclude_zero_value == T) {
+  if(include_zero_value == T) {
     df <- df |> dplyr::filter(Frequency > 0)
   }
 

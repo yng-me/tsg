@@ -17,11 +17,12 @@
 generate_frequency <- function(
   .data,
   x,
-  label_stub = get_config('label_stub'),
+  label_stub = NULL,
   sort_frequency = FALSE,
+  sort_by = 'desc',
   include_total = TRUE,
   include_cumulative = TRUE,
-  exclude_zero_value = FALSE
+  include_zero_value = FALSE
 ) {
 
   # Check if input data is valid
@@ -35,20 +36,25 @@ generate_frequency <- function(
 
   grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
   grouping_col_names <- names(dplyr::collect(grouping_cols))
-  first_cols <- c(grouping_col_names, set_as_string({{x}}))
+  first_cols <- c(set_as_string({{x}}), grouping_col_names)
 
   .df_selected <- .data |>
-    dplyr::select(dplyr::any_of(grouping_col_names), {{x}})
+    dplyr::select({{x}}, dplyr::any_of(grouping_col_names))
 
   # Compute frequency distribution
   df <- .df_selected |>
     dplyr::count({{x}}) |>
+    dplyr::ungroup() |>
     dplyr::collect() |>
     dplyr::mutate(percent = n / sum(n))
 
   # Whether to sort the frequency
   if(sort_frequency == T) {
-    df <- df |> dplyr::arrange(dplyr::desc(n))
+    if(sort_by == 'desc') {
+      df <- dplyr::arrange(df, dplyr::desc(n))
+    } else {
+      df <- dplyr::arrange(df, n)
+    }
   }
 
   # Check what to include/exclude in the final output
@@ -63,7 +69,7 @@ generate_frequency <- function(
       excluded_cols = first_cols,
       include_total,
       include_cumulative,
-      exclude_zero_value
+      include_zero_value
     )
 
   # Check if stub head label is specified

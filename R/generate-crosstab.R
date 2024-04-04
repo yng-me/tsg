@@ -7,7 +7,6 @@
 #' @param .x \strong{Required}. Variable to be used as categories.
 #' @param ... Tidy-select column names.
 #' @param total_by_col Whether to apply the sum columnwise if \code{TRUE} or rowwise \code{FALSE}. Default is \code{FALSE}
-#' @param total_option CURRENTLY IGNORE. For future implementation.
 #' @param include_frequency Whether to include frequency columns. Default is \code{TRUE}.
 #' @param include_proportion Whether to include proportion/percentage columns. Default is \code{TRUE}.
 #' @param include_column_total Whether to include column total. Default is \code{TRUE}.
@@ -16,7 +15,7 @@
 #' @param include_zero_value Whether to drop columns with zero (0) values
 #' @param convert_to_percent Whether to format to percent or proportion. Default is \code{TRUE}.
 #' @param decimal_precision Specify the precision of rounding the percent or proportion.
-#' @param label_stub Stubhead label (first column).
+#' @param label_stub stubhead label (first column).
 #' @param label_total Label for the overall total.
 #' @param label_subtotal Label for the subtotal.
 #' @param weights Weights to be applied in the aggregation.
@@ -34,7 +33,6 @@ generate_crosstab <- function(
   .x,
   ...,
   total_by_col = FALSE,
-  total_option = 'default',
   include_frequency = TRUE,
   include_proportion = TRUE,
   include_column_total = TRUE,
@@ -43,14 +41,14 @@ generate_crosstab <- function(
   include_zero_value = FALSE,
   convert_to_percent = TRUE,
   decimal_precision = NULL,
-  label_stub = get_config('label_stub'),
+  label_stub = NULL,
   label_total = 'Total',
   label_subtotal = NULL,
   names_separator = '__',
   weights = NULL
 ) {
 
-  # Check the if input data is valid
+
   check_input_data_validity(.data)
   if("ArrowObject" %in% .data | "arrow_dplyr_query" %in% .data) {
     .data <- .data |> dplyr::collect()
@@ -61,11 +59,6 @@ generate_crosstab <- function(
 
   df_selected <- .data |>
     dplyr::select(any_of(grouping_col_names), {{.x}}, ...)
-
-  `:=` <- NULL
-  `.` <- NULL
-  total <- NULL
-  frequency <- NULL
 
   expr_cols <- rlang::expr(c(...))
   cols_to_pivot <- tidyselect::eval_select(
@@ -89,10 +82,11 @@ generate_crosstab <- function(
   add_total <- function(.df) {
 
     df <- .df |>
+      dplyr::select({{.x}}, dplyr::everything()) |>
       janitor::adorn_totals(c('row', 'col')) |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::matches('^Frequency')),
-        list(pv = ~ p_multiplier * (. / Total))
+        list(`:PV:_` = ~ p_multiplier * (. / Total))
       ) |>
       dplyr::select(
         {{.x}},
@@ -104,7 +98,7 @@ generate_crosstab <- function(
       df <- .df |>
         dplyr::mutate_at(
           dplyr::vars(dplyr::matches('^Frequency')),
-          list(pv = ~ p_multiplier * (. / sum(., na.rm = T)))
+          list(`:PV:_` = ~ p_multiplier * (. / sum(., na.rm = T)))
         ) |>
         dplyr::mutate_if(is.numeric, ~ dplyr::if_else(is.nan(.), 0, .))
     }
@@ -112,7 +106,7 @@ generate_crosstab <- function(
     if(is.null(decimal_precision) & is.numeric(decimal_precision)) {
       df <- df |>
         dplyr::mutate_at(
-          dplyr::vars(dplyr::matches('_pv$')),
+          dplyr::vars(dplyr::matches('_\\:PV\\:_$')),
           ~ round(., as.integer(decimal_precision))
         )
     }
@@ -120,9 +114,9 @@ generate_crosstab <- function(
     df |>
       dplyr::rename_all(~ stringr::str_replace(., 'Total', label_total)) |>
       dplyr::rename_at(
-        dplyr::vars(dplyr::ends_with('_pv')),
+        dplyr::vars(dplyr::ends_with('_:PV:_')),
         ~ stringr::str_remove(
-          stringr::str_replace(., '^Frequency', p_label), '_pv$'
+          stringr::str_replace(., '^Frequency', p_label), '_\\:PV\\:_$'
         )
       )
 
@@ -135,7 +129,7 @@ generate_crosstab <- function(
       dplyr::select(...) |>
       names()
 
-    if(include_subtotal == F && length(dots_name) < 2) return(.df)
+    if(include_subtotal == F & length(dots_name) < 2) return(.df)
 
     if(is.null(label_subtotal)) label_subtotal <- 'Subtotal'
 
@@ -145,16 +139,13 @@ generate_crosstab <- function(
 
       s <- unique(.data[[m[k]]])
 
-      print(as.character(s))
-
       for(j in seq_along(s)) {
 
         .df <- .df |>
           dplyr::mutate(
-            !!as.name(paste0('Frequency>', s[j], '>', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Frequency>', s[j])))),
-            !!as.name(paste0('Percent>', s[j], '>', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Percent>', s[j]))))
-          )# |>
-          # dplyr::select(1, 2, dplyr::starts_with('Frequency'), starts_with('Percent'))
+            !!as.name(paste0('Frequency__', s[j], '__', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Frequency__', s[j])))),
+            !!as.name(paste0('Percent__', s[j], '__', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Percent__', s[j]))))
+          )
       }
     }
 
@@ -189,7 +180,9 @@ generate_crosstab <- function(
     if(include_column_total == F) {
       .df <- .df |> dplyr::select(-dplyr::matches('^Total'))
     }
-    if(include_row_total == F) .df <- .df |> dplyr::filter({{.x}} != 'Total' | is.na({{.x}}))
+    if(include_row_total == F) .df <- .df |>
+        dplyr::filter({{.x}} != 'Total' | is.na({{.x}}) | {{.x}} == '-')
+
     if(!is.null(label_stub)) {
       .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{.x}})
     }
@@ -215,7 +208,7 @@ generate_crosstab <- function(
       names_prefix = paste0('Frequency', names_separator)
     ) |>
     add_total() |>
-    add_subtotal() |>
+    # add_subtotal() |>
     set_inclusion() |>
     dplyr::select(dplyr::any_of(grouping_col_names), dplyr::everything())
 

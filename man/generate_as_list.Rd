@@ -53,7 +53,7 @@ generate_as_list(
 
 \item{formatted}{Whether to apply formatting for the Excel output. Default is \code{FALSE}.}
 
-\item{filename}{Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsg_list.xlsx} as a filename and will be saved in the current working directory.}
+\item{filename}{Valid filename with \code{.xlsx} extension. If not specified, it will use \code{tsgx_list.xlsx} as a filename and will be saved in the current working directory.}
 
 \item{names_separator}{Column separator that defines the table hierarchy.}
 
@@ -65,5 +65,5 @@ Returns a list of tables aggregated based on values defined in \code{list_group}
 \description{
 This function allows you to generate summary tables based on a defined grouping or aggregation.
 You can optionally return table values in either frequency or proportion/percentage or both.
-It uses any \code{tsg_*} valid functions as calculator to generate desired tabulation structure.
+It uses any \code{tsgx_*} valid functions as calculator to generate desired tabulation structure.
 }
