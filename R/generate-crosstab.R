@@ -86,7 +86,7 @@ generate_crosstab <- function(
       janitor::adorn_totals(c('row', 'col')) |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::matches('^Frequency')),
-        list(`:PV:_` = ~ p_multiplier * (. / Total))
+        list(PV_TOTAL_ALL_INTERNAL = ~ p_multiplier * (. / Total))
       ) |>
       dplyr::select(
         {{.x}},
@@ -96,9 +96,10 @@ generate_crosstab <- function(
 
     if(total_by_col) {
       df <- .df |>
+        janitor::adorn_totals('col', name = "Frequency__Total") |>
         dplyr::mutate_at(
           dplyr::vars(dplyr::matches('^Frequency')),
-          list(`:PV:_` = ~ p_multiplier * (. / sum(., na.rm = T)))
+          list(PV_TOTAL_ALL_INTERNAL = ~ p_multiplier * (. / sum(., na.rm = T)))
         ) |>
         dplyr::mutate_if(is.numeric, ~ dplyr::if_else(is.nan(.), 0, .))
     }
@@ -106,7 +107,7 @@ generate_crosstab <- function(
     if(is.null(decimal_precision) & is.numeric(decimal_precision)) {
       df <- df |>
         dplyr::mutate_at(
-          dplyr::vars(dplyr::matches('_\\:PV\\:_$')),
+          dplyr::vars(dplyr::matches('PV_TOTAL_ALL_INTERNAL$')),
           ~ round(., as.integer(decimal_precision))
         )
     }
@@ -114,9 +115,9 @@ generate_crosstab <- function(
     df |>
       dplyr::rename_all(~ stringr::str_replace(., 'Total', label_total)) |>
       dplyr::rename_at(
-        dplyr::vars(dplyr::ends_with('_:PV:_')),
+        dplyr::vars(dplyr::ends_with('PV_TOTAL_ALL_INTERNAL')),
         ~ stringr::str_remove(
-          stringr::str_replace(., '^Frequency', p_label), '_\\:PV\\:_$'
+          stringr::str_replace(., '^Frequency', p_label), '_PV_TOTAL_ALL_INTERNAL$'
         )
       )
 
@@ -178,7 +179,7 @@ generate_crosstab <- function(
     }
 
     if(include_column_total == F) {
-      .df <- .df |> dplyr::select(-dplyr::matches('^Total'))
+      .df <- .df |> dplyr::select(-dplyr::matches('^(Total|Frequency__Total|Percent__Total|Proportion__Total)'))
     }
     if(include_row_total == F) .df <- .df |>
         dplyr::filter({{.x}} != 'Total' | is.na({{.x}}) | {{.x}} == '-')
