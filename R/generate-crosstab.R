@@ -4,7 +4,7 @@
 
 #' @param .data A data frame, data frame extension (e.g. a \code{tibble}), a lazy data frame (e.g. from \code{dbplyr} or \code{dtplyr}), or Arrow data format.
 #'
-#' @param .x \strong{Required}. Variable to be used as categories.
+#' @param x \strong{Required}. Variable to be used as categories.
 #' @param ... Tidy-select column names.
 #' @param total_by_col Whether to apply the sum columnwise if \code{TRUE} or rowwise \code{FALSE}. Default is \code{FALSE}
 #' @param include_frequency Whether to include frequency columns. Default is \code{TRUE}.
@@ -30,7 +30,7 @@
 
 generate_crosstab <- function(
   .data,
-  .x,
+  x,
   ...,
   total_by_col = FALSE,
   include_frequency = TRUE,
@@ -45,20 +45,20 @@ generate_crosstab <- function(
   label_total = 'Total',
   label_subtotal = NULL,
   names_separator = '__',
+  x_as_stub = FALSE,
+  remove_cols_from_group = NULL,
   weights = NULL
 ) {
-
 
   check_input_data_validity(.data)
   if("ArrowObject" %in% .data | "arrow_dplyr_query" %in% .data) {
     .data <- .data |> dplyr::collect()
   }
 
-  grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
-  grouping_col_names <- names(dplyr::collect(grouping_cols))
+  grouping_col_names <- .data |> dplyr::group_vars()
 
   df_selected <- .data |>
-    dplyr::select(any_of(grouping_col_names), {{.x}}, ...)
+    dplyr::select(any_of(grouping_col_names), {{x}}, ...)
 
   expr_cols <- rlang::expr(c(...))
   cols_to_pivot <- tidyselect::eval_select(
@@ -66,11 +66,31 @@ generate_crosstab <- function(
     data = dplyr::collect(df_selected)
   )
 
+  v <- names(df_selected)
+  df_names <- list()
+  for(i in seq_along(v)) {
+    y <- v[i]
+    attr_i <- attributes(df_selected[[y]])
+    label <- attr_i$label
+    if(is.null(label)) label <- y
+    df_names[[i]] <- dplyr::tibble(
+      value = y,
+      label = label
+    )
+  }
+  df_names <- df_names |> dplyr::bind_rows()
+
+  for(i in seq_along(v)) {
+    y <- v[i]
+    df_selected <- df_selected |>
+      factor_col(y, .keep_cols = F)
+  }
+
   if(rlang::dots_n(...) == 0) {
     return(
       .data |>
         generate_frequency(
-          x = {{.x}},
+          x = {{x}},
           label_stub = label_stub
         )
     )
@@ -82,14 +102,14 @@ generate_crosstab <- function(
   add_total <- function(.df) {
 
     df <- .df |>
-      dplyr::select({{.x}}, dplyr::everything()) |>
+      dplyr::select({{x}}, dplyr::everything()) |>
       janitor::adorn_totals(c('row', 'col')) |>
       dplyr::mutate_at(
         dplyr::vars(dplyr::matches('^Frequency')),
         list(PV_TOTAL_ALL_INTERNAL = ~ p_multiplier * (. / Total))
       ) |>
       dplyr::select(
-        {{.x}},
+        {{x}},
         Total,
         dplyr::everything()
       )
@@ -182,10 +202,10 @@ generate_crosstab <- function(
       .df <- .df |> dplyr::select(-dplyr::matches('^(Total|Frequency__Total|Percent__Total|Proportion__Total)'))
     }
     if(include_row_total == F) .df <- .df |>
-        dplyr::filter({{.x}} != 'Total' | is.na({{.x}}) | {{.x}} == '-')
+        dplyr::filter({{x}} != 'Total' | is.na({{x}}) | {{x}} == '-')
 
     if(!is.null(label_stub)) {
-      .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{.x}})
+      .df <- .df |> dplyr::rename((!!as.name(label_stub)) := {{x}})
     }
 
     if(total_by_col) .df <- .df |> janitor::adorn_totals()
@@ -195,7 +215,7 @@ generate_crosstab <- function(
   }
 
   cross_tab <- df_selected |>
-    dplyr::group_by({{.x}}, ..., .add = T) |>
+    dplyr::group_by({{x}}, ..., .add = T) |>
     dplyr::count(name = 'Frequency') |>
     dplyr::ungroup() |>
     dplyr::collect() |>
@@ -211,8 +231,57 @@ generate_crosstab <- function(
     add_total() |>
     # add_subtotal() |>
     set_inclusion() |>
-    dplyr::select(dplyr::any_of(grouping_col_names), dplyr::everything())
+    dplyr::tibble()
 
-  return(dplyr::tibble(cross_tab))
+
+  if(length(grouping_col_names) > 0 & !is.null(remove_cols_from_group)) {
+    vv <- grouping_col_names[!(grouping_col_names %in% remove_cols_from_group)]
+    if(length(vv) > 0) {
+      cross_tab <- cross_tab |>
+        dplyr::group_by(dplyr::pick(dplyr::any_of(vv)))
+    }
+  }
+
+  if(x_as_stub) {
+
+    if(!is.null(label_stub)) {
+
+      cross_tab <- cross_tab |>
+        dplyr::select(dplyr::any_of(label_stub), dplyr::any_of(grouping_col_names), dplyr::everything())
+
+    } else {
+      cross_tab <- cross_tab |>
+        dplyr::select({{x}}, dplyr::any_of(grouping_col_names), dplyr::everything())
+    }
+
+  } else {
+    cross_tab <- cross_tab |>
+      dplyr::select(dplyr::any_of(grouping_col_names), dplyr::everything())
+  }
+
+
+  for(j in seq_along(df_names$value)) {
+    z <- df_names$value[j]
+    if(z %in% names(cross_tab)) {
+      cross_tab <- cross_tab |>
+        dplyr::rename(!!as.name(df_names$label[j]) := !!as.name(z))
+    }
+  }
+
+  for(i in seq_along(remove_cols_from_group)) {
+    xx <- remove_cols_from_group[i]
+    if(remove_cols_from_group[i] %in% names(cross_tab)) {
+      cross_tab <- cross_tab |>
+        dplyr::mutate(
+          !!as.name(xx) := dplyr::if_else(
+            !!as.name(xx) == '-',
+            NA_character_,
+            !!as.name(xx)
+          )
+        )
+    }
+  }
+
+  cross_tab
 
 }

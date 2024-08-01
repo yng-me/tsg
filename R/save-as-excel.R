@@ -43,38 +43,41 @@ save_as_excel <- function(
 
     if('list' %in% class(.list)) {
 
-      df_names <- dplyr::as_tibble(names(.list))
+      df_names <- dplyr::as_tibble(names(.list)) |>
+        dplyr::mutate(
+          title = value,
+          subtitle = NA_character_,
+          description = NA_character_
+        )
 
       if(!is.null(export_settings)) {
-        df_names <- export_settings |>
+        df_sheet_names <- export_settings |>
           dplyr::filter(!!as.name(tab_variable_name) %in% names(.list))
+      } else {
+
+        df_sheet_names <- df_names |>
+          dplyr::mutate(
+            value = dplyr::if_else(
+              nchar(value) > 31,
+              stringr::str_sub(value, 1, 31),
+              value
+            )
+          )
+
+        names(.list) <- df_sheet_names$value
       }
 
-      df_sheet_names <- df_names |>
-        dplyr::mutate(
-          value = dplyr::if_else(
-            nchar(value) > 31,
-            stringr::str_sub(value, 1, 31),
-            value
-          )
-        ) |>
-        dplyr::pull(value)
+      for(i in seq_along(df_sheet_names$value)) {
 
-      names(.list) <- df_sheet_names
-
-      for(i in seq_along(df_sheet_names)) {
-
-        if(!is.null(title)) {
-          title_i <- paste0(title, ': ', df_sheet_names[i])
-        } else {
-          title_i <- df_sheet_names[i]
-        }
+        description <- df_sheet_names$description[i]
+        if(is.na(description)) description <- NULL
 
         write_as_excel(
-          .list[[df_sheet_names[i]]],
+          .list[[df_sheet_names$value[i]]],
           wb = wb,
-          sheet = df_sheet_names[i],
-          title = title_i,
+          sheet = df_sheet_names$value[i],
+          title = df_sheet_names$title[i],
+          description = description,
           ...
         )
       }

@@ -36,13 +36,35 @@ generate_frequency <- function(
 
   grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
   grouping_col_names <- names(dplyr::collect(grouping_cols))
-  first_cols <- c(set_as_string({{x}}), grouping_col_names)
+  x_col <- set_as_string({{x}})
+  first_cols <- c(x_col, grouping_col_names)
 
-  .df_selected <- .data |>
+  df_selected <- .data |>
     dplyr::select({{x}}, dplyr::any_of(grouping_col_names))
 
+  v <- names(df_selected)
+  df_names <- list()
+  for(i in seq_along(v)) {
+    y <- v[i]
+    attr_i <- attributes(df_selected[[y]])
+    label <- attr_i$label
+    if(is.null(label)) label <- y
+    df_names[[i]] <- dplyr::tibble(
+      value = y,
+      label = label
+    )
+  }
+  df_names <- df_names |> dplyr::bind_rows()
+
+  for(i in seq_along(v)) {
+    y <- v[i]
+    df_selected <- df_selected |>
+      factor_col(y, .keep_cols = F)
+  }
+
+
   # Compute frequency distribution
-  df <- .df_selected |>
+  df <- df_selected |>
     dplyr::count({{x}}) |>
     dplyr::ungroup() |>
     dplyr::collect() |>
@@ -57,20 +79,24 @@ generate_frequency <- function(
     }
   }
 
+  gc <- grouping_col_names[grouping_col_names != x_col]
+  gc <- gc[gc != 'x']
+
   # Check what to include/exclude in the final output
-  df <- df |> dplyr::mutate(Percent := percent * 100) |>
+  df <- df |>
+    dplyr::mutate(Percent := percent * 100) |>
     dplyr::select(
       dplyr::any_of(first_cols),
       Frequency = n,
       Percent
     ) |>
-    dplyr::ungroup() |>
     frequency_inclusion(
       excluded_cols = first_cols,
       include_total,
       include_cumulative,
       include_zero_value
-    )
+    ) |>
+    dplyr::group_by(dplyr::pick(dplyr::any_of(gc)))
 
   # Check if stub head label is specified
   if(!is.null(label_stub)) {
@@ -78,6 +104,15 @@ generate_frequency <- function(
       dplyr::rename((!!as.name(label_stub)) := {{x}})
   }
 
-  return(dplyr::tibble(df))
+  for(j in seq_along(df_names$value)) {
+    z <- df_names$value[j]
+    if(z %in% names(df)) {
+      df <- df |>
+        dplyr::rename(!!as.name(df_names$label[j]) := !!as.name(z))
+    }
+  }
+
+
+  return(df)
 
 }

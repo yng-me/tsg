@@ -56,3 +56,41 @@ convert_to_na <- function(.data, to = '') {
     )
 }
 
+
+factor_col <- function(.data, .col, .keep_cols = TRUE, .rename_cols = FALSE) {
+
+  attr_i <- attributes(.data[[.col]])
+
+  if (!is.null(attr_i$valueset)) {
+    col_fct <- .col
+    if (.keep_cols) col_fct <- paste0(.col, "_fct")
+
+    if(is.numeric(as.integer(attr_i$valueset$value[1]))) {
+
+      .data <- .data |>
+        dplyr::mutate(
+          !!as.name(col_fct) := factor(
+            as.integer(!!as.name(.col)),
+            as.integer(attr_i$valueset$value),
+            attr_i$valueset$label
+          )
+        )
+
+    } else {
+      .data <- .data |>
+        dplyr::mutate(
+          !!as.name(col_fct) := factor(
+            !!as.name(.col),
+            attr_i$valueset$value,
+            attr_i$valueset$label
+          )
+        )
+    }
+  }
+
+  if(!is.null(attr_i$label) & .rename_cols & !.keep_cols) {
+    .data <- .data |>
+      dplyr::rename(!!as.name(attr_i$label) := !!as.name(col_fct))
+  }
+  .data
+}
