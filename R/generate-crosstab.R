@@ -282,6 +282,7 @@ generate_crosstab <- function(
     }
   }
 
-  cross_tab
+  cross_tab |>
+    dplyr::select(-dplyr::any_of('PV_TOTAL_ALL_INTERNAL'))
 
 }
