@@ -30,7 +30,7 @@ generate_multiple_response <- function(
   include_proportion = TRUE,
   convert_to_percent = TRUE,
   format_precision = 2,
-  label_stub = get_config('label_stub'),
+  label_stub = NULL,
   label_total = NULL,
   names_separator = '>',
   recode = TRUE,
@@ -50,123 +50,164 @@ generate_multiple_response <- function(
     dplyr::select(...) |>
     names()
 
-  if(rlang::dots_n(...) == 0 | length(dots_name) == 0) {
-    stop('Multiple response variable is required!')
-  }
-
   grouping_cols <- .data |> dplyr::select(dplyr::group_cols())
   grouping_col_names <- names(dplyr::collect(grouping_cols))
 
-  .df_selected <- .data |>
+  df_selected <- .data |>
     dplyr::select(dplyr::any_of(grouping_col_names), {{x}}, ...)
 
+  v <- names(df_selected)
+  df_names <- list()
+  for(i in seq_along(v)) {
+    y <- v[i]
+    attr_i <- attributes(df_selected[[y]])
+    label <- attr_i$label
+    if(is.null(label)) label <- y
+    df_names[[i]] <- dplyr::tibble(
+      value = y,
+      label = label
+    )
+  }
+
+  df_names <- df_names |>
+    dplyr::bind_rows()
 
   p_label <- dplyr::if_else(convert_to_percent, 'Percent', 'Proportion')
   p_multiplier <- dplyr::if_else(convert_to_percent, 100, 1)
 
+  if(rlang::dots_n(...) == 0 | length(dots_name) == 0) {
 
-  join_with <- .df_selected |>
-    dplyr::group_by({{x}}, .add = T) |>
-    dplyr::count() |>
-    dplyr::ungroup() |>
-    dplyr::collect()
-
-  if(length(dots_name) == 1 & rlang::dots_n(...) == 1) {
-
-    y <- sapply(substitute(list(...))[-1], deparse)[1]
-
-    df <- .df_selected |>
-      dplyr::mutate(type = toupper(stringr::str_trim(!!as.name(y)))) |>
+    df <- df_selected |>
       dplyr::collect() |>
-      dplyr::mutate(type = dplyr::if_else(type == '', NA_character_, type)) |>
-      dplyr::mutate(type = strsplit(type, split = '')) |>
-      tidyr::unnest(type) |>
-      dplyr::filter(!is.na(type), grepl('^[A-Z]$', type)) |>
-      dplyr::mutate(type = paste0('<<', type, '>>')) |>
-      dplyr::group_by({{x}}, type, .add = T, .drop = T) |>
-      dplyr::count() |>
-      dplyr::ungroup() |>
-      dplyr::arrange(type) |>
-      tidyr::pivot_wider(
-        names_from = type,
-        values_from = n,
-        values_fill = 0,
-        names_sort = F
-      )
+      dplyr::mutate({{x}} := dplyr::if_else({{x}} == '', NA_character_, {{x}})) |>
+      dplyr::mutate({{x}} := toupper(stringr::str_trim({{x}}))) |>
+      dplyr::mutate({{x}} := strsplit({{x}}, split = '')) |>
+      tidyr::unnest({{x}}) |>
+      dplyr::filter(!is.na({{x}}), grepl('^[A-Z]$', {{x}})) |>
+      dplyr::count({{x}}, name = "Frequency") |>
+      dplyr::mutate(!!as.name(p_label) := p_multiplier * (Frequency / nrow(df_selected)))
+
+    vs_df <- df_selected |> dplyr::select({{x}})
+    vs_name <- names(vs_df)[1]
+    vs <- attributes(vs_df[[vs_name]])$valueset
+
+    if(!is.null(vs)) {
+      df <- df |>
+        dplyr::mutate(
+          {{x}} := factor({{x}}, vs$value, vs$label)
+        )
+    }
 
   } else {
 
-    if(recode == T) {
+    join_with <- df_selected |>
+      dplyr::group_by({{x}}, .add = T) |>
+      dplyr::count() |>
+      dplyr::ungroup() |>
+      dplyr::collect()
 
-      recode_var <- stringr::str_sub(
-        dots_name,
-        recode_variable_position,
-        recode_variable_position
-      )
+    if(length(dots_name) == 1 & rlang::dots_n(...) == 1) {
 
-      if(length(dots_name) != length(unique(recode_var))) {
-        stop('Indicate the position of letter of variable that uniquely identifies each mult-response variable: \n
-             `recode_variable_position`')
-      }
+      y <- sapply(substitute(list(...))[-1], deparse)[1]
 
-      df <- .df_selected |>
-        dplyr::group_by({{x}}, .add = T) |>
-        dplyr::rename_at(
-          dplyr::vars(...),
-          ~ paste0('<<', toupper(
-            stringr::str_sub(., recode_variable_position, recode_variable_position)), '>>'
-          )
-        ) |>
+      df <- df_selected |>
+        dplyr::mutate(type = toupper(stringr::str_trim(!!as.name(y)))) |>
         dplyr::collect() |>
-        dplyr::mutate_at(
-          dplyr::vars(dplyr::matches('^<<[A-Z]>>$')),
-          ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
-        ) |>
-        dplyr::summarise_at(
-          dplyr::vars(dplyr::matches('^<<[A-Z]>>$')),
-          ~ sum(., na.rm = T)
+        dplyr::mutate(type = dplyr::if_else(type == '', NA_character_, type)) |>
+        dplyr::mutate(type = strsplit(type, split = '')) |>
+        tidyr::unnest(type) |>
+        dplyr::filter(!is.na(type), grepl('^[A-Z]$', type)) |>
+        dplyr::mutate(type = paste0('<<', type, '>>')) |>
+        dplyr::group_by({{x}}, type, .add = T, .drop = T) |>
+        dplyr::count() |>
+        dplyr::ungroup() |>
+        dplyr::arrange(type) |>
+        tidyr::pivot_wider(
+          names_from = type,
+          values_from = n,
+          values_fill = 0,
+          names_sort = F
         )
 
     } else {
 
-      df <- .df_selected |>
-        dplyr::group_by({{x}}, .add = T) |>
-        dplyr::collect() |>
-        dplyr::mutate_at(
-          dplyr::vars(...),
-          ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
-        ) |>
-        dplyr::summarise_at(
-          dplyr::vars(...),
-          ~ sum(., na.rm = T)
+      if(recode == T) {
+
+        recode_var <- stringr::str_sub(
+          dots_name,
+          recode_variable_position,
+          recode_variable_position
         )
+
+        if(length(dots_name) != length(unique(recode_var))) {
+          stop('Indicate the position of letter of variable that uniquely identifies each mult-response variable: \n
+               `recode_variable_position`')
+        }
+
+        df <- df_selected |>
+          dplyr::group_by({{x}}, .add = T) |>
+          dplyr::rename_at(
+            dplyr::vars(...),
+            ~ paste0('<<', toupper(
+              stringr::str_sub(., recode_variable_position, recode_variable_position)), '>>'
+            )
+          ) |>
+          dplyr::collect() |>
+          dplyr::mutate_at(
+            dplyr::vars(dplyr::matches('^<<[A-Z]>>$')),
+            ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
+          ) |>
+          dplyr::summarise_at(
+            dplyr::vars(dplyr::matches('^<<[A-Z]>>$')),
+            ~ sum(., na.rm = T)
+          )
+
+      } else {
+
+        df <- df_selected |>
+          dplyr::group_by({{x}}, .add = T) |>
+          dplyr::collect() |>
+          dplyr::mutate_at(
+            dplyr::vars(...),
+            ~ dplyr::if_else(. != as.integer(value_to_count), 0L, 1L, NA_integer_)
+          ) |>
+          dplyr::summarise_at(
+            dplyr::vars(...),
+            ~ sum(., na.rm = T)
+          )
+      }
+
     }
 
+    g <- c(grouping_col_names, set_as_string({{x}}))
+
+    df_cols <- df |>
+      dplyr::ungroup() |>
+      dplyr::select(-dplyr::any_of(g), -n) |>
+      names()
+
+    df <- df |>
+      dplyr::inner_join(join_with, by = g) |>
+      janitor::adorn_totals() |>
+      dplyr::mutate_at(
+        dplyr::vars(dplyr::any_of(df_cols)),
+        list(percent = ~ (. / n) * p_multiplier)
+      ) |>
+      dplyr::rename_at(
+        dplyr::vars(dplyr::matches('_percent$')),
+        ~ paste0(p_label, names_separator, stringr::str_remove(., '_percent$'))
+      ) |>
+      dplyr::rename_at(
+        dplyr::vars(dplyr::any_of(df_cols)), ~ paste0('Frequency', names_separator, .)
+      ) |>
+      dplyr::select(dplyr::any_of(g), n, dplyr::everything()) |>
+      dplyr::rename(Total = n)
+
+    if(clean_name == T) {
+      df <- df |>
+        dplyr::rename_all(~ stringr::str_remove_all(., '<<|>>'))
+    }
   }
-
-  g <- c(grouping_col_names, set_as_string({{x}}))
-
-  df_cols <- df |>
-    dplyr::ungroup() |>
-    dplyr::select(-dplyr::any_of(g), -n) |>
-    names()
-
-  df <- df |>
-    dplyr::inner_join(join_with, by = g) |>
-    janitor::adorn_totals() |>
-    dplyr::mutate_at(
-      dplyr::vars(dplyr::any_of(df_cols)),
-      list(percent = ~ (. / n) * p_multiplier)
-    ) |>
-    dplyr::rename_at(
-      dplyr::vars(dplyr::matches('_percent$')),
-      ~ paste0(p_label, names_separator, stringr::str_remove(., '_percent$'))
-    ) |>
-    dplyr::rename_at(
-      dplyr::vars(dplyr::any_of(df_cols)), ~ paste0('Frequency', names_separator, .)
-    ) |>
-    dplyr::select(dplyr::any_of(g), n, dplyr::everything()) |>
-    dplyr::rename(Total = n)
 
   if(!is.null(label_stub)) {
     df <- df |> dplyr::rename((!!as.name(label_stub)) := {{x}})
@@ -180,9 +221,12 @@ generate_multiple_response <- function(
       )
   }
 
-  if(clean_name == T) {
-    df <- df |>
-      dplyr::rename_all(~ stringr::str_remove_all(., '<<|>>'))
+  for(j in seq_along(df_names$value)) {
+    z <- df_names$value[j]
+    if(z %in% names(df)) {
+      df <- df |>
+        dplyr::rename(!!as.name(df_names$label[j]) := !!as.name(z))
+    }
   }
 
   return(dplyr::tibble(df))
