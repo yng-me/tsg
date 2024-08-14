@@ -111,8 +111,8 @@ generate_multiple_response <- function(
       y <- sapply(substitute(list(...))[-1], deparse)[1]
 
       df <- df_selected |>
-        dplyr::mutate(type = toupper(stringr::str_trim(!!as.name(y)))) |>
         dplyr::collect() |>
+        dplyr::mutate(type = toupper(stringr::str_trim(!!as.name(y)))) |>
         dplyr::mutate(type = dplyr::if_else(type == '', NA_character_, type)) |>
         dplyr::mutate(type = strsplit(type, split = '')) |>
         tidyr::unnest(type) |>

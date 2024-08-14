@@ -51,7 +51,7 @@ generate_crosstab <- function(
 ) {
 
   check_input_data_validity(.data)
-  if("ArrowObject" %in% .data | "arrow_dplyr_query" %in% .data) {
+  if("ArrowObject" %in% class(.data) | "arrow_dplyr_query" %in% class(.data)) {
     .data <- .data |> dplyr::collect()
   }
 
