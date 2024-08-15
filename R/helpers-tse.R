@@ -247,12 +247,12 @@ extract_column_names <- function(
   dplyr::as_tibble(names(df)) |>
     dplyr::mutate(
       value = stringr::str_split(value, names_separator),
-      col_from = 1:n()
+      col_from = 1:dplyr::n()
     ) |>
     dplyr::mutate(col_from = col_from + start_col - 1) |>
     tidyr::unnest(value) |>
     dplyr::group_by(col_from) |>
-    dplyr::mutate(row_from = 1:n()) |>
+    dplyr::mutate(row_from = 1:dplyr::n()) |>
     dplyr::mutate(row_from = row_from + start_row - 1) |>
     tidyr::nest() |>
     dplyr::mutate(depth = purrr::map_int(data, nrow)) |>

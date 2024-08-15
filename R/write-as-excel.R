@@ -457,7 +457,8 @@ write_as_excel <- function(
 
   return(
     list(
-      start_row = start_row_note - 1
+      start_row = start_row_note - 1,
+      row_depth = row_depth
     )
   )
 
