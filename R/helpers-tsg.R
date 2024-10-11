@@ -12,14 +12,14 @@ frequency_inclusion <- function(
   df <- .data_piped |> dplyr::tibble()
 
   if(include_cumulative == T) {
-    cumulative <- .data_piped |>
+    cumulative <- df |>
       dplyr::select(-dplyr::any_of(excluded_cols)) |>
       cumsum() |>
       dplyr::rename(
         'Cumulative Total' = Frequency,
         'Cumulative Percent' = Percent
       )
-    df <- .data_piped |> dplyr::bind_cols(cumulative)
+    df <- df |> dplyr::bind_cols(cumulative)
   }
 
   if(include_total == T) {
