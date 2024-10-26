@@ -7,7 +7,6 @@
 #' @param .agg_area_level
 #' @param .agg_area_length
 #' @param .total_by_col
-#' @param .reducer
 #'
 #' @return
 #' @export
@@ -23,8 +22,7 @@ generate_tab_by_level <- function(
   .agg_area_level = NULL,
   .agg_area_length = c(2, 5, 7, 10),
   .total_by_col = F,
-  .switch_col = F,
-  .reducer = NULL
+  .switch_col = F
 ) {
 
   df_all <- list()
@@ -61,8 +59,7 @@ generate_tab_by_level <- function(
         gtab_frequency(
           .x = x_col,
           .y = cols,
-          .total_by_col = .total_by_col,
-          .reducer = .reducer
+          .total_by_col = .total_by_col
         ) |>
         dplyr::mutate(
           area_code = paste0(rep('0', .agg_area_length[length(.agg_area_length)]), collapse = ''),
@@ -95,8 +92,7 @@ generate_tab_by_level <- function(
             x_col,
             area_code,
             .y = y_cols,
-            .total_by_col = .total_by_col,
-            .reducer = .reducer
+            .total_by_col = .total_by_col
           ) |>
           dplyr::mutate(
             level = as.integer(.agg_area_level[j]),
@@ -121,49 +117,44 @@ generate_tab_by_level <- function(
 }
 
 
-gtab_frequency <- function(.data, .x, ..., .y = list(), .total_by_col = FALSE, .reducer = NULL) {
+gtab_frequency <- function(.data, .x, ..., .y = list(), .total_by_col = FALSE) {
 
-  if(!is.null(.reducer)) {
-    func <- eval(as.name(.reducer))
-    .data <- .data |> func(.x, ..., .y)
+  if(length(.y) > 0) {
+
+    .data <- .data |>
+      dplyr::group_by(..., !!as.name(.x), .add = T) |>
+      dplyr::count(name = 'frequency') |>
+      dplyr::ungroup() |>
+      dplyr::collect() |>
+      gtab_arrange(.x) |>
+      tidyr::pivot_wider(
+        names_from = dplyr::any_of(.y),
+        values_from = frequency,
+        names_sort = T,
+        names_sep = '__',
+        values_fill = 0,
+        names_expand = T,
+        names_prefix = 'frequency__'
+      ) |>
+      gtab_add_total(.x, .total_by_col = .total_by_col)
+
   } else {
 
-    if(length(.y) > 0) {
+    .data <- .data |>
+      dplyr::group_by(..., !!as.name(.x), .add = T) |>
+      dplyr::count(name = 'frequency') |>
+      dplyr::ungroup() |>
+      dplyr::collect() |>
+      gtab_arrange(.x) |>
+      dplyr::group_by(...) |>
+      tidyr::nest() |>
+      dplyr::mutate(data = purrr::map(data, \(x) {
+        x |>
+          janitor::adorn_totals(fill = 'Total')
+      })) |>
+      tidyr::unnest(data) |>
+      dplyr::ungroup()
 
-      .data <- .data |>
-        dplyr::group_by(..., !!as.name(.x), .add = T) |>
-        dplyr::count(name = 'frequency') |>
-        dplyr::ungroup() |>
-        dplyr::collect() |>
-        gtab_arrange(.x) |>
-        tidyr::pivot_wider(
-          names_from = dplyr::any_of(.y),
-          values_from = frequency,
-          names_sort = T,
-          names_sep = '__',
-          values_fill = 0,
-          names_expand = T,
-          names_prefix = 'frequency__'
-        ) |>
-        gtab_add_total(.x, .total_by_col = .total_by_col)
-
-    } else {
-
-      .data <- .data |>
-        dplyr::group_by(..., !!as.name(.x), .add = T) |>
-        dplyr::count(name = 'frequency') |>
-        dplyr::ungroup() |>
-        dplyr::collect() |>
-        gtab_arrange(.x) |>
-        dplyr::group_by(...) |>
-        tidyr::nest() |>
-        dplyr::mutate(data = purrr::map(data, \(x) {
-          x |>
-            janitor::adorn_totals(fill = 'Total')
-        })) |>
-        tidyr::unnest(data) |>
-        dplyr::ungroup()
-    }
   }
 
 

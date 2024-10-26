@@ -12,13 +12,11 @@ generate_tab_by_level(
   .agg_area_level = NULL,
   .agg_area_length = c(2, 5, 7, 10),
   .total_by_col = F,
-  .row_vars_as_col = F,
-  .switch_col = F,
-  .reducer = NULL
+  .switch_col = F
 )
 }
 \arguments{
-\item{.reducer}{}
+\item{.total_by_col}{}
 }
 \description{
 Generate by aggregation level
