@@ -80,10 +80,7 @@ generate_frequency <- function(
   }
 
   df <- df |>
-    dplyr::arrange(
-      as.integer({{x}}),
-      {{x}}
-    )
+    dplyr::arrange(as.integer({{x}}), {{x}})
 
   gc <- grouping_col_names[grouping_col_names != x_col]
   gc <- gc[gc != 'x']

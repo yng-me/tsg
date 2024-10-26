@@ -13,7 +13,7 @@ generate_multiple_response(
   include_proportion = TRUE,
   convert_to_percent = TRUE,
   format_precision = 2,
-  label_stub = get_config("label_stub"),
+  label_stub = NULL,
   label_total = NULL,
   names_separator = ">",
   recode = TRUE,

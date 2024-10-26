@@ -9,7 +9,6 @@ generate_crosstab(
   x,
   ...,
   total_by_col = FALSE,
-  total_option = "default",
   include_frequency = TRUE,
   include_proportion = TRUE,
   include_column_total = TRUE,
@@ -18,11 +17,13 @@ generate_crosstab(
   include_zero_value = FALSE,
   convert_to_percent = TRUE,
   decimal_precision = NULL,
-  label_stub = get_config("label_stub"),
+  label_stub = NULL,
   label_total = "Total",
   label_subtotal = NULL,
-  weights = NULL,
-  names_separator = ">"
+  names_separator = "__",
+  x_as_stub = FALSE,
+  remove_cols_from_group = NULL,
+  weights = NULL
 )
 }
 \arguments{
@@ -33,8 +34,6 @@ generate_crosstab(
 \item{...}{Tidy-select column names.}
 
 \item{total_by_col}{Whether to apply the sum columnwise if \code{TRUE} or rowwise \code{FALSE}. Default is \code{FALSE}}
-
-\item{total_option}{CURRENTLY IGNORE. For future implementation.}
 
 \item{include_frequency}{Whether to include frequency columns. Default is \code{TRUE}.}
 
@@ -52,15 +51,15 @@ generate_crosstab(
 
 \item{decimal_precision}{Specify the precision of rounding the percent or proportion.}
 
-\item{label_stub}{Stubhead label (first column).}
+\item{label_stub}{stubhead label (first column).}
 
 \item{label_total}{Label for the overall total.}
 
 \item{label_subtotal}{Label for the subtotal.}
 
-\item{weights}{Weights to be applied in the aggregation.}
-
 \item{names_separator}{Column separator that defines the table hierarchy.}
+
+\item{weights}{Weights to be applied in the aggregation.}
 }
 \value{
 Returns a cross-table of type \code{tibble}

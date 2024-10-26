@@ -1,7 +1,7 @@
 Package: tsgx
 Type: Package
 Title: Table Summary Generator
-Version: 0.1.5
+Version: 0.1.6
 Authors@R: c(
     person(
       "Bhas", 
@@ -24,6 +24,7 @@ Import:
   yaml,
   purrr,
   tibble,
+  janitor,
   openxlsx
 Suggests: 
   testthat (>= 3.0.0),

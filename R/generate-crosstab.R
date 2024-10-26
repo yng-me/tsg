@@ -228,6 +228,7 @@ generate_crosstab <- function(
       names_expand = include_zero_value,
       names_prefix = paste0('Frequency', names_separator)
     ) |>
+    dplyr::arrange(as.integer({{x}}), {{x}}) |>
     add_total() |>
     # add_subtotal() |>
     set_inclusion() |>

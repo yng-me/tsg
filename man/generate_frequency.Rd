@@ -7,11 +7,12 @@
 generate_frequency(
   .data,
   x,
-  label_stub = get_config("label_stub"),
+  label_stub = NULL,
   sort_frequency = FALSE,
+  sort_by = "desc",
   include_total = TRUE,
   include_cumulative = TRUE,
-  exclude_zero_value = FALSE
+  include_zero_value = FALSE
 )
 }
 \arguments{
