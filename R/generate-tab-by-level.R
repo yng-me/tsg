@@ -434,12 +434,13 @@ gtab_frequency <- function(.data, .x, ..., .y = list(), .total_by_col = FALSE) {
       gtab_arrange(.x) |>
       tidyr::pivot_wider(
         names_from = dplyr::any_of(.y),
-        values_from = frequency,
         names_sort = T,
         names_sep = '__',
-        values_fill = 0,
         names_expand = T,
-        names_prefix = 'frequency__'
+        names_prefix = 'frequency__',
+        values_from = frequency,
+        values_fill = 0,
+        values_fn = sum
       ) |>
       gtab_add_total(.x, .total_by_col = .total_by_col)
 
