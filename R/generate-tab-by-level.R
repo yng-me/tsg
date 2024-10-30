@@ -7,6 +7,10 @@
 #' @param .agg_area_level
 #' @param .agg_area_length
 #' @param .total_by_col
+#' @param .switch_col
+#' @param .split_multiple_response
+#' @param .pivot_cols_to_row
+#' @param .pivot_cols_to_row_vs
 #'
 #' @return
 #' @export
@@ -22,13 +26,115 @@ generate_tab_by_level <- function(
   .agg_area_level = NULL,
   .agg_area_length = c(2, 5, 7, 10),
   .total_by_col = F,
-  .switch_col = F
+  .switch_col = F,
+  .split_multiple_response = F,
+  .pivot_cols_to_row = F,
+  .pivot_cols_to_row_vs = NULL
 ) {
+
+  if(nrow(.data) == 0) return(NULL)
 
   df_all <- list()
 
   y_cols <- sapply(substitute(list(...))[-1], deparse)
   agg_area_length <- .agg_area_length[.agg_area_level]
+  is_logical_cols <- FALSE
+  retain_header <- FALSE
+
+  x_attr <- attributes(.data[[.x_cols[1]]])
+
+  if(.split_multiple_response & length(.x_cols) == 1) {
+
+    n_row <- .data |>
+      dplyr::filter(!is.na(!!as.name(.x_cols[1]))) |>
+      nrow()
+
+    if(n_row == 0) { return(NULL) }
+
+    .data <- .data |>
+      dplyr::collect() |>
+      dplyr::mutate(!!as.name(.x_cols[1]) := toupper(stringr::str_trim(!!as.name(.x_cols[1])))) |>
+      dplyr::mutate(!!as.name(.x_cols[1]) := strsplit(!!as.name(.x_cols[1]), split = '')) |>
+      dplyr::mutate(
+        !!as.name(.x_cols[1]) := purrr::map(!!as.name(.x_cols[1]), \(x) {
+          x |>
+            dplyr::as_tibble() |>
+            dplyr::mutate(VALUE__ = 1L) |>
+            dplyr::full_join(
+              x_attr$valueset |>
+                dplyr::select(value),
+              by = 'value',
+            ) |>
+            dplyr::mutate(VALUE__ = dplyr::if_else(is.na(VALUE__), 2L, VALUE__)) |>
+            dplyr::rename(!!as.name(.x_cols[1]) := value)
+        })
+      ) |>
+      tidyr::unnest(!!as.name(.x_cols[1]), keep_empty = T) |>
+      dplyr::filter(!is.na(!!as.name(.x_cols[1])), grepl('^[A-Z]$', !!as.name(.x_cols[1])))
+
+    if(nrow(.data) == 0) { return(NULL) }
+
+    if(!is.null(x_attr)) {
+      attr(.data[[.x_cols[1]]], 'label') <- x_attr$label
+      attr(.data[[.x_cols[1]]], 'valueset') <- x_attr$valueset
+    }
+
+    if(length(y_cols) == 0) {
+
+      y_cols <- 'VALUE__'
+      attr(.data[[y_cols]], 'valueset') <- data.frame(
+        value = c(1L, 2L),
+        label = c("Yes", "No")
+      )
+      retain_header <- TRUE
+    } else {
+      .data <- .data |>
+        dplyr::filter(VALUE__ == 1L)
+    }
+  }
+
+  if(.pivot_cols_to_row) {
+
+    .data <- .data |>
+      dplyr::collect() |>
+      tidyr::pivot_longer(
+        dplyr::any_of(.x_cols),
+        names_to = 'NAME__',
+        values_to = 'VALUE__'
+      )
+
+    is_logical_cols <- typeof(.data$VALUE__) == 'logical'
+
+    if(!is.null(.pivot_cols_to_row_vs)) {
+
+      vs <- .pivot_cols_to_row_vs |>
+        dplyr::filter(value %in% .x_cols) |>
+        dplyr::select(
+          COL__ = name,
+          NAME__ = value,
+          LABEL__ = label
+        )
+
+      .x_cols <- vs$COL__[1]
+
+      .data <- .data |>
+        dplyr::left_join(vs, by = 'NAME__', multiple = 'first') |>
+        dplyr::select(-dplyr::any_of(c('COL__', 'NAME__'))) |>
+        dplyr::rename(!!as.name(.x_cols) := LABEL__) |>
+        dplyr::select(!!as.name(.x_cols), dplyr::everything())
+
+    } else {
+      .data <- .data |> dplyr::rename(x = NAME__)
+      .x_cols <- 'x'
+    }
+
+    y_cols <- 'VALUE__'
+
+    if(!is.null(x_attr)) {
+      attr(.data$VALUE__, 'valueset') <- x_attr$valueset
+    }
+
+  }
 
   if(.switch_col & length(y_cols) > 0) { x_col <- y_cols[1] }
 
@@ -42,7 +148,7 @@ generate_tab_by_level <- function(
       x_col <- .x_cols[i]
     }
 
-    if(length(y_cols) > 0) {
+    if(length(y_cols) > 0 & !is_logical_cols) {
       meta <- gtab_get_meta(.data, !!as.name(x_col), dplyr::any_of(y_cols))
     } else {
       meta <- gtab_get_meta(.data, !!as.name(x_col))
@@ -66,6 +172,7 @@ generate_tab_by_level <- function(
           level = 0L
         ) |>
         gtab_add_factor(meta)
+
 
     } else {
 
@@ -100,19 +207,217 @@ generate_tab_by_level <- function(
           )
       }
 
-      df <- dplyr::bind_rows(df_list) |>
-        gtab_add_factor(meta)
+      df <- dplyr::bind_rows(df_list)
+
+      if(.pivot_cols_to_row & is_logical_cols) {
+
+        df <- df |>
+          dplyr::select(-dplyr::contains(c('FALSE', 'percent'))) |>
+          dplyr::select(1:4, frequency = 5) |>
+          dplyr::mutate(
+            percent = (frequency / total) * 100
+          ) |>
+          dplyr::select(-total)
+
+        attr(df$frequency, 'label') <- 'Frequency'
+        attr(df$percent, 'label') <- 'Percent'
+
+      }
+
+      df <- df |>  gtab_add_factor(meta)
+      header <- gtab_create_header(df, meta, y_cols)
+
+      if(.split_multiple_response & length(.x_cols) == 1) {
+
+        df <- df |>
+          dplyr::select(-dplyr::any_of('total')) |>
+          dplyr::filter(!!as.name(.x_cols[1]) != 'Total')
+
+        header <- header |>
+          dplyr::filter(field != 'total')
+      }
+
+      if(.pivot_cols_to_row) {
+        df <- df |>
+          dplyr::filter(!!as.name(.x_cols[1]) != 'Total')
+      }
+
     }
 
     df_all[[.x_cols[i]]] <- list(
       df = df,
       meta = meta,
-      header = gtab_create_header(df, meta, y_cols),
-      attr = list(agg_area_level = .agg_area_level)
+      header = header,
+      attr = list(
+        agg_area_level = .agg_area_level,
+        is_logical_cols = is_logical_cols,
+        retain_header = retain_header
+      )
     )
   }
 
   return(df_all)
+
+}
+
+
+#' Title
+#'
+#' @param .data
+#' @param .x_cols
+#' @param .y_cols
+#' @param .agg_var
+#' @param .agg_area_level
+#' @param .agg_area_length
+#' @param .pivot_cols_to_row_vs
+#'
+#' @return
+#' @export
+#'
+#' @examples
+#'
+
+generate_tab <- function(
+  .data,
+  .x_cols,
+  .y_cols,
+  .agg_var = 'barangay_geo',
+  .agg_area_level = NULL,
+  .agg_area_length = c(2, 5, 7, 10),
+  .pivot_cols_to_row_vs = NULL
+) {
+
+  df_list <- list()
+  agg_area_length <- .agg_area_length[.agg_area_level]
+
+  .data <- dplyr::collect(.data)
+  y_attr <- attributes(.data[[.y_cols[1]]])$valueset
+
+  for(j in seq_along(agg_area_length)) {
+
+    df_list[[as.character(j)]] <- .data |>
+      dplyr::collect() |>
+      dplyr::mutate(
+        area_code = stringr::str_sub(!!as.name(.agg_var), 1, agg_area_length[j]) |>
+          stringr::str_pad(
+            width = .agg_area_length[length(.agg_area_length)],
+            pad = '0',
+            side = 'right'
+          )
+      ) |>
+      tidyr::pivot_longer(dplyr::any_of(.x_cols), names_to = 'NAME__') |>
+      dplyr::group_by(area_code, NAME__, value, !!as.name(.y_cols[1])) |>
+      dplyr::count() |>
+      dplyr::group_by(area_code, NAME__) |>
+      tidyr::nest() |>
+      dplyr::mutate(
+        data = purrr::map(data, \(x) {
+          x |>
+            tidyr::pivot_wider(
+              names_from = value,
+              values_from = n
+            ) |>
+            janitor::adorn_totals(
+              where = c('col', 'row'),
+              name = c('Total', 'total')
+            ) |>
+            dplyr::transmute(
+              !!as.name(.y_cols[1]),
+              total,
+              frequency = `TRUE`,
+              percent = (`TRUE` / total ) * 100
+            ) |>
+            tidyr::pivot_wider(
+              names_from = !!as.name(.y_cols[1]),
+              values_from = c(total, frequency, percent),
+              names_sep = '__'
+            )
+        })
+      ) |>
+      unnest(data) |>
+      ungroup() |>
+      gtab_set_pivot_label(.x_cols, .pivot_cols_to_row_vs) |>
+      dplyr::mutate(
+        level = as.integer(.agg_area_level[j]),
+        .before = 1
+      )
+  }
+
+  df <- df_list |>
+    dplyr::bind_rows() |>
+    dplyr::select(
+      level,
+      area_code,
+      dplyr::everything()
+    )
+
+  get_header <- function(.df, .y_attr) {
+
+    h <- data.frame(
+      order = 1:ncol(.df),
+      hidden = c(TRUE, TRUE, rep(FALSE, (ncol(.df) - 2))),
+      field = names(.df),
+      label = names(.df)
+    ) |>
+      dplyr::mutate(
+        label = stringr::str_remove_all(label, '^(frequency|total|percent)__') |>
+          stringr::str_replace_all('_', ' ') |>
+          stringr::str_to_sentence()
+      )
+
+    if(!is.null(.y_attr)) {
+      h <- h |>
+        dplyr::left_join(
+          .y_attr |>
+            dplyr::transmute(
+              name = label,
+              label = as.character(value)
+            ),
+          by = 'label'
+        ) |>
+        dplyr::mutate(
+          label = dplyr::if_else(
+            !is.na(name),
+            name,
+            label
+          )
+        ) |>
+        dplyr::select(-name)
+    }
+
+    h |>
+      dplyr::mutate(
+        label = dplyr::if_else(
+          grepl('^percent__', field) & !grepl('^percent__', label),
+          paste0(label, ' (%)'),
+          label
+        ),
+        label = dplyr::if_else(
+          grepl('^total__', field) & !grepl('^total__', label),
+          paste0(label, ' (overall)'),
+          label
+        ),
+        hidden = dplyr::if_else(
+          grepl('\\(overall\\)', label),
+          TRUE,
+          hidden
+        )
+      )
+  }
+
+  return(
+    list(
+      DEFAULT = list(
+        df = df,
+        header = get_header(df, y_attr),
+        meta = list(),
+        attr = list(
+          agg_area_level = .agg_area_level,
+          retain_header = TRUE
+        )
+      )
+    )
+  )
 
 }
 
@@ -162,11 +467,11 @@ gtab_frequency <- function(.data, .x, ..., .y = list(), .total_by_col = FALSE) {
 
 }
 
-gtab_get_meta <- function(.data, .x, ...) {
+gtab_get_meta <- function(.data, ...) {
 
   attr_df <- .data |>
     head(1) |>
-    dplyr::select({{.x}}, ..., dplyr::any_of(dplyr::group_vars(.data))) |>
+    dplyr::select(..., dplyr::any_of(dplyr::group_vars(.data))) |>
     dplyr::collect()
 
   setNames(
@@ -286,7 +591,8 @@ gtab_add_factor <- function(.data, .meta, .retain_original = T, .suffix = '_code
             value = 'Total',
             label = 'Total'
           ),
-        by = 'value'
+        by = 'value',
+        multiple = 'first'
       ) |>
       dplyr::rename(
         !!as.name(df_name_original) := value,
@@ -334,6 +640,31 @@ gtab_add_factor <- function(.data, .meta, .retain_original = T, .suffix = '_code
       level,
       dplyr::everything()
     )
+}
+
+gtab_set_pivot_label <- function(.data, .x_cols, .pivot_cols_to_row_vs = NULL) {
+
+  if(!is.null(.pivot_cols_to_row_vs)) {
+
+    vs <- .pivot_cols_to_row_vs |>
+      dplyr::filter(value %in% .x_cols) |>
+      dplyr::select(
+        COL__ = name,
+        NAME__ = value,
+        LABEL__ = label
+      )
+
+    .x_cols <- vs$COL__[1]
+
+    .data <- .data |>
+      dplyr::left_join(vs, by = 'NAME__', multiple = 'first') |>
+      dplyr::select(-dplyr::any_of(c('COL__', 'NAME__'))) |>
+      dplyr::rename(!!as.name(.x_cols) := LABEL__) |>
+      dplyr::select(!!as.name(.x_cols), dplyr::everything())
+  }
+
+  return(.data)
+
 }
 
 gtab_add_total <- function(.data, .col, .total_by_col = F) {
@@ -415,7 +746,4 @@ gtab_arrange <- function(.data, .x) {
     dplyr::arrange(as.integer(v__), !!as.name(.x)) |>
     dplyr::select(-v__)
 }
-
-
-
 
