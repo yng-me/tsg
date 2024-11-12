@@ -322,7 +322,7 @@ generate_tab <- function(
       tidyr::nest() |>
       dplyr::mutate(
         data = purrr::map(data, \(x) {
-          x |>
+          y <- x |>
             tidyr::pivot_wider(
               names_from = value,
               values_from = n
@@ -330,7 +330,14 @@ generate_tab <- function(
             janitor::adorn_totals(
               where = c('col', 'row'),
               name = c('Total', 'total')
-            ) |>
+            )
+
+          if(!('TRUE' %in% names(y))) {
+            y <- y |>
+              dplyr::mutate(`TRUE` = 0)
+          }
+
+          y <- y |>
             dplyr::transmute(
               !!as.name(.y_cols[1]),
               total,
@@ -344,8 +351,8 @@ generate_tab <- function(
             )
         })
       ) |>
-      unnest(data) |>
-      ungroup() |>
+      tidyr::unnest(data) |>
+      dplyr::ungroup() |>
       gtab_set_pivot_label(.x_cols, .pivot_cols_to_row_vs) |>
       dplyr::mutate(
         level = as.integer(.agg_area_level[j]),

@@ -14,6 +14,7 @@ generate_tab_by_level(
   .total_by_col = F,
   .switch_col = F,
   .split_multiple_response = F,
+  .split_multiple_response_width = NULL,
   .pivot_cols_to_row = F,
   .pivot_cols_to_row_vs = NULL
 )
