@@ -28,6 +28,7 @@ generate_tab_by_level <- function(
   .total_by_col = F,
   .switch_col = F,
   .split_multiple_response = F,
+  .split_multiple_response_width = NULL,
   .pivot_cols_to_row = F,
   .pivot_cols_to_row_vs = NULL
 ) {
@@ -51,10 +52,15 @@ generate_tab_by_level <- function(
 
     if(n_row == 0) { return(NULL) }
 
+    regex <- '^[A-Z]$'
+    if(!is.null(.split_multiple_response_width)) {
+      regex <- paste0('^[0-9A-Z]{', .split_multiple_response_width, '}$')
+    }
+
     .data <- .data |>
       dplyr::collect() |>
       dplyr::mutate(!!as.name(.x_cols[1]) := toupper(stringr::str_trim(!!as.name(.x_cols[1])))) |>
-      dplyr::mutate(!!as.name(.x_cols[1]) := strsplit(!!as.name(.x_cols[1]), split = '')) |>
+      dplyr::mutate(!!as.name(.x_cols[1]) := str_dice(!!as.name(.x_cols[1]), .split_multiple_response_width)) |>
       dplyr::mutate(
         !!as.name(.x_cols[1]) := purrr::map(!!as.name(.x_cols[1]), \(x) {
           x |>
@@ -62,7 +68,8 @@ generate_tab_by_level <- function(
             dplyr::mutate(VALUE__ = 1L) |>
             dplyr::full_join(
               x_attr$valueset |>
-                dplyr::select(value),
+                dplyr::select(value) |>
+                dplyr::mutate(value = as.character(value)),
               by = 'value',
             ) |>
             dplyr::mutate(VALUE__ = dplyr::if_else(is.na(VALUE__), 2L, VALUE__)) |>
@@ -70,7 +77,8 @@ generate_tab_by_level <- function(
         })
       ) |>
       tidyr::unnest(!!as.name(.x_cols[1]), keep_empty = T) |>
-      dplyr::filter(!is.na(!!as.name(.x_cols[1])), grepl('^[A-Z]$', !!as.name(.x_cols[1])))
+      dplyr::filter(!is.na(!!as.name(.x_cols[1])), grepl(regex, !!as.name(.x_cols[1])))
+
 
     if(nrow(.data) == 0) { return(NULL) }
 
