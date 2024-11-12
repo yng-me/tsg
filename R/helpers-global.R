@@ -117,12 +117,11 @@ select_only <- function(.data, x_group = NULL, y_group = NULL, ...) {
   )
 }
 
-
 str_dice <- function(s, width = NULL) {
 
   if(!is.null(width)) {
     L <- nchar(s)
-    stringr::str_sub(s, seq(1L, L - width + 1, width), seq(width, L, width))
+    substring(s, seq(1L, L - width + 1, width), seq(width, L, width))
   } else {
     strsplit(s, split = '')
   }

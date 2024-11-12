@@ -59,18 +59,20 @@ generate_tab_by_level <- function(
 
     .data <- .data |>
       dplyr::collect() |>
-      dplyr::mutate(!!as.name(.x_cols[1]) := toupper(stringr::str_trim(!!as.name(.x_cols[1])))) |>
-      dplyr::mutate(!!as.name(.x_cols[1]) := str_dice(!!as.name(.x_cols[1]), .split_multiple_response_width)) |>
       dplyr::mutate(
+        !!as.name(.x_cols[1]) := toupper(stringr::str_trim(!!as.name(.x_cols[1]))),
         !!as.name(.x_cols[1]) := purrr::map(!!as.name(.x_cols[1]), \(x) {
           x |>
+            str_dice(.split_multiple_response_width) |>
             dplyr::as_tibble() |>
             dplyr::mutate(VALUE__ = 1L) |>
+            dplyr::mutate(value = as.character(value)) |>
             dplyr::full_join(
               x_attr$valueset |>
-                dplyr::select(value) |>
+                dplyr::select(value, label) |>
                 dplyr::mutate(value = as.character(value)),
               by = 'value',
+              multiple = 'first'
             ) |>
             dplyr::mutate(VALUE__ = dplyr::if_else(is.na(VALUE__), 2L, VALUE__)) |>
             dplyr::rename(!!as.name(.x_cols[1]) := value)
