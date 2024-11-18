@@ -121,9 +121,9 @@ str_dice <- function(s, width = NULL) {
 
   if(!is.null(width)) {
     L <- nchar(s)
-    substring(s, seq(1L, L - width + 1, width), seq(width, L, width))
+    substring(s, seq(1L, L - width + 1, width), seq(width, L, width))[[1]]
   } else {
-    strsplit(s, split = '')
+    strsplit(s, split = '')[[1]]
   }
 }
 

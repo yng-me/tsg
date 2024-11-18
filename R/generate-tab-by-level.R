@@ -42,7 +42,16 @@ generate_tab_by_level <- function(
   is_logical_cols <- FALSE
   retain_header <- FALSE
 
-  x_attr <- attributes(.data[[.x_cols[1]]])
+  if('arrow_dplyr_query' %in% class(.data) | 'ArrowObject' %in% class(.data)) {
+    data_1 <- .data |>
+      head(1) |>
+      dplyr::select(!!as.name(.x_cols[1])) |>
+      dplyr::collect()
+    x_attr <- attributes(data_1[[.x_cols[1]]])
+
+  } else {
+    x_attr <- attributes(.data[[.x_cols[1]]])
+  }
 
   if(.split_multiple_response & length(.x_cols) == 1) {
 
@@ -64,15 +73,14 @@ generate_tab_by_level <- function(
         !!as.name(.x_cols[1]) := purrr::map(!!as.name(.x_cols[1]), \(x) {
           x |>
             str_dice(.split_multiple_response_width) |>
-            dplyr::as_tibble() |>
+            tibble::as_tibble() |>
             dplyr::mutate(VALUE__ = 1L) |>
             dplyr::mutate(value = as.character(value)) |>
             dplyr::full_join(
               x_attr$valueset |>
                 dplyr::select(value, label) |>
                 dplyr::mutate(value = as.character(value)),
-              by = 'value',
-              multiple = 'first'
+              by = 'value'
             ) |>
             dplyr::mutate(VALUE__ = dplyr::if_else(is.na(VALUE__), 2L, VALUE__)) |>
             dplyr::rename(!!as.name(.x_cols[1]) := value)
