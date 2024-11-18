@@ -1,7 +1,7 @@
 Package: tsgx
 Type: Package
 Title: Table Summary Generator
-Version: 0.1.6
+Version: 0.1.7
 Authors@R: c(
     person(
       "Bhas", 
