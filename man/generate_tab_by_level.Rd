@@ -16,7 +16,8 @@ generate_tab_by_level(
   .split_multiple_response = F,
   .split_multiple_response_width = NULL,
   .pivot_cols_to_row = F,
-  .pivot_cols_to_row_vs = NULL
+  .pivot_cols_to_row_vs = NULL,
+  .flatten = FALSE
 )
 }
 \arguments{

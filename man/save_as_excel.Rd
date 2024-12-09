@@ -13,6 +13,7 @@ save_as_excel(
   export_settings = NULL,
   include_table_list = TRUE,
   tab_variable_name = "tab_name",
+  options = list(),
   ...
 )
 }
@@ -32,6 +33,8 @@ save_as_excel(
 \item{include_table_list}{(IGNORED) Whether to include a summary of list of tables generated}
 
 \item{tab_variable_name}{Column name to be used as tab/sheet name.}
+
+\item{options}{}
 
 \item{...}{Additional arguments}
 }

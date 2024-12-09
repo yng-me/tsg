@@ -9,6 +9,7 @@
 #' @param include_table_list (IGNORED) Whether to include a summary of list of tables generated
 #' @param tab_variable_name Column name to be used as tab/sheet name.
 #' @param ... Additional arguments
+#' @param options
 #'
 #' @return Workbook
 #' @export
@@ -24,6 +25,8 @@ save_as_excel <- function(
   export_settings = NULL,
   include_table_list = TRUE,
   tab_variable_name = 'tab_name',
+  options = list(),
+  table_title = NULL,
   ...
 ) {
 
@@ -90,6 +93,35 @@ save_as_excel <- function(
         title = title,
         ...
       )
+
+      openxlsx::writeData(
+        wb,
+        x = table_title,
+        sheet = 'Sheet 1',
+        startRow = 2,
+        startCol = 2
+      )
+    }
+
+    if(length(options) > 0) {
+
+      if(!is.null(options$width)) {
+        openxlsx::setColWidths(
+          wb,
+          sheet = 'Sheet 1',
+          cols = options$width$cols,
+          widths = options$width$values
+        )
+      }
+
+      if(!is.null(options$height)) {
+        openxlsx::setRowHeights(
+          wb,
+          sheet = 'Sheet 1',
+          rows = options$height$rows,
+          heights = options$height$values
+        )
+      }
 
     }
 
