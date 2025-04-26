@@ -36,25 +36,25 @@
 #' write_as_excel(starwars_species_sex, wb = wb, sheet = "Table 1")
 
 write_as_excel <- function(
-  .data,
-  wb = NULL,
-  sheet = set_sheet_name(wb),
-  append_to_existing_sheet = F,
-  title = NULL,
-  subtitle = NULL,
-  description = NULL,
-  footnote = NULL,
-  source_note = NULL,
-  start_col = 2,
-  start_row = 2,
-  options = get_config('facade'),
-  names_separator = '>',
-  save_as_excel = FALSE,
-  cols_with_decimal_format = NULL,
-  filename = NULL,
-  format_precision = 2,
-  overwrite = TRUE,
-  ...
+    .data,
+    wb = NULL,
+    sheet = set_sheet_name(wb),
+    append_to_existing_sheet = F,
+    title = NULL,
+    subtitle = NULL,
+    description = NULL,
+    footnote = NULL,
+    source_note = NULL,
+    start_col = 2,
+    start_row = 2,
+    options = get_config('facade'),
+    names_separator = '>',
+    save_as_excel = FALSE,
+    cols_with_decimal_format = NULL,
+    filename = NULL,
+    format_precision = 2,
+    overwrite = TRUE,
+    ...
 ) {
 
   depth <- NULL
@@ -410,18 +410,18 @@ write_as_excel <- function(
       startRow = start_row_note
     )
 
-    # openxlsx::addStyle(
-    #   wb = wb,
-    #   sheet = sheet,
-    #   style = openxlsx::createStyle(
-    #     fontSize = 10,
-    #     textDecoration = c('italic', 'bold')
-    #   ),
-    #   rows = start_row_note,
-    #   cols = start_col,
-    #   gridExpand =  T,
-    #   stack =  T
-    # )
+    openxlsx::addStyle(
+      wb = wb,
+      sheet = sheet,
+      style = openxlsx::createStyle(
+        fontSize = 9,
+        textDecoration = c('italic', 'bold')
+      ),
+      rows = start_row_note,
+      cols = start_col,
+      gridExpand =  T,
+      stack =  T
+    )
 
   }
 

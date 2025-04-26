@@ -22,20 +22,20 @@
 #'
 
 generate_multiple_response <- function(
-  .data,
-  x,
-  ...,
-  value_to_count = 1,
-  include_frequency = TRUE,
-  include_proportion = TRUE,
-  convert_to_percent = TRUE,
-  format_precision = 2,
-  label_stub = NULL,
-  label_total = NULL,
-  names_separator = '>',
-  recode = TRUE,
-  recode_variable_position = 5,
-  clean_name = TRUE
+    .data,
+    x,
+    ...,
+    value_to_count = 1,
+    include_frequency = TRUE,
+    include_proportion = TRUE,
+    convert_to_percent = TRUE,
+    format_precision = 2,
+    label_stub = NULL,
+    label_total = NULL,
+    names_separator = '__',
+    recode = TRUE,
+    recode_variable_position = 5,
+    clean_name = TRUE
 ) {
 
   # Check the if input data is valid

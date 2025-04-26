@@ -29,25 +29,25 @@
 #'
 
 generate_crosstab <- function(
-  .data,
-  x,
-  ...,
-  total_by_col = FALSE,
-  include_frequency = TRUE,
-  include_proportion = TRUE,
-  include_column_total = TRUE,
-  include_row_total = TRUE,
-  include_subtotal = FALSE,
-  include_zero_value = FALSE,
-  convert_to_percent = TRUE,
-  decimal_precision = NULL,
-  label_stub = NULL,
-  label_total = 'Total',
-  label_subtotal = NULL,
-  names_separator = '__',
-  x_as_stub = FALSE,
-  remove_cols_from_group = NULL,
-  weights = NULL
+    .data,
+    x,
+    ...,
+    total_by_col = FALSE,
+    include_frequency = TRUE,
+    include_proportion = TRUE,
+    include_column_total = TRUE,
+    include_row_total = TRUE,
+    include_subtotal = FALSE,
+    include_zero_value = FALSE,
+    convert_to_percent = TRUE,
+    decimal_precision = NULL,
+    label_stub = NULL,
+    label_total = 'Total',
+    label_subtotal = NULL,
+    names_separator = '__',
+    x_as_stub = FALSE,
+    remove_cols_from_group = NULL,
+    weights = NULL
 ) {
 
   check_input_data_validity(.data)
@@ -58,6 +58,7 @@ generate_crosstab <- function(
   grouping_col_names <- .data |> dplyr::group_vars()
 
   df_selected <- .data |>
+    dplyr::mutate({{x}} := as.character({{x}})) |>
     dplyr::select(any_of(grouping_col_names), {{x}}, ...)
 
   expr_cols <- rlang::expr(c(...))

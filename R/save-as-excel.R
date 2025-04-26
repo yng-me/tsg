@@ -17,17 +17,17 @@
 #' @examples
 
 save_as_excel <- function(
-  .list,
-  filename = NULL,
-  formatted = TRUE,
-  overwrite = TRUE,
-  title = NULL,
-  export_settings = NULL,
-  include_table_list = TRUE,
-  tab_variable_name = 'tab_name',
-  options = list(),
-  table_title = NULL,
-  ...
+    .list,
+    filename = NULL,
+    formatted = TRUE,
+    overwrite = TRUE,
+    title = NULL,
+    export_settings = NULL,
+    include_table_list = TRUE,
+    tab_variable_name = 'tab_name',
+    options = list(),
+    table_title = NULL,
+    ...
 ) {
 
   wb <- openxlsx::createWorkbook()
@@ -121,6 +121,72 @@ save_as_excel <- function(
           rows = options$height$rows,
           heights = options$height$values
         )
+      }
+
+      if(!is.null(options$merge)) {
+
+        openxlsx::mergeCells(
+          wb,
+          sheet = 'Sheet 1',
+          rows = options$merge$rows,
+          cols = options$merge$cols
+        )
+      }
+
+      if(!is.null(options$formats)) {
+
+        for(i in seq_along(options$formats)) {
+
+          format <- options$formats[[i]]
+
+          openxlsx::addStyle(
+            wb,
+            sheet = 'Sheet 1',
+            style = openxlsx::createStyle(
+              numFmt = format$type
+            ),
+            stack = T,
+            cols = format$cols,
+            rows = format$rows,
+            gridExpand = T
+          )
+        }
+
+      }
+
+      if(!is.null(options$styles)) {
+
+        for(i in seq_along(options$styles)) {
+
+          style_i <- options$styles[[i]]
+          style_i_format <- style_i$format
+
+          print(style_i_format)
+
+          openxlsx::addStyle(
+            wb,
+            sheet = 'Sheet 1',
+            style = openxlsx::createStyle(
+              fontName = style_i_format$fontName,
+              fontSize = style_i_format$fontSize,
+              fontColour = style_i_format$fontColour,
+              border = style_i_format$border,
+              bgFill = style_i_format$bgFill,
+              fgFill = style_i_format$fgFill,
+              halign = style_i_format$halign,
+              valign = style_i_format$valign,
+              textDecoration = style_i_format$textDecoration,
+              textRotation = style_i_format$textRotation,
+              indent = style_i_format$indent,
+              locked = style_i_format$locked,
+              hidden = style_i_format$hidden
+            ),
+            stack = T,
+            cols = style_i$cols,
+            rows = style_i$rows,
+            gridExpand = T
+          )
+        }
       }
 
     }
