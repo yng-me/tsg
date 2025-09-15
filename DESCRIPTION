@@ -1,0 +1,35 @@
+Package: tsg
+Type: Package
+Title: What the Package Does (Title Case)
+Version: 0.1.0
+Author: Bhas Abdulsamad [aut, cre, cph] (<https://orcid.org/0009-0002-5891-8124>)
+Maintainer: Bhas Abdulsamad <aeabdulsamad@gmail.com>
+Description: More about what it does (maybe more than one line)
+    Use four spaces when indenting paragraphs within the Description.
+License: MIT + file LICENSE
+Encoding: UTF-8
+LazyData: true
+Imports:
+  haven,
+  openxlsx,
+  fs,
+  glue,
+  forcats,
+  purrr,
+  tidyr,
+  dplyr (>= 1.1.0),
+  stringr (>= 1.4.0),
+  rlang (>= 1.0.2)
+Suggests: 
+  testthat (>= 3.0.0),
+  utils (>= 4.0.0),
+  cli,
+  devtools,
+  knitr,
+  rmarkdown,
+  mockery,
+  tibble,
+  withr,
+  gt (>= 0.10.0)
+Config/testthat/edition: 3
+RoxygenNote: 7.2.3
