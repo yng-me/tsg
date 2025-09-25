@@ -2,5 +2,6 @@
 
 export(add_column_total)
 export(add_missing_label)
+export(generate_crosstab)
 export(generate_frequency)
 export(write_xlsx)

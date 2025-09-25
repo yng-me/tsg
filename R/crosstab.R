@@ -18,8 +18,9 @@
 #' @param label_stub stubhead label (first column).
 #' @param label_total Label for the overall total.
 #' @param label_subtotal Label for the subtotal.
-#' @param weights Weights to be applied in the aggregation.
 #' @param names_separator Column separator that defines the table hierarchy.
+#' @param label_na Logical. If \code{TRUE}, includes missing values in the frequency table.
+#' @param metadata A named list with optional metadata to attach as attributes: \code{title}, \code{subtitle}, \code{source_note}, and \code{footnotes}.
 #'
 #' @return Returns a cross-table of type \code{tibble}
 #'
@@ -46,7 +47,6 @@ generate_crosstab <- function(
   label_na = "Not reported",
   label_subtotal = NULL,
   names_separator = '_',
-  remove_cols_from_group = NULL,
   metadata = list(
     title = NULL,
     subtitle = NULL,
