@@ -60,6 +60,8 @@ generate_frequency <- function(
   )
 ) {
 
+  is_valid_input_data(data)
+
   n_args <- rlang::dots_n(...)
   df <- list()
 
@@ -149,9 +151,15 @@ generate_frequency <- function(
 
         df_j <- dplyr::filter(df_i, glue::glue(glue_arg) == list_group_j)
 
-        if(add_percent) { df_j[[multiplier_col]] <- multiplier * (df_j$frequency / sum(df_j$frequency, na.rm = T)) }
+        if(add_percent) {
+          df_j[[multiplier_col]] <- multiplier * (df_j$frequency / sum(df_j$frequency, na.rm = T))
+        }
+
         if(add_cumulative) { df_j$cumulative <- cumsum(df_j$frequency) }
-        if(add_cumulative_percent & add_percent) { df_j[[cumulative_col]] <- cumsum(df_j[[multiplier_col]]) }
+        if(add_cumulative_percent & add_percent) {
+          df_j[[cumulative_col]] <- cumsum(df_j[[multiplier_col]])
+        }
+
         if(add_total) {
           df_j <- add_column_total(
             data = df_j,
@@ -167,9 +175,17 @@ generate_frequency <- function(
 
         attr(df_j$frequency, "label") <- "Frequency"
 
-        if(multiplier_col %in% names(df_j)) { attr(df_j[[multiplier_col]], "label") <- multiplier_label }
-        if("cumulative" %in% names(df_j)) { attr(df_j$cumulative, "label") <- "Cumulative frequency" }
-        if(cumulative_col %in% names(df_j)) { attr(df_j[[cumulative_col]], "label") <- cumulative_label }
+        if(multiplier_col %in% names(df_j)) {
+          attr(df_j[[multiplier_col]], "label") <- multiplier_label
+        }
+
+        if("cumulative" %in% names(df_j)) {
+          attr(df_j$cumulative, "label") <- "Cumulative frequency"
+        }
+
+        if(cumulative_col %in% names(df_j)) {
+          attr(df_j[[cumulative_col]], "label") <- cumulative_label
+        }
 
         attr_names <- names(group_attrs)
 

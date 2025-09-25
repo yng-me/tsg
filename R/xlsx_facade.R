@@ -75,8 +75,35 @@ xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, precision = 
   return(wb)
 }
 
-xlsx_corner_borders <- function() {
+xlsx_corner_borders <- function(
+  wb,
+  sheet_name,
+  row_start,
+  row_end,
+  col_start,
+  col_end,
+  facade
+) {
 
+  corners <- c("top", "bottom", "left", "right")
+
+  corner_rows <- list(row_start, row_end, row_start:row_end, row_start:row_end)
+  corner_cols <- list(col_start:col_end, col_start:col_end, col_start, col_end)
+
+  for(i in 1:4) {
+
+    facade$styles$border_outer$border <- corners[i]
+
+    xlsx_eval_style(
+      wb = wb,
+      sheet = sheet_name,
+      style = facade$styles$border_outer,
+      rows = corner_rows[[i]],
+      cols = corner_cols[[i]]
+    )
+  }
+
+  return(wb)
 }
 
 
