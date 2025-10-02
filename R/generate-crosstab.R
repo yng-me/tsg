@@ -99,20 +99,24 @@ generate_crosstab <- function(
   p_label <- dplyr::if_else(convert_to_percent, 'Percent', 'Proportion')
   p_multiplier <- dplyr::if_else(convert_to_percent, 100, 1)
 
-  add_total <- function(.df) {
+  add_total <- function(.df, .include = TRUE) {
 
-    df <- .df |>
-      dplyr::select({{x}}, dplyr::everything()) |>
-      janitor::adorn_totals(c('row', 'col')) |>
-      dplyr::mutate_at(
-        dplyr::vars(dplyr::matches('^Frequency')),
-        list(PV_TOTAL_ALL_INTERNAL = ~ p_multiplier * (. / Total))
-      ) |>
-      dplyr::select(
-        {{x}},
-        Total,
-        dplyr::everything()
-      )
+    if(.include) {
+      df <- .df |>
+        dplyr::select({{x}}, dplyr::everything()) |>
+        janitor::adorn_totals(c('row', 'col')) |>
+        dplyr::mutate_at(
+          dplyr::vars(dplyr::matches('^Frequency')),
+          list(PV_TOTAL_ALL_INTERNAL = ~ p_multiplier * (. / Total))
+        ) |>
+        dplyr::select(
+          {{x}},
+          Total,
+          dplyr::everything()
+        )
+    } else {
+      df <- .df
+    }
 
     if(total_by_col) {
       df <- .df |>
@@ -221,16 +225,33 @@ generate_crosstab <- function(
     dplyr::ungroup() |>
     dplyr::collect()
 
-  if(nrow(cross_tab) == 1) {
+  yy <- dplyr::select(cross_tab, ...)
 
-    xx <- names(dplyr::select(cross_tab, ...))
+  if(nrow(cross_tab) == 1 | length(unique(yy[[1]])) == 1) {
+
+    xx <- names(yy)
     xx_col <- cross_tab[[xx[1]]][1]
     xx_col_f <- paste0("Frequency", names_separator, xx_col)
     xx_col_p <- paste0("Percent", names_separator, xx_col)
 
-    cross_tab[[xx_col_f]] <- cross_tab$Frequency
+    is_zero <- cross_tab$Frequency[1] == 0
 
-    if(cross_tab$Frequency[1] == 0) {
+    if(is_zero) {
+      cross_tab[[xx_col_f]] <- cross_tab$Frequency
+      cross_tab[[xx_col_p]] <- 0
+    } else {
+      cross_tab$Total <- cross_tab$Frequency
+      cross_tab[[xx_col_f]] <- cross_tab$Frequency
+      cross_tab[[xx_col_p]] <- 100
+    }
+
+    cross_tab <- cross_tab |>
+      dplyr::select(-dplyr::any_of(xx[1])) |>
+      dplyr::select(-dplyr::any_of("Frequency")) |>
+      janitor::adorn_totals(where = "row") |>
+      add_total(.include = FALSE)
+
+    if(is_zero) {
       cross_tab[[xx_col_p]] <- 0
     } else {
       cross_tab[[xx_col_p]] <- 100
@@ -249,11 +270,12 @@ generate_crosstab <- function(
         names_prefix = paste0('Frequency', names_separator)
       ) |>
       dplyr::arrange(as.integer({{x}}), {{x}}) |>
-      add_total() |>
-      set_inclusion() |>
-      dplyr::tibble()
+      add_total()
   }
 
+  cross_tab <- cross_tab |>
+    set_inclusion() |>
+    dplyr::tibble()
 
 
   if(length(grouping_col_names) > 0 & !is.null(remove_cols_from_group)) {
