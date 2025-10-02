@@ -58,7 +58,6 @@ generate_crosstab <- function(
   grouping_col_names <- .data |> dplyr::group_vars()
 
   df_selected <- .data |>
-    dplyr::mutate({{x}} := as.character({{x}})) |>
     dplyr::select(any_of(grouping_col_names), {{x}}, ...)
 
   expr_cols <- rlang::expr(c(...))
@@ -141,7 +140,6 @@ generate_crosstab <- function(
           stringr::str_replace(., '^Frequency', p_label), '_PV_TOTAL_ALL_INTERNAL$'
         )
       )
-
   }
 
   add_subtotal <- function(.df) {
@@ -165,8 +163,10 @@ generate_crosstab <- function(
 
         .df <- .df |>
           dplyr::mutate(
-            !!as.name(paste0('Frequency__', s[j], '__', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Frequency__', s[j])))),
-            !!as.name(paste0('Percent__', s[j], '__', label_subtotal)) := rowSums(dplyr::select(., dplyr::matches(paste0('^Percent__', s[j]))))
+            !!as.name(paste0('Frequency__', s[j], '__', label_subtotal)) := rowSums(
+              dplyr::select(., dplyr::matches(paste0('^Frequency__', s[j])))),
+            !!as.name(paste0('Percent__', s[j], '__', label_subtotal)) := rowSums(
+              dplyr::select(., dplyr::matches(paste0('^Percent__', s[j]))))
           )
       }
     }
@@ -219,21 +219,41 @@ generate_crosstab <- function(
     dplyr::group_by({{x}}, ..., .add = T) |>
     dplyr::count(name = 'Frequency') |>
     dplyr::ungroup() |>
-    dplyr::collect() |>
-    tidyr::pivot_wider(
-      names_from = dplyr::all_of(names(cols_to_pivot)),
-      values_from = Frequency,
-      names_sep = names_separator,
-      names_sort = T,
-      values_fill = 0,
-      names_expand = include_zero_value,
-      names_prefix = paste0('Frequency', names_separator)
-    ) |>
-    dplyr::arrange(as.integer({{x}}), {{x}}) |>
-    add_total() |>
-    # add_subtotal() |>
-    set_inclusion() |>
-    dplyr::tibble()
+    dplyr::collect()
+
+  if(nrow(cross_tab) == 1) {
+
+    xx <- names(dplyr::select(cross_tab, ...))
+    xx_col <- cross_tab[[xx[1]]][1]
+    xx_col_f <- paste0("Frequency", names_separator, xx_col)
+    xx_col_p <- paste0("Percent", names_separator, xx_col)
+
+    cross_tab[[xx_col_f]] <- cross_tab$Frequency
+
+    if(cross_tab$Frequency[1] == 0) {
+      cross_tab[[xx_col_p]] <- 0
+    } else {
+      cross_tab[[xx_col_p]] <- 100
+    }
+
+  } else {
+
+    cross_tab <- cross_tab |>
+      tidyr::pivot_wider(
+        names_from = dplyr::all_of(names(cols_to_pivot)),
+        values_from = Frequency,
+        names_sep = names_separator,
+        names_sort = T,
+        values_fill = 0,
+        names_expand = include_zero_value,
+        names_prefix = paste0('Frequency', names_separator)
+      ) |>
+      dplyr::arrange(as.integer({{x}}), {{x}}) |>
+      add_total() |>
+      set_inclusion() |>
+      dplyr::tibble()
+  }
+
 
 
   if(length(grouping_col_names) > 0 & !is.null(remove_cols_from_group)) {
