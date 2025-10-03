@@ -42,13 +42,13 @@ generate_frequency <- function(
   add_percent = TRUE,
   add_cumulative = FALSE,
   add_cumulative_percent = FALSE,
+  as_proportion = FALSE,
   include_na = TRUE,
   recode_na = "auto",
-  calculate_per_group = TRUE,
-  as_proportion = FALSE,
   position_total = "bottom",
-  group_separator = " - ",
+  calculate_per_group = TRUE,
   group_as_list = FALSE,
+  group_separator = " - ",
   label_stub = NULL,
   label_na = "Not reported",
   label_total = "Total",
@@ -112,8 +112,8 @@ generate_frequency <- function(
     }
 
     df_i <- data |>
-      dplyr::rename(category := !!as.name(column_name)) |>
-      dplyr::group_by(category, .add = TRUE) |>
+      dplyr::rename(.category := !!as.name(column_name)) |>
+      dplyr::group_by(.category, .add = TRUE) |>
       dplyr::count(name = "frequency") |>
       dplyr::ungroup() |>
       dplyr::collect()
@@ -169,8 +169,8 @@ generate_frequency <- function(
           )
         }
 
-        if(is.null(attributes(df_j$category)$label)) {
-          attr(df_j$category, "label") <- column_name
+        if(is.null(attributes(df_j$.category)$label)) {
+          attr(df_j$.category, "label") <- column_name
         }
 
         attr(df_j$frequency, "label") <- "Frequency"
@@ -212,7 +212,12 @@ generate_frequency <- function(
 
         attr(df_j, "groups") <- groups
 
-        df_ij[[list_group_j]] <- df_j
+        if("category" %in% names(df_j)) {
+          colnames(df_j)[which(colnames(df_j) == "category")] <- "category_group"
+          message("WARNING: `category` is a reserved column name and has been renamed to `category_group`")
+        }
+
+        df_ij[[list_group_j]] <- dplyr::rename(df_j, category = .category)
 
       }
 
@@ -268,18 +273,18 @@ generate_frequency <- function(
       if(cumulative_col %in% names(df_i)) { attr(df_i[[cumulative_col]], "label") <- cumulative_label }
 
       if(!is.null(attributes(data[[column_name]])$label)) {
-        attr(df_i$category, "label") <- label
+        attr(df_i$.category, "label") <- label
       } else {
-        attr(df_i$category, "label") <- column_name
+        attr(df_i$.category, "label") <- column_name
       }
     }
 
 
-    # if with missing category
-    if(include_na & length(df_i$category[is.na(df_i$category)]) > 0) {
+    # if with missing .category
+    if(include_na & length(df_i$.category[is.na(df_i$.category)]) > 0) {
 
-      df_i$category <- add_missing_label(
-        value = df_i$category,
+      df_i$.category <- add_missing_label(
+        value = df_i$.category,
         label_na = label_na,
         recode_na = recode_na
       )
@@ -290,7 +295,25 @@ generate_frequency <- function(
       attr(df_i, "label_xlsx") <- label_stubs[i]
     }
 
-    df[[label]] <- df_i
+    if(group_as_list & inherits(df_i, "list")) {
+
+      df[[label]] <- df_i
+
+    } else {
+
+      if("category" %in% names(df_i) & "category" %in% groups) {
+        colnames(df_i)[which(colnames(df_i) == "category")] <- "category_group"
+        message("WARNING: `category` is a reserved column name and has been renamed to `category_group`")
+      }
+
+      if(length(groups) > 0) {
+        attr(df_i, "label_total") <- label_total
+        attr(df_i, "groups") <- groups
+      }
+
+      df[[label]] <- dplyr::rename(df_i, category = .category)
+
+    }
 
   }
 
@@ -404,46 +427,49 @@ add_column_total <- function(data, position = "bottom", colname = "percent", lab
 
   total <- data |>
     dplyr::select(dplyr::any_of(c("frequency", colname))) |>
-    dplyr::summarise(dplyr::across(dplyr::everything(), sum, na.rm = TRUE), .groups = 'drop')
+    dplyr::summarise(
+      dplyr::across(dplyr::everything(), \(x) sum(x, na.rm = TRUE)),
+      .groups = 'drop'
+    )
 
-  if(haven::is.labelled(data$category)) {
+  if(haven::is.labelled(data$.category)) {
 
-    value__ <- 0L
-    if(min(data$category, na.rm = T) == 0) {
-      value__ <- -1L
+    .value <- 0L
+    if(min(data$.category, na.rm = T) == 0) {
+      .value <- -1L
     }
 
     total <- total |>
-      dplyr::mutate(category = value__) |>
-      dplyr::mutate(category = haven::labelled(category, labels = stats::setNames(value__, label_total)))
+      dplyr::mutate(.category = .value) |>
+      dplyr::mutate(.category = haven::labelled(.category, labels = stats::setNames(.value, label_total)))
 
-  } else if(is.factor(data$category)) {
+  } else if(is.factor(data$.category)) {
 
-    value__ <- 0L
-    if(min(as.integer(data$category), na.rm = T) == 0) {
-      value__ <- -1L
+    .value <- 0L
+    if(min(as.integer(data$.category), na.rm = T) == 0) {
+      .value <- -1L
     }
 
     total <- total |>
-      dplyr::mutate(category = value__) |>
-      dplyr::mutate(category = factor(category, levels = value__, labels = label_total))
+      dplyr::mutate(.category = .value) |>
+      dplyr::mutate(.category = factor(.category, levels = .value, labels = label_total))
 
-  } else if (is.numeric(data$category)) {
+  } else if (is.numeric(data$.category)) {
 
-    value__ <- label_total
-    data <- dplyr::mutate(data, category = as.character(category))
-    total <- dplyr::mutate(total, category = "Total")
+    .value <- label_total
+    data <- dplyr::mutate(data, .category = as.character(.category))
+    total <- dplyr::mutate(total, .category = "Total")
 
-  } else if (is.character(data$category))  {
+  } else {
 
-    value__ <- label_total
-    total <- dplyr::mutate(total, category = label_total)
+    .value <- label_total
+    total <- dplyr::mutate(total, .category = label_total)
 
   }
 
   if(position == "top") {
     data <- dplyr::bind_rows(total, data) |>
-      dplyr::select(category, dplyr::any_of(c("frequency", colname)))
+      dplyr::select(.category, dplyr::any_of(c("frequency", colname)))
   } else if(position == "bottom") {
     data <- dplyr::bind_rows(data, total)
   } else {
@@ -451,7 +477,7 @@ add_column_total <- function(data, position = "bottom", colname = "percent", lab
   }
 
   attr(data, "total") <- list(
-    value = value__,
+    value = .value,
     label = label_total,
     position = position,
     colname = colname
