@@ -15,6 +15,21 @@ df_empty <- dplyr::tibble(
   value = numeric(0)
 )
 
+df_labelled <- dplyr::tibble(
+  category = haven::labelled(
+    c(1, 2, 1, 3, 2, 1, 3, 2),
+    label = "Category haven",
+    labels = c(A = 1, B = 2, C = 3)
+  ),
+  value = c(10, 20, 10, 30, 20, 10, 30, 20)
+)
+
+df_factored <- dplyr::tibble(
+  category = factor(c(1, 2, 1, 3, 2, 1, 3, 2), labels = c("A", "B", "C")),
+  value = c(5, 10, 5, 15, 10, 5, 15, 10)
+)
+
+attr(df_factored$category, "label") <- "Category factor"
 
 test_that("generate_frequency returns correct frequency table", {
 
@@ -37,15 +52,27 @@ test_that("generate_frequency returns correct frequency table", {
 
 })
 
-
 test_that("generate_frequency returns correct frequency table for multiple variables", {
 
   result <- generate_frequency(df)
 
   expect_s3_class(result, "tsg")
+  expect_s3_class(result, "tsg_freq")
   expect_true(inherits(result, 'list'))
   expect_equal(length(result), 3)
   expect_equal(names(result), c("category", "type", "value"))
+
+})
+
+test_that("generate_frequency handles factors and labelled variables correctly", {
+
+  result_labelled <- generate_frequency(df_labelled, category)
+  expect_equal(as.vector(result_labelled$category), c(1, 2, 3, 0))
+  expect_equal(attributes(result_labelled$category)$label, "Category haven")
+
+  result_factored <- generate_frequency(df_factored, category)
+  expect_equal(as.vector(result_factored$category), c("A", "B", "C", "Total"))
+  expect_equal(attributes(result_factored$category)$label, "Category factor")
 
 })
 
@@ -196,12 +223,12 @@ test_that("generate_frequency works with multiple grouping variables", {
     generate_frequency(value, group_as_list = FALSE, calculate_per_group = FALSE)
 
   expect_true(inherits(result_1, 'tsg'))
-  expect_equal(nrow(result_1), 7)
+  expect_equal(nrow(result_1), 8)
   expect_equal(ncol(result_1), 5)
 
   result_2 <- df |>
     dplyr::group_by(type, category) |>
-    generate_frequency(value, group_as_list = TRUE, group_separator = "|") |>
+    generate_frequency(value, group_as_list = TRUE, group_separator = "|", expand_categories = FALSE) |>
     suppressMessages()
 
   expect_true(inherits(result_2, 'list'))
@@ -218,11 +245,11 @@ test_that("generate_frequency works with multiple grouping variables", {
 
   result_3 <- df |>
     dplyr::group_by(type, category) |>
-    generate_frequency(value, group_as_list = FALSE) |>
+    generate_frequency(value, group_as_list = FALSE, calculate_per_group = TRUE) |>
     suppressMessages()
 
   expect_true(inherits(result_3, 'tsg'))
-  expect_equal(nrow(result_3), 12)
+  expect_equal(nrow(result_3), 20)
   expect_equal(ncol(result_3), 5)
   expect_equal(result_3$frequency[nrow(result_3)], 2)
   expect_equal(result_3$percent[nrow(result_3)], 100)
@@ -234,8 +261,6 @@ test_that("generate_frequency works with multiple grouping variables", {
   expect_contains(attributes(result_3)$groups, c("type", "category"))
 
 })
-
-
 
 
 # Edge case with an empty dataset
@@ -263,6 +288,19 @@ test_that("generate_frequency handles dataset with only NA values", {
 })
 
 
+# Top n categories
+test_that("generate_frequency handles top_n parameter correctly", {
+
+  df_large <- dplyr::tibble(category = sample(LETTERS[1:10], 100, replace = TRUE))
+  result_top_3 <- generate_frequency(df_large, category, top_n = 3, add_total = FALSE)
+  result_top_5 <- generate_frequency(df_large, category, top_n = 5, sort_value = FALSE, add_total = FALSE)
+
+  expect_equal(nrow(result_top_3), 4)  # Top 3 + "Other"
+  expect_true(nrow(result_top_5) != 6)
+  expect_true("Others" %in% result_top_3$category)
+  expect_true(!("Others" %in% result_top_5$category))
+
+})
 
 
 
