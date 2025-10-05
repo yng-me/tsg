@@ -423,8 +423,48 @@ tsg_get_crosstab <- function(data, x, column_name) {
 }
 
 
-get_uniform_labels <- function(data, column_name) {
+collapse_list <- function(
+    data,
+    col_id = "variable_name",
+    label = NULL,
+    as_proportion = FALSE,
+    name_separator = "_",
+    label_separator = "__"
+) {
 
+  if(!inherits(data, "list")) {
+    stop("Data must be a list")
+  }
+
+  multiplier_col <- get_multiplier(as_proportion, key = "col")
+  cols_to_pivot <- c("frequency", multiplier_col)
+
+  class(data) <- "list"
+
+  data <- dplyr::bind_rows(data, .id = col_id)
+
+  data <- data |>
+    tidyr::pivot_wider(
+      names_from = category,
+      values_from = dplyr::any_of(cols_to_pivot),
+      names_sep = name_separator,
+      names_sort = TRUE
+    ) |>
+    add_column_label(
+      column_name = col_id,
+      data_attr = attributes(data$category),
+      multiplier_col = multiplier_col,
+      name_separator = name_separator,
+      label_separator = label_separator,
+      prefixed = multiplier_col %in% names(data),
+      excluded = col_id
+    )
+
+  col_label <- label %||% "Variable name"
+
+  attr(data[[col_id]], "label") <- col_label
+
+  data
 
 }
 
