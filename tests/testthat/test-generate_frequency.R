@@ -7,6 +7,7 @@ df <- dplyr::tibble(
 
 df_na <- dplyr::tibble(
   category = c("A", "B", "A", NA, "C", "C", "A", NA),
+  type = c("X", "Y", "X", "X", "Y", "Y", "X", "X"),
   value = c(1, 2, 1, 2, 3, 3, 1, 2)
 )
 
@@ -50,6 +51,8 @@ test_that("generate_frequency returns correct frequency table", {
   expect_equal(attributes(result$frequency)$label, "Frequency")
   expect_equal(attributes(result$percent)$label, "Percent")
 
+  expect_equal(attributes(result$category)$label, "category")
+
 })
 
 test_that("generate_frequency returns correct frequency table for multiple variables", {
@@ -57,7 +60,7 @@ test_that("generate_frequency returns correct frequency table for multiple varia
   result <- generate_frequency(df)
 
   expect_s3_class(result, "tsg")
-  expect_s3_class(result, "tsg_freq")
+  expect_s3_class(result, "tsgf")
   expect_true(inherits(result, 'list'))
   expect_equal(length(result), 3)
   expect_equal(names(result), c("category", "type", "value"))
@@ -183,12 +186,18 @@ test_that("generate_frequency handles NA values correctly", {
   result_with_na <- generate_frequency(df_na, category, include_na = TRUE, add_total = FALSE)
   result_with_na_labelled <- generate_frequency(df_na, category, include_na = TRUE, label_na = "Missing", add_total = FALSE)
 
+  result_with_na_group <- df_na |>
+    dplyr::group_by(type) |>
+    generate_frequency(category, include_na = TRUE, add_total = FALSE, group_as_list = TRUE, label_na = "Missing")
+
   expect_equal(sum(result_without_na$frequency, na.rm = TRUE), 6)
   expect_equal(nrow(result_without_na), 3)  # Only A, B, C
   expect_equal(nrow(result_with_na), 4)     # A, B, C, NA
   expect_equal(nrow(result_with_na_labelled), 4) # A, B, C, "Missing"
   expect_true("Missing" %in% result_with_na_labelled$category)
   expect_true("Not reported" %in% result_with_na$category)
+
+  expect_true("Missing" %in% result_with_na_group[[1]]$category)
 
 })
 
@@ -211,6 +220,7 @@ test_that("generate_frequency calculates per group and returns a list", {
   expect_equal(names(result_warn), c("A", "B", "C"))
 
   expect_warning(result_warn, regexp = NA)
+
 
 })
 
@@ -293,15 +303,68 @@ test_that("generate_frequency handles top_n parameter correctly", {
 
   df_large <- dplyr::tibble(category = sample(LETTERS[1:10], 100, replace = TRUE))
   result_top_3 <- generate_frequency(df_large, category, top_n = 3, add_total = FALSE)
-  result_top_5 <- generate_frequency(df_large, category, top_n = 5, sort_value = FALSE, add_total = FALSE)
 
-  expect_equal(nrow(result_top_3), 4)  # Top 3 + "Other"
-  expect_true(nrow(result_top_5) != 6)
+  expect_equal(nrow(result_top_3), 4)
   expect_true("Others" %in% result_top_3$category)
-  expect_true(!("Others" %in% result_top_5$category))
 
 })
 
 
+test_that("generate_frequency handles top_n with NA values correctly", {
+  df_large_na <- dplyr::tibble(category = sample(c(LETTERS[1:10], NA), 100, replace = TRUE))
+  result_top_3_na <- generate_frequency(df_large_na, category, top_n = 3, include_na = TRUE, add_total = FALSE)
+  result_top_3 <- generate_frequency(df_large_na, category, top_n = 3, top_n_only = TRUE, include_na = TRUE, add_total = FALSE)
+  result_top_not_sorted <- generate_frequency(df_large_na, category, top_n = 3, include_na = TRUE, add_total = FALSE, sort_value = FALSE)
 
+  expect_equal(nrow(result_top_3_na), 4)
+  expect_equal(nrow(result_top_not_sorted), 4)
+  expect_equal(nrow(result_top_3), 3)
+})
+
+
+
+test_that("generate_frequency handles collapse list correctly", {
+
+  df_collapse <- dplyr::tibble(
+    category_1 = c("A", "B", "C", "D", "E", "F", "G", "H"),
+    category_2 = c("A", "C", "D", "D", "D", "F", "A", "H"),
+  )
+
+  df <- df_collapse |>
+    tsg::generate_frequency(add_percent = FALSE, collapse_list = TRUE)
+
+  df_1 <- df_collapse |>
+    tsg::generate_frequency(collapse_list = TRUE)
+
+  df_2 <- df_collapse |>
+    generate_frequency() |>
+    collapse_list()
+
+  expect_equal(df_1, df_2)
+  expect_equal(nrow(df_1), 2)
+  expect_equal(ncol(df_1), 19)
+  expect_equal(dim(df), c(2, 10))
+})
+
+
+test_that("generate_frequency expand categories correctly", {
+
+  df_1 <- df |>
+    dplyr::group_by(type) |>
+    generate_frequency(category, expand_categories = TRUE)
+
+  df_2 <- df |>
+    dplyr::group_by(type) |>
+    generate_frequency(category, expand_categories = FALSE)
+
+  df_3 <- df |>
+    dplyr::group_by(type) |>
+    generate_frequency(category, expand_categories = FALSE, calculate_per_group = FALSE)
+
+  expect_equal(nrow(df_1), 8)
+  expect_equal(nrow(df_2), 7)
+  expect_equal(nrow(df_3), 6)
+
+
+})
 

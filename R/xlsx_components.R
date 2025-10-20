@@ -18,7 +18,7 @@ xlsx_write_title <- function(
       sheet = sheet_name,
       startRow = start_row + offset_row,
       startCol = start_col + offset_col,
-      colNames = F
+      colNames = FALSE
     )
 
     xlsx_eval_style(
@@ -46,7 +46,7 @@ xlsx_write_title <- function(
         sheet = sheet_name,
         startRow = start_row + offset_row,
         startCol = start_col + offset_col,
-        colNames = F
+        colNames = FALSE
       )
 
       xlsx_eval_style(
@@ -73,66 +73,6 @@ xlsx_write_title <- function(
 
   attr(wb, "offset_row") <- offset_row
 
-  return(wb)
-
-}
-
-
-xlsx_write_endnotes <- function(
-  wb,
-  sheet_name,
-  source_note = NULL,
-  footnotes = NULL,
-  start_col = 1,
-  start_row = 1,
-  facade = getOption("tsg.options.facade")
-) {
-
-  if(is.null(source_note) & length(footnotes) == 0) {
-    attr(wb, "offset_row") <- 0
-    return(wb)
-  }
-
-  if(!is.null(source_note)) {
-
-    openxlsx::writeData(
-      wb = wb,
-      x = source_note,
-      sheet = sheet_name,
-      startRow = start_row + offset_row,
-      startCol = start_col + offset_col,
-      colNames = F
-    )
-
-    xlsx_eval_style(
-      wb = wb,
-      sheet = sheet_name,
-      style = facade$styles$source_note,
-      rows = start_row + offset_row,
-      cols = start_col + offset_col
-    )
-
-    openxlsx::setRowHeights(
-      wb = wb,
-      sheet = sheet_name,
-      rows = start_row,
-      heights = facade$heights$sourceNote
-    )
-
-    offset_row <- offset_row + 1
-
-  }
-
-  xlsx_write_footnotes(
-    wb = wb,
-    sheet_name = sheet_name,
-    footnotes = footnotes,
-    offset_row = header_depth + offset_row + 1 + nrow(data),
-    offset_col = offset_col,
-    facade = facade
-  )
-
-  attr(wb, "offset_row") <- offset_row + attributes(wb)$offset_row
   return(wb)
 
 }
@@ -165,7 +105,7 @@ xlsx_write_footnotes <- function(
       sheet = sheet_name,
       startRow =  offset_row + i,
       startCol = offset_col + 1,
-      colNames = F
+      colNames = FALSE
     )
 
   }

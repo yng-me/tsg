@@ -1,4 +1,4 @@
-#' Generate Frequency Tables with Optional Grouping and Summary Statistics
+#' Generate frequency table
 #'
 #' Creates frequency tables for one or more categorical variables, optionally grouped by other variables.
 #' The function supports various enhancements such as sorting, totals, percentages, cumulative statistics,
@@ -7,7 +7,7 @@
 #' @param data A data frame (typically \code{tibble}) containing the variables to summarize.
 #' @param ... One or more unquoted variable names (passed via tidy evaluation) for which to compute frequency tables.
 #' @param sort_value Logical. If \code{TRUE}, frequency values will be sorted.
-#' @param sort_desc Logical. If \code{TRUE}, sorts in descending order of frequency. Ignored if \code{sort_value = FALSE}.
+#' @param sort_desc Logical. If \code{TRUE}, sorts in descending order of frequency. If \code{sort_value = FALSE}, the category is sorted in ascending order.
 #' @param sort_except Optional character vector. Variables to exclude from sorting.
 #' @param add_total Logical. If \code{TRUE}, adds a total row or value to the frequency table.
 #' @param add_percent Logical. If \code{TRUE}, adds percent or proportion values to the table.
@@ -23,17 +23,20 @@
 #' @param label_stub Optional character vector used for labeling output tables (e.g., for export or display).
 #' @param label_na Character. Label to use for missing (\code{NA}) values.
 #' @param label_total Character. Label used for the total row/category.
-#' @param metadata A named list with optional metadata to attach as attributes: \code{title}, \code{subtitle}, \code{source_note}, and \code{footnotes}.
-#' @param expand_categories
-#' @param label_as_group_name
-#' @param top_n
+#' @param label_as_group_name Logical. If \code{TRUE}, uses variable labels as names in the output list; otherwise, uses variable names.
+#' @param expand_categories Logical. If \code{TRUE}, ensures all categories (including those with zero counts) are included in the output.
+#' @param top_n Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.
+#' @param top_n_only Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.
+#' @param collapse_list Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers.
+#' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
 #'
 #' @return A frequency table (\code{tibble}, possibly nested) or a list of such tables. Additional attributes such as labels, metadata, and grouping information may be attached. The returned object is of class \code{"tsg"}.
 #'
 #' @export
 #'
 #' @examples
-#'
+#' data <- generate_frequency(dplyr::starwars, sex)
+#' data
 
 generate_frequency <- function(
   data,
@@ -48,8 +51,8 @@ generate_frequency <- function(
   as_proportion = FALSE,
   include_na = TRUE,
   recode_na = "auto",
-  position_total = "bottom",
-  calculate_per_group = FALSE,
+  position_total = c("bottom", "top"),
+  calculate_per_group = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
   label_as_group_name = TRUE,
@@ -59,12 +62,8 @@ generate_frequency <- function(
   expand_categories = TRUE,
   collapse_list = FALSE,
   top_n = NULL,
-  metadata = list(
-    title = NULL,
-    subtitle = NULL,
-    source_note = NULL,
-    footnotes = NULL
-  )
+  top_n_only = FALSE,
+  metadata = NULL
 ) {
 
   is_valid_input_data(data)
@@ -105,9 +104,9 @@ generate_frequency <- function(
         sort_value = sort_value,
         sort_desc = sort_desc,
         sort_except = sort_except,
-        groups = groups,
-        top_n = top_n
-      )
+        groups = groups
+      ) |>
+      tsg_sort_top_n(top_n, top_n_only)
 
     if(group_as_list & length(groups) > 0) {
 
@@ -118,7 +117,7 @@ generate_frequency <- function(
 
       df_groups <- data_i |>
         dplyr::select(dplyr::any_of(groups)) |>
-        dplyr::distinct(.keep_all = T) |>
+        dplyr::distinct(.keep_all = TRUE) |>
         dplyr::mutate(list_group = glue::glue(glue_arg))
 
       data_ij <- list()
@@ -127,7 +126,7 @@ generate_frequency <- function(
 
         list_group_j <- df_groups$list_group[j]
 
-        data_ij[[list_group_j]] <- data_i |>
+        data_j <- data_i |>
           dplyr::filter(glue::glue(glue_arg) == list_group_j) |>
           expand_category_values(
             categories,
@@ -143,7 +142,7 @@ generate_frequency <- function(
           tsg_add_row_total(
             x = .category,
             add_total = add_total,
-            position = position_total,
+            position = position_total[1],
             label_total = label_total,
             groups = groups
           ) |>
@@ -152,8 +151,20 @@ generate_frequency <- function(
             label,
             as_proportion
           ) |>
-          set_group_attrs(groups, group_attrs) |>
-          dplyr::rename(category = .category)
+          set_group_attrs(groups, group_attrs)
+
+        # if with missing .category
+        if(include_na & length(data_j$.category[is.na(data_j$.category)]) > 0) {
+
+          data_j$.category <- add_missing_label(
+            value = data_j$.category,
+            label_na = label_na,
+            recode_na = recode_na
+          )
+
+        }
+
+        data_ij[[list_group_j]] <- dplyr::rename(data_j, category = .category)
 
       }
 
@@ -179,7 +190,7 @@ generate_frequency <- function(
               tsg_add_row_total(
                 x = .category,
                 add_total = add_total,
-                position = position_total,
+                position = position_total[1],
                 label_total = label_total
               )
           })) |>
@@ -198,9 +209,10 @@ generate_frequency <- function(
           tsg_add_row_total(
             x = .category,
             add_total = add_total,
-            position = position_total,
+            position = position_total[1],
             label_total = label_total
-          )
+          ) |>
+          set_group_attrs(groups, group_attrs)
       }
 
       data_i <- set_data_attrs(data_i, column_name, label, as_proportion)
@@ -249,13 +261,15 @@ generate_frequency <- function(
 
   if(group_as_list & length(groups) > 0) {
     attr(df, "groups") <- groups
+    attr(df, "group_attrs") <- group_attrs
   }
 
   for(meta in names(metadata)) {
     attr(df, meta) <- metadata[[meta]]
   }
 
-  # class(df) <- c("tsg", "tsg_freq", class(df))
+  class(df) <- unique(c("tsg", "tsgf", class(df)))
+
   return(df)
 
 }

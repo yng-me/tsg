@@ -1,3 +1,40 @@
+#' Generate cross-tabulation
+#'
+#' @param data A data frame (typically \code{tibble}) containing the variables to summarize.
+#' @param x The variable to use for the rows of the cross-tabulation.
+#' @param ... Additional variable(s) to use for the columns of the cross-tabulation. If none are provided, a frequency table for \code{x} will be returned.
+#' @param add_total Logical. If \code{TRUE}, adds total row and/or column.
+#' @param add_total_row Logical. If \code{TRUE}, adds a total row.
+#' @param add_total_column Logical. If \code{TRUE}, adds a total column.
+#' @param add_percent Logical. If \code{TRUE}, adds percent or proportion values to the table.
+#' @param as_proportion Logical. If \code{TRUE}, displays proportions instead of percentages (range 0–1).
+#' @param percent_by_column Logical. If \code{TRUE}, percentages are calculated by column; otherwise, by row.
+#' @param name_separator Character. Separator used when constructing variable names in the output.
+#' @param label_separator Character. Separator used when constructing labels in the output.
+#' @param label_total Character. Label used for the total row/category.
+#' @param label_total_column Character. Label used for the total column/category.
+#' @param label_total_row Character. Label used for the total row/category.
+#' @param label_na Character. Label to use for missing (\code{NA}) values.
+#' @param include_na Logical. If \code{TRUE}, includes missing values in the cross table.
+#' @param label_as_group_name Logical. If \code{TRUE}, uses the variable label of the grouping variable(s) as the name in the output list.
+#' @param group_separator Character. Separator used when constructing group names in the output list.
+#' @param group_as_list Logical. If \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s).
+#' @param recode_na Character or \code{NULL}. Value used to replace missing values in labelled vectors; \code{"auto"} will determine a code automatically.
+#' @param sort_column_names Logical. If \code{TRUE}, sorts the column names in the output.
+#' @param calculate_per_group Logical. If \code{TRUE}, calculates the cross-tabulation separately for each group defined by the grouping variable(s).
+#' @param expand_categories Logical. If \code{TRUE}, ensures that all categories of \code{x} are represented in the output, even if they have zero counts.
+#' @param position_total Character. Position of the total row/column; either \code{"bottom"} or \code{"top"} for rows, and \code{"right"} or \code{"left"} for columns.
+#' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
+#'
+#' @return A data frame or a list of data frames containing the cross-tabulation results. If \code{group_as_list} is \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s). Otherwise, a single data frame is returned. Each data frame includes counts and, if specified, percentages or proportions for each combination of \code{x} and the additional variables provided in \code{...}.
+#'
+#' @export
+#'
+#' @examples
+# ' data <- generate_crosstab(dplyr::starwars, species, sex)
+#' data
+
+
 generate_crosstab <- function(
   data,
   x,
@@ -8,25 +45,22 @@ generate_crosstab <- function(
   add_percent = TRUE,
   as_proportion = FALSE,
   percent_by_column = FALSE,
-  pivot_wider = TRUE,
   name_separator = "_",
   label_separator = "__",
   label_total = "Total",
   label_total_column = NULL,
   label_total_row = NULL,
   label_na = "Not reported",
+  include_na = TRUE,
+  recode_na = "auto",
   label_as_group_name = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
   calculate_per_group = TRUE,
   expand_categories = TRUE,
   position_total = "bottom",
-  metadata = list(
-    title = NULL,
-    subtitle = NULL,
-    source_note = NULL,
-    footnotes = NULL
-  )
+  sort_column_names = TRUE,
+  metadata = NULL
 ) {
 
   n_args <- rlang::dots_n(...)
@@ -44,7 +78,7 @@ generate_crosstab <- function(
   column_names <- names(dplyr::select(dplyr::ungroup(data), ...))
 
   df_list <- list()
-  categories <- unique(data[[rlang::as_label(enquo(x))]])
+  categories <- unique(data[[rlang::as_label(rlang::enquo(x))]])
 
   for(column_name in column_names) {
 
@@ -52,6 +86,10 @@ generate_crosstab <- function(
     if(label_as_group_name) {
       list_name <- attributes(data[[column_name]])$label
       if(is.null(list_name)) { list_name <- column_name }
+    }
+
+    if(!include_na) {
+      data <- dplyr::filter(data, !is.na({{x}}), !is.na(!!as.name(column_name)))
     }
 
     data_i <- tsg_get_crosstab(data, {{x}}, column_name)
@@ -65,7 +103,7 @@ generate_crosstab <- function(
 
       df_groups <- data_i |>
         dplyr::select(dplyr::any_of(groups)) |>
-        dplyr::distinct(.keep_all = T) |>
+        dplyr::distinct(.keep_all = TRUE) |>
         dplyr::mutate(list_group = glue::glue(glue_arg))
 
       data_ij <- list()
@@ -74,7 +112,7 @@ generate_crosstab <- function(
 
         list_group_j <- df_groups$list_group[j]
 
-        data_ij[[list_group_j]]  <- data_i |>
+        data_j <- data_i |>
           dplyr::filter(glue::glue(glue_arg) == list_group_j) |>
           expand_category_values(
             categories = categories,
@@ -85,6 +123,7 @@ generate_crosstab <- function(
             column_name,
             groups = groups,
             data_attr = data_attrs[[column_name]],
+            add_percent = add_percent,
             add_total = add_total,
             add_total_row = add_total_row,
             add_total_column = add_total_column,
@@ -94,15 +133,27 @@ generate_crosstab <- function(
             label_total = label_total_row %||% label_total,
             name_separator = name_separator,
             label_separator = label_separator,
-            label_na = label_na
+            label_na = label_na,
+            sort_column_names = sort_column_names
           ) |>
           dplyr::select(dplyr::any_of(groups), dplyr::everything()) |>
           add_total_label(
             label = label_total_column %||% label_total,
             label_separator = label_separator,
             name_separator = name_separator,
-            percent_by_column = percent_by_column
+            percent_by_column = percent_by_column & add_percent
           )
+
+        if(include_na & length(data_j$category[is.na(data_j$category)]) > 0) {
+
+          data_j$category <- add_missing_label(
+            value = data_j$category,
+            label_na = label_na,
+            recode_na = recode_na
+          )
+        }
+
+        data_ij[[list_group_j]] <- data_j
 
       }
 
@@ -127,6 +178,7 @@ generate_crosstab <- function(
               tsg_pivot_table(
                 column_name,
                 data_attr = data_attrs[[column_name]],
+                add_percent = add_percent,
                 add_total = add_total,
                 add_total_row = add_total_row,
                 add_total_column = add_total_column,
@@ -136,12 +188,64 @@ generate_crosstab <- function(
                 label_total = label_total_row %||% label_total,
                 name_separator = name_separator,
                 label_separator = label_separator,
-                label_na = label_na
+                label_na = label_na,
+                sort_column_names = sort_column_names
               )
           })) |>
-          tidyr::unnest(cols = c(data)) |>
+          tidyr::unnest(cols = c(data), keep_empty = expand_categories) |>
           dplyr::ungroup() |>
-          dplyr::select(dplyr::any_of(groups), dplyr::everything())
+          add_column_label(
+            x = 'category',
+            column_name = column_name,
+            data_attr = data_attrs[[column_name]],
+            multiplier_col = multiplier$col,
+            name_separator = name_separator,
+            label_separator = label_separator,
+            label_na = label_na,
+            prefixed = add_percent
+          ) |>
+          dplyr::select(dplyr::any_of(groups), dplyr::everything()) |>
+          dplyr::mutate(
+            dplyr::across(
+              dplyr::starts_with("frequency"),
+              ~ dplyr::if_else(is.na(.), 0L, .)
+            )
+          ) |>
+          dplyr::mutate(
+            dplyr::across(
+              dplyr::matches(glue::glue("^(percent|proportion){name_separator}")),
+              ~ dplyr::if_else(is.na(.), 0, .)
+            )
+          )
+
+        if(any(grepl(glue::glue("^(frequency|percent|proportion){name_separator}"), names(data_i)))) {
+
+          data_i <- data_i |>
+            dplyr::select(
+              dplyr::any_of(groups),
+              dplyr::any_of(c(".category", "category", "total")),
+              dplyr::matches("^frequency"),
+              dplyr::matches("^(percent|proportion)"),
+              dplyr::everything()
+            )
+        } else {
+
+          data_i <- data_i |>
+            dplyr::select(
+              dplyr::any_of(groups),
+              dplyr::any_of(c(".category", "category")),
+              dplyr::matches("^frequency"),
+              dplyr::matches("^(percent|proportion)"),
+              dplyr::everything(),
+              dplyr::any_of("total")
+            )
+
+        }
+
+        if(!include_na) {
+          data_i <- dplyr::filter(data_i, !is.na(category))
+        }
+
 
       } else {
 
@@ -149,6 +253,7 @@ generate_crosstab <- function(
           tsg_pivot_table(
             column_name,
             data_attr = data_attrs[[column_name]],
+            add_percent = add_percent,
             add_total = add_total,
             add_total_row = add_total_row,
             add_total_column = add_total_column,
@@ -158,9 +263,40 @@ generate_crosstab <- function(
             label_total = label_total_row %||% label_total,
             name_separator = name_separator,
             label_separator = label_separator,
-            label_na = label_na
+            label_na = label_na,
+            sort_column_names = sort_column_names
           ) |>
           dplyr::select(dplyr::any_of(groups), dplyr::everything())
+
+
+        if(add_total_row) {
+
+          if(position_total[1] == "bottom") {
+
+            which_row <- which(is.na(data[nrow(data_i), ]))
+            if(length(which_row) > 0) { data[nrow(data), which_row] <- label_total }
+
+          } else {
+            which_row <- which(is.na(data[1, ]))
+            if(length(which_row) > 0) { data[1, which_row] <- label_total }
+          }
+
+
+          for(i in seq_along(groups)) {
+            group_col <- groups[i]
+            if(!is.null(data_i[[group_col]])) {
+              data_i[[group_col]] <- add_missing_label(
+                value = data_i[[group_col]],
+                label_na = label_total,
+                recode_na = recode_na
+              )
+            }
+          }
+
+          add_missing_label
+
+        }
+
       }
 
       data_i <- add_total_label(
@@ -168,9 +304,17 @@ generate_crosstab <- function(
         label = label_total_column %||% label_total,
         label_separator = label_separator,
         name_separator = name_separator,
-        percent_by_column = percent_by_column
+        percent_by_column = percent_by_column & add_percent
       )
 
+      if(include_na & length(data_i$category[is.na(data_i$category)]) > 0) {
+
+        data_i$category <- add_missing_label(
+          value = data_i$category,
+          label_na = label_na,
+          recode_na = recode_na
+        )
+      }
     }
 
     df_list[[list_name]] <- data_i
@@ -187,6 +331,8 @@ generate_crosstab <- function(
     attr(df_list, meta) <- metadata[[meta]]
   }
 
+  class(df_list) <- c("tsg", "tsgc", class(df_list))
+
   return(df_list)
 
 }
@@ -196,6 +342,7 @@ generate_crosstab <- function(
 tsg_pivot_table <- function(
   data,
   column_name,
+  add_percent,
   add_total,
   add_total_row,
   add_total_column,
@@ -206,22 +353,27 @@ tsg_pivot_table <- function(
   label_separator,
   name_separator,
   label_na,
+  sort_column_names,
   percent_by_column = FALSE,
   groups = NULL
 ) {
 
   multiplier <- get_multiplier(as_proportion)
 
-  col_prefix <- glue::glue("frequency{name_separator}")
+  col_prefix <- ""
+  if(add_percent) {
+    col_prefix <- glue::glue("frequency{name_separator}")
+  }
   col_prefix_p <- glue::glue("{multiplier$col}{name_separator}")
-
 
   data <- data |>
     tidyr::pivot_wider(
       names_from = !!as.name(column_name),
       values_from = frequency,
       values_fill = 0,
-      names_prefix = col_prefix
+      names_prefix = col_prefix,
+      names_expand = TRUE,
+      names_sort = sort_column_names
     ) |>
     dplyr::select(
       dplyr::any_of(groups),
@@ -229,39 +381,46 @@ tsg_pivot_table <- function(
     )
 
   total_col <- "total"
-  if(percent_by_column) { total_col <- glue::glue("{col_prefix}total") }
 
-  data[[total_col]] <- rowSums(data[ , grepl(glue::glue("^{col_prefix}"), names(data))], na.rm = TRUE)
-
-  if(!percent_by_column) {
-    data <- add_row_total(
-      data,
-      .category,
-      position = position_total,
-      label_total = label_total,
-      groups = groups
-    )
+  if(add_percent) {
+    if(percent_by_column) { total_col <- glue::glue("{col_prefix}total") }
+    data[[total_col]] <- rowSums(data[, grepl(glue::glue("^{col_prefix}"), names(data))], na.rm = TRUE)
+  } else {
+    data[[total_col]] <- rowSums(data[, which(names(data) != ".category" & !(names(data) %in% groups))], na.rm = TRUE)
   }
 
-  data <- data |>
-    dplyr::select(.category, dplyr::any_of(total_col), dplyr::everything()) |>
-    dplyr::mutate(
-      dplyr::across(
-        dplyr::starts_with(col_prefix),
-        function(x) {
-          if(percent_by_column) {
-            (x / sum(x, na.rm = TRUE)) * multiplier$value
-          } else {
-            (x / !!as.name(total_col)) * multiplier$value
-          }
+  if(add_percent) {
 
-        },
-        .names = glue::glue("{col_prefix_p}{{col}}")
+    if(!percent_by_column) {
+      data <- tsg_add_row_total(
+        data,
+        .category,
+        position = position_total,
+        label_total = label_total,
+        groups = groups
       )
-    )
+    }
 
-  if(percent_by_column) {
-    data <- add_row_total(
+    data <- data |>
+      dplyr::select(.category, dplyr::any_of(total_col), dplyr::everything()) |>
+      dplyr::mutate(
+        dplyr::across(
+          dplyr::starts_with(col_prefix),
+          function(x) {
+            if(percent_by_column) {
+              (x / sum(x, na.rm = TRUE)) * multiplier$value
+            } else {
+              (x / !!as.name(total_col)) * multiplier$value
+            }
+
+          },
+          .names = glue::glue("{col_prefix_p}{{col}}")
+        )
+      )
+  }
+
+  if(percent_by_column | !add_percent) {
+    data <- tsg_add_row_total(
       data,
       .category,
       position = position_total,
@@ -270,7 +429,7 @@ tsg_pivot_table <- function(
     )
   }
 
-  data <- data |>
+  data |>
     dplyr::mutate(
       dplyr::across(
         dplyr::starts_with(col_prefix_p),
@@ -285,12 +444,14 @@ tsg_pivot_table <- function(
       )
     ) |>
     add_column_label(
+      x = '.category',
       column_name = column_name,
       data_attr = data_attr,
-      multiplier = multiplier$col,
+      multiplier_col = multiplier$col,
       name_separator = name_separator,
       label_separator = label_separator,
-      label_na = label_na
+      label_na = label_na,
+      prefixed = add_percent
     ) |>
     dplyr::rename(category = .category)
 
@@ -300,6 +461,7 @@ tsg_pivot_table <- function(
 
 add_column_label <- function(
   data,
+  x,
   column_name,
   data_attr,
   multiplier_col,
@@ -317,6 +479,7 @@ add_column_label <- function(
   if(!is.null(excluded)) {
     tab_labels <- tab_labels[!(tab_labels %in% excluded)]
   }
+
   if(prefixed) {
     tab_labels <- tab_labels[grepl(label_pattern, tab_labels)]
   }
@@ -345,9 +508,12 @@ add_column_label <- function(
     if(prefixed) {
       new_label <- paste0(stringr::str_to_title(prefix_label), label_separator, new_label)
     }
+
     attr(data[[tab_label]], "label") <- new_label
 
   }
+
+  attr(data[[x]], "label") <- data_attr$label
 
   data
 
@@ -367,16 +533,3 @@ add_total_label <- function(data, label, name_separator, label_separator, percen
   data
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

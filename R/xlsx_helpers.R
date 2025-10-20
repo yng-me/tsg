@@ -1,7 +1,7 @@
 xlsx_header_merge <- function(wb, data, ..., offset_row = 0, offset_col = 0, names_separator = "__") {
 
   depths <- get_header_depth(data, names_separator = names_separator)
-  depth_max <- max(depths, na.rm = T)
+  depth_max <- max(depths, na.rm = TRUE)
 
   for(i in seq_len(depth_max)) {
 
@@ -39,7 +39,7 @@ xlsx_header_merge <- function(wb, data, ..., offset_row = 0, offset_col = 0, nam
       ...,
       startRow = offset_row + i,
       startCol = offset_col + 1,
-      colNames = F
+      colNames = FALSE
     )
 
     if(i < depth_max) {

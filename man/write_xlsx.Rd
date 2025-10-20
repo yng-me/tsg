@@ -78,3 +78,13 @@ This function supports advanced Excel formatting including:
 
 The function is designed to handle export needs in professional and reporting contexts.
 }
+\examples{
+data <- tsg::generate_frequency(dplyr::starwars, sex)
+
+dir_to <- tempfile()
+write_xlsx(
+  data,
+  file.path(dir_to, "starwars_frequency.xlsx")
+ )
+
+}

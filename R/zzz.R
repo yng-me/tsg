@@ -1,10 +1,11 @@
 utils::globalVariables(
   c(
-    "category",
-    "frequency",
     "n",
     ".",
-    ":="
+    ":=",
+    ".category",
+    "category",
+    "frequency"
   )
 )
 

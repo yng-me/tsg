@@ -40,8 +40,8 @@ xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
     openxlsx::addStyle(
       wb = wb,
       sheet = sheet_name,
-      stack = T,
-      gridExpand = T,
+      stack = TRUE,
+      gridExpand = TRUE,
       cols = cols,
       rows = rows,
       style = eval(parse(text = fn))
@@ -54,6 +54,9 @@ xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
 
 xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, precision = 3) {
 
+  if(is.null(precision)) { precision <- 3 }
+  if(!is.numeric(precision)) { precision <- 3 }
+
   is_dbl <- names(dplyr::select(data, dplyr::where(is.double)))
   which_dbl <- which(names(data) %in% is_dbl)
 
@@ -64,8 +67,8 @@ xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, precision = 
       sheet = sheet_name,
       cols = which_dbl + offset,
       rows = rows,
-      gridExpand = T,
-      stack = T,
+      gridExpand = TRUE,
+      stack = TRUE,
       style = openxlsx::createStyle(
         numFmt = paste0('#,#0.', paste0(rep(0, as.integer(precision)), collapse = ''))
       )
@@ -96,7 +99,7 @@ xlsx_corner_borders <- function(
 
     xlsx_eval_style(
       wb = wb,
-      sheet = sheet_name,
+      sheet_name = sheet_name,
       style = facade$styles$border_outer,
       rows = corner_rows[[i]],
       cols = corner_cols[[i]]

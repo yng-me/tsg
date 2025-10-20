@@ -65,7 +65,7 @@ add_column_values <- function(
   m <- get_multiplier(as_proportion)
 
   if(add_percent) {
-    data[[m$col]] <- m$value * (data$frequency / sum(data$frequency, na.rm = T))
+    data[[m$col]] <- m$value * (data$frequency / sum(data$frequency, na.rm = TRUE))
   }
 
   if(add_cumulative) {
@@ -85,66 +85,21 @@ tsg_add_row_total <- function(
   data,
   x,
   add_total = TRUE,
-  position = c("bottom", "top"),
+  position = "bottom",
   label_total = "Total",
   groups = NULL
 ) {
 
   if(!add_total) { return(data) }
 
+  attr(data, "category") <- names(dplyr::select(data, {{x}}))
+  attr(data, "groups") <- groups
+
   add_row_total(
     data = data,
-    x = {{x}},
     position = position,
-    label_total = label_total,
-    groups = groups
+    label_total = label_total
   )
-
-}
-
-add_row_total <- function(
-  data,
-  x,
-  position = c("bottom", "top"),
-  label_total = "Total",
-  groups = NULL
-) {
-
-  position <- match.arg(position)
-
-  data <- coerce_category(data, {{x}})
-  col <- names(dplyr::select(data, {{x}}))
-
-  exclude_cols <- c(
-    groups,
-    names(dplyr::select(data, -dplyr::where(is.numeric)))
-  )
-
-  total_row <- data |>
-    dplyr::summarise(
-      dplyr::across(
-        -dplyr::any_of(exclude_cols),
-        ~ sum(.x, na.rm = TRUE)
-      )
-    ) |>
-    coerce_total(col, data[[col]], label_total = label_total) |>
-    dplyr::select(dplyr::all_of(col), dplyr::everything())
-
-
-  if(!is.null(groups)) {
-    total_row <- data |>
-      dplyr::select(dplyr::all_of(groups)) |>
-      dplyr::first() |>
-      dplyr::bind_cols(total_row)
-  }
-
-  if(position == "bottom") {
-    data <- dplyr::bind_rows(data, total_row)
-  } else {
-    data <- dplyr::bind_rows(total_row, data)
-  }
-
-  data
 
 }
 
@@ -157,7 +112,7 @@ coerce_total <- function(data, col, x, label_total = "Total") {
   }
 
   .value <- 0L
-  if(min(as.integer(x), na.rm = T) == 0) { .value <- -1L }
+  if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L }
   data[[col]] <- .value
 
   if(haven::is.labelled(x)) {
@@ -319,13 +274,16 @@ set_group_attrs <- function(data, groups, group_attrs) {
       )
 
     } else if (!is.null(attr_label)) {
-
       attr(data[[attr_k]], "label") <- attr_label
-
+    } else {
+      attr(data[[attr_k]], "label") <- attr_k
     }
   }
 
   attr(data, "groups") <- groups
+  attr(data, "group_attrs") <- group_attrs
+
+
 
   data |>
     resolve_group_col() |>
@@ -344,6 +302,30 @@ resolve_group_col <- function(data, condition = TRUE) {
   data
 }
 
+tsg_sort_top_n <- function(data, top_n = NULL, top_n_only = FALSE) {
+
+  if(is.null(top_n)) { return(data) }
+  if(nrow(data) <= top_n + 1) { return(data) }
+
+  if(top_n_only) {
+     dplyr::slice_head(data, n = top_n)
+  } else {
+    # Create "Others" row summing frequencies of all rows beyond top_n
+    data_others <- data |>
+      dplyr::slice_tail(n = nrow(data) - top_n) |>
+      dplyr::summarise(
+        .category = "Others",
+        frequency = sum(frequency, na.rm = TRUE),
+        .groups = "drop"
+      )
+    # Bind "Others" row to top_n rows
+    data |>
+      dplyr::slice_head(n = top_n) |>
+      dplyr::bind_rows(data_others)
+  }
+
+}
+
 
 tsg_sort_col_value <- function(
   data,
@@ -351,48 +333,24 @@ tsg_sort_col_value <- function(
   sort_value,
   sort_desc,
   sort_except,
-  groups,
-  top_n = NULL
+  groups
 ) {
 
-  sort_value_i <- sort_value
-  if(!is.null(sort_except)) {
-    sort_value_i <- !(column_name %in% sort_except)
+  if(length(groups) > 0) { return(data) }
+
+  if(!is.null(sort_except) & sort_value) {
+    sort_value <- !(column_name %in% sort_except)
+  } else if(!is.null(sort_except) & !sort_value) {
+    sort_value <- column_name %in% sort_except
   }
 
-  if(sort_value_i & length(groups) == 0) {
-    if(sort_desc) {
-      data <- dplyr::arrange(data, dplyr::desc(frequency))
-    } else {
-      data <- dplyr::arrange(data, frequency)
-    }
+  if(!sort_value) { return(data) }
 
-    # Handle top_n only for ungrouped data
-    if(!is.null(top_n)) {
-
-      # Only apply if more rows than top_n + 1 (to account for "Others" row)
-      if(nrow(data) > top_n + 1) {
-
-        # Create "Others" row summing frequencies of all rows beyond top_n
-        data_others <- data |>
-          dplyr::slice_tail(n = nrow(data) - top_n) |>
-          dplyr::summarise(
-            .category = "Others",
-            frequency = sum(frequency, na.rm = TRUE),
-            .groups = "drop"
-          )
-
-        # Bind "Others" row to top_n rows
-        data <- data |>
-          dplyr::slice_head(n = top_n) |>
-          dplyr::bind_rows(data_others)
-
-      }
-
-    }
+  if(sort_desc) {
+    dplyr::arrange(data, dplyr::desc(frequency))
+  } else {
+    dplyr::arrange(data, frequency)
   }
-
-  data
 
 }
 
@@ -419,17 +377,20 @@ tsg_get_crosstab <- function(data, x, column_name) {
     dplyr::group_by({{x}}, !!as.name(column_name), .add = TRUE) |>
     dplyr::count(name = "frequency") |>
     dplyr::ungroup() |>
-    dplyr::rename(.category := {{x}})
+    dplyr::rename(.category := {{x}}) |>
+    dplyr::collect()
 }
 
 
 collapse_list <- function(
-    data,
-    col_id = "variable_name",
-    label = NULL,
-    as_proportion = FALSE,
-    name_separator = "_",
-    label_separator = "__"
+  data,
+  ...,
+  col_id = "category",
+  label = NULL,
+  pluck = NULL,
+  as_proportion = FALSE,
+  name_separator = "_",
+  label_separator = "__"
 ) {
 
   if(!inherits(data, "list")) {
@@ -441,32 +402,57 @@ collapse_list <- function(
 
   class(data) <- "list"
 
-  data <- dplyr::bind_rows(data, .id = col_id)
+  data <- dplyr::bind_rows(data, .id = paste0('.', col_id))
+
+  groups <- attributes(data)$groups
+  group_attrs <- attributes(data)$group_attrs
+
+  for(i in groups) {
+    data <- dplyr::filter(data, !is.na(!!as.name(i)))
+  }
+
+  pluck_col <- function(df) {
+    if(length(pluck) == 1) {
+      cols_to_remove <- paste0("^", setdiff(c("frequency", "percent"), pluck), "_")
+      df <- dplyr::select(df, -dplyr::matches(cols_to_remove))
+    }
+    df
+  }
 
   data <- data |>
+    dplyr::mutate(value = category) |>
+    dplyr::filter(...) |>
+    dplyr::select(-dplyr::any_of("value"), -dplyr::matches("^cumulative")) |>
     tidyr::pivot_wider(
       names_from = category,
       values_from = dplyr::any_of(cols_to_pivot),
       names_sep = name_separator,
+      values_fill = 0,
       names_sort = TRUE
     ) |>
+    pluck_col() |>
     add_column_label(
+      x = "category",
       column_name = col_id,
       data_attr = attributes(data$category),
       multiplier_col = multiplier_col,
       name_separator = name_separator,
       label_separator = label_separator,
-      prefixed = multiplier_col %in% names(data),
-      excluded = col_id
-    )
+      prefixed = multiplier_col %in% names(data)
+    ) |>
+    set_group_attrs(groups, group_attrs) |>
+    dplyr::rename(!!as.name(col_id) := !!as.name(paste0('.', col_id))) |>
+    dplyr::select(dplyr::any_of(groups), dplyr::any_of(col_id), dplyr::everything())
 
-  col_label <- label %||% "Variable name"
+  col_label <- label %||% "Category"
 
   attr(data[[col_id]], "label") <- col_label
+
+  attr(data, "groups") <- groups
+  attr(data, "group_attrs") <- group_attrs
+
+  class(data) <- unique(c("tsg", "tsgf", class(data)))
 
   data
 
 }
-
-
-
