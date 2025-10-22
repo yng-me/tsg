@@ -52,13 +52,13 @@ xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
 }
 
 
-xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, precision = 3) {
+xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, cols = NULL, precision = 3) {
 
-  if(is.null(precision)) { precision <- 3 }
-  if(!is.numeric(precision)) { precision <- 3 }
+  if(is.null(precision)) { precision <- 2 }
+  if(!is.numeric(precision)) { precision <- 2 }
 
   is_dbl <- names(dplyr::select(data, dplyr::where(is.double)))
-  which_dbl <- which(names(data) %in% is_dbl)
+  which_dbl <- which(names(data) %in% c(is_dbl, cols))
 
   if(length(which_dbl) > 0) {
 
@@ -154,8 +154,10 @@ xlsx_extract_facade <- function(built_in, user_defined) {
 
   # level 1
   built_in$gridLines <- user_defined$gridLines %||% built_in$gridLines
-  built_in$decimal <- user_defined$gridLines %||% built_in$decimal
   built_in$lastRowBold <- user_defined$lastRowBold %||% built_in$lastRowBold
+
+  built_in$decimal$cols <- user_defined$decimal$cols %||% built_in$decimal$cols
+  built_in$decimal$precision <- user_defined$decimal$precision %||% built_in$decimal$precision
 
   # level 2 (heights)
   built_in$heights$title <- user_defined$heights$title %||% built_in$heights$title
@@ -180,3 +182,4 @@ xlsx_extract_facade <- function(built_in, user_defined) {
   # level 3
   return(built_in)
 }
+

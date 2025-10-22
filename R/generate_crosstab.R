@@ -142,7 +142,8 @@ generate_crosstab <- function(
             label_separator = label_separator,
             name_separator = name_separator,
             percent_by_column = percent_by_column & add_percent
-          )
+          ) |>
+          set_group_attrs(groups, group_attrs, resolve = FALSE)
 
         if(include_na & length(data_j$category[is.na(data_j$category)]) > 0) {
 
@@ -280,7 +281,6 @@ generate_crosstab <- function(
             which_row <- which(is.na(data[1, ]))
             if(length(which_row) > 0) { data[1, which_row] <- label_total }
           }
-
 
           for(i in seq_along(groups)) {
             group_col <- groups[i]
@@ -513,7 +513,7 @@ add_column_label <- function(
 
   }
 
-  attr(data[[x]], "label") <- data_attr$label
+  # attr(data[[x]], "label") <- data_attr$label
 
   data
 

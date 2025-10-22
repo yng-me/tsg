@@ -1,0 +1,41 @@
+---
+title: "tsg"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{tsg}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tsg)
+```
+
+The `tsg` package provides a set of functions for generating frequency tables, cross-tabulations, and formatted output tables. It is designed to work with data frames and supports various customization options.
+
+## Generate frequency table 
+
+The `generate_frequency()` function creates frequency tables for one or more categorical variables in a data frame. It supports a variety of enhancements, such as sorting, adding totals and percentages, handling missing values, and customizing labels. This function is highly versatile and can work with grouped data, outputting either a single table or a list of tables.
+
+### Basic usage
+
+### 
+
+
+## Generate cross-tabulation 
+
+Using the `generate_crosstab()` function
+
+This function creates a cross-tabulation (contingency table) from the data, allowing for analysis of the relationship between two or more categorical variables.
+
+
+## Generate output using the `generate_output()` function
+
+This function generates a formatted output table from the frequency or cross-tabulation data. It supports various formatting options and can include metadata such as titles and subtitles.

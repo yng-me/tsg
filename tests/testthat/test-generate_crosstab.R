@@ -33,6 +33,7 @@ mock_data_factored <- mock_data_labelled |>
     sex = factor(sex, labels = c("Male", "Female"))
   )
 
+attr(mock_data_labelled$age_group, "label") <- "Age group"
 
 # Unit tests for generate_crosstab function
 test_that("generate_crosstab generates frequency table for one variable", {
@@ -439,6 +440,18 @@ test_that("generate_crosstab handles missing values correctly", {
 
   expect_true(any(result_1$category == "Missing"))
   expect_true(all(!is.na(result_2$category)))
+
+})
+
+
+
+test_that("generate_crosstab retains label when grouping is applied", {
+
+  df_grouped <- mock_data_labelled |>
+    dplyr::group_by(age_group) |>
+    generate_crosstab(type, sex, group_as_list = TRUE)
+
+  expect_equal(attributes(df_grouped[[1]]$age_group)$label, "Age group")
 
 })
 

@@ -1,9 +1,8 @@
 Package: tsg
 Type: Package
-Title: What the Package Does (Title Case)
+Title: xxx
 Version: 0.1.0
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: xxx
 Authors@R: c(
     person(
       "Bhas", 
@@ -26,6 +25,7 @@ Imports:
   purrr,
   tidyr,
   glue,
+  gt,
   dplyr (>= 1.1.0),
   stringr (>= 1.4.0),
   rlang (>= 1.0.2)
@@ -43,3 +43,4 @@ Config/testthat/edition: 3
 RoxygenNote: 7.3.3
 Depends: 
     R (>= 4.1.0)
+VignetteBuilder: knitr

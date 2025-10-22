@@ -18,7 +18,9 @@ utils::globalVariables(
     ),
     tsg.options.facade = list(
       gridLines = FALSE,
-      decimal = 3,
+      decimal = list(
+        precision = 2
+      ),
       lastRowBold = FALSE,
       heights = list(
         title = 24,

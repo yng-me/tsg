@@ -30,6 +30,28 @@ df_factored <- dplyr::tibble(
   value = c(5, 10, 5, 15, 10, 5, 15, 10)
 )
 
+mock_data_labelled <- dplyr::tibble(
+  type = c(1, 2, 1, 2, 3, 1, 3, 2, 1, 1, 3, 1, 1, 2, 2, 3),
+  sex =  c(1, 2, 2, 1, 1, 2, 2, 1, 2, 2, 1, 2, 1, 2, 2, 1),
+  status = c("Healthy", "Sick", "Sick", "Healthy", "Healthy", "Sick", "Sick", "Healthy", "Sick", "Healthy", "Healthy", "Sick", "Sick", "Sick", "Healthy", "Healthy"),
+  age_group = c("Old", "Young", "Young", "Young", "Old", "Old", "Young", "Young", "Young", "Young", "Old", "Young", "Young", "Young", "Young", "Old")
+)
+
+mock_data_labelled <- mock_data_labelled |>
+  dplyr::mutate(
+    type = haven::labelled(
+      type,
+      label = "Type",
+      labels = c(A = 1, B = 2, C = 3)
+    ),
+    sex = haven::labelled(
+      sex,
+      label = "Sex",
+      labels = c(Male = 1, Female = 2)
+    )
+  )
+
+attr(mock_data_labelled$age_group, "label") <- "Age group"
 attr(df_factored$category, "label") <- "Category factor"
 
 test_that("generate_frequency returns correct frequency table", {
@@ -367,4 +389,22 @@ test_that("generate_frequency expand categories correctly", {
 
 
 })
+
+
+test_that("generate_frequency retains label when grouping is applied", {
+
+  df_grouped_1 <- mock_data_labelled |>
+    dplyr::group_by(type) |>
+    generate_frequency(sex)
+
+  df_grouped_2 <- mock_data_labelled |>
+    dplyr::group_by(age_group) |>
+    generate_frequency(sex, group_as_list = TRUE)
+
+  expect_equal(attributes(df_grouped_1$type)$label, "Type")
+  expect_equal(attributes(df_grouped_2$Young$age_group)$label, "Age group")
+
+
+})
+
 

@@ -255,7 +255,7 @@ set_data_attrs <- function(data, column_name, label, as_proportion = FALSE) {
 }
 
 
-set_group_attrs <- function(data, groups, group_attrs) {
+set_group_attrs <- function(data, groups, group_attrs, resolve = TRUE) {
 
   attr_names <- names(group_attrs)
 
@@ -283,11 +283,14 @@ set_group_attrs <- function(data, groups, group_attrs) {
   attr(data, "groups") <- groups
   attr(data, "group_attrs") <- group_attrs
 
+  if(resolve) {
+    data |>
+      resolve_group_col() |>
+      dplyr::select(dplyr::any_of(groups), dplyr::everything())
+  } else {
+    dplyr::select(data, dplyr::any_of(groups), dplyr::everything())
+  }
 
-
-  data |>
-    resolve_group_col() |>
-    dplyr::select(dplyr::any_of(groups), dplyr::everything())
 
 }
 

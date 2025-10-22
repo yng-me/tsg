@@ -201,9 +201,14 @@ xlsx_write_data <- function(
   source_note <- source_note %||% attributes(data)$source_note
   footnotes <- footnotes %||% attributes(data)$footnotes
 
-  facade <- xlsx_extract_facade(
-    built_in = facade,
+  facade_temp <- xlsx_extract_facade(
+    built_in = getOption("tsg.options.facade"),
     user_defined = attributes(data)$facade
+  )
+
+  facade <- xlsx_extract_facade(
+    built_in = facade_temp,
+    user_defined = facade
   )
 
   wb <- xlsx_write_title(
@@ -432,7 +437,8 @@ xlsx_write_data <- function(
         sheet_name = sheet_name,
         rows = (offset_row + header_depth_i):(offset_row_i + header_depth_i),
         offset = start_col - 1,
-        precision = facade$decimal
+        cols = facade$decimal$cols,
+        precision = facade$decimal$precision
       )
 
       xlsx_colwidths(
@@ -689,7 +695,8 @@ xlsx_write_data <- function(
           sheet_name = sheet_name,
           rows = (offset_row_i + 1):(nrow(data_i) + header_depth_i + offset_row_i),
           offset = start_col - 1,
-          precision = facade$decimal
+          cols = facade$decimal$cols,
+          precision = facade$decimal$precision
         )
 
         offset_row_i <- offset_row_i + nrow(data_i) + 3
@@ -754,7 +761,8 @@ xlsx_write_data <- function(
       sheet_name = sheet_name,
       rows = 1:(header_depth + nrow(data)) + offset_row,
       offset = start_col - 1,
-      precision = facade$decimal
+      cols = facade$decimal$cols,
+      precision = facade$decimal$precision
     )
 
     if(facade$lastRowBold) {
