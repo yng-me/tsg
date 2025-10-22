@@ -95,12 +95,12 @@ xlsx_corner_borders <- function(
 
   for(i in 1:4) {
 
-    facade$styles$border_outer$border <- corners[i]
+    facade$style$border_outer$border <- corners[i]
 
     xlsx_eval_style(
       wb = wb,
       sheet_name = sheet_name,
-      style = facade$styles$border_outer,
+      style = facade$style$border_outer,
       rows = corner_rows[[i]],
       cols = corner_cols[[i]]
     )
@@ -110,27 +110,27 @@ xlsx_corner_borders <- function(
 }
 
 
-xlsx_colwidths <- function(wb, sheet_name, cols, facade = getOption("tsg.options.facade"), offset = 0) {
+xlsx_colwidths <- function(wb, sheet_name, cols, facade = get_tsg_facade(), offset = 0) {
 
   openxlsx::setColWidths(
     wb = wb,
     sheet = sheet_name,
     cols = cols,
-    widths = facade$widths$all
+    widths = facade$width$all
   )
 
   openxlsx::setColWidths(
     wb = wb,
     sheet = sheet_name,
     cols = cols[1],
-    widths = facade$widths$first
+    widths = facade$width$first
   )
 
   openxlsx::setColWidths(
     wb = wb,
     sheet = sheet_name,
     cols = cols[length(cols)],
-    widths = facade$widths$last
+    widths = facade$width$last
   )
 
   if(offset > 0) {
@@ -138,7 +138,7 @@ xlsx_colwidths <- function(wb, sheet_name, cols, facade = getOption("tsg.options
       wb = wb,
       sheet = sheet_name,
       cols = 1:offset,
-      widths = facade$widths$offset
+      widths = facade$width$offset
     )
   }
 
@@ -160,22 +160,22 @@ xlsx_extract_facade <- function(built_in, user_defined) {
   built_in$decimal$precision <- user_defined$decimal$precision %||% built_in$decimal$precision
 
   # level 2 (heights)
-  built_in$heights$title <- user_defined$heights$title %||% built_in$heights$title
-  built_in$heights$subtitle <- user_defined$heights$subtitle %||% built_in$heights$subtitle
-  built_in$heights$header <- user_defined$heights$header %||% built_in$heights$header
-  built_in$heights$bottomHeader <- user_defined$heights$bottomHeader %||% built_in$heights$bottomHeader
-  built_in$heights$body <- user_defined$heights$body %||% built_in$heights$body
-  built_in$heights$sourceNote <- user_defined$heights$sourceNote %||% built_in$heights$sourceNote
-  built_in$heights$group <- user_defined$heights$group %||% built_in$heights$group
+  built_in$height$title <- user_defined$height$title %||% built_in$height$title
+  built_in$height$subtitle <- user_defined$height$subtitle %||% built_in$height$subtitle
+  built_in$height$header <- user_defined$height$header %||% built_in$height$header
+  built_in$height$bottomHeader <- user_defined$height$bottomHeader %||% built_in$height$bottomHeader
+  built_in$height$body <- user_defined$height$body %||% built_in$height$body
+  built_in$height$sourceNote <- user_defined$height$sourceNote %||% built_in$height$sourceNote
+  built_in$height$group <- user_defined$height$group %||% built_in$height$group
 
   # level 2 (widths)
-  built_in$widths$offset <- user_defined$widths$offset %||% built_in$widths$offset
-  built_in$widths$first <- user_defined$widths$first %||% built_in$widths$first
-  built_in$widths$all <- user_defined$widths$all %||% built_in$widths$all
-  built_in$widths$last <- user_defined$widths$last %||% built_in$widths$last
+  built_in$width$offset <- user_defined$width$offset %||% built_in$width$offset
+  built_in$width$first <- user_defined$width$first %||% built_in$width$first
+  built_in$width$all <- user_defined$width$all %||% built_in$width$all
+  built_in$width$last <- user_defined$width$last %||% built_in$width$last
 
-  if(is.null(user_defined$widths$last) & !is.null(user_defined$widths$all)) {
-    built_in$widths$last <- user_defined$widths$all
+  if(is.null(user_defined$width$last) & !is.null(user_defined$width$all)) {
+    built_in$width$last <- user_defined$width$all
   }
 
   # TODO

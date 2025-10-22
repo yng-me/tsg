@@ -384,9 +384,9 @@ tsg_pivot_table <- function(
 
   if(add_percent) {
     if(percent_by_column) { total_col <- glue::glue("{col_prefix}total") }
-    data[[total_col]] <- rowSums(data[, grepl(glue::glue("^{col_prefix}"), names(data))], na.rm = TRUE)
+    data[[total_col]] <- as.integer(rowSums(data[, grepl(glue::glue("^{col_prefix}"), names(data))], na.rm = TRUE))
   } else {
-    data[[total_col]] <- rowSums(data[, which(names(data) != ".category" & !(names(data) %in% groups))], na.rm = TRUE)
+    data[[total_col]] <- as.integer(rowSums(data[, which(names(data) != ".category" & !(names(data) %in% groups))], na.rm = TRUE))
   }
 
   if(add_percent) {
@@ -513,7 +513,9 @@ add_column_label <- function(
 
   }
 
-  # attr(data[[x]], "label") <- data_attr$label
+  if(x %in% names(data)) {
+    attr(data[[x]], "label") <- data_attr$label
+  }
 
   data
 

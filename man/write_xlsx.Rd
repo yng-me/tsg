@@ -56,8 +56,7 @@ where the Excel file(s) will be saved. File extension \code{.xlsx} is automatica
 
 \item{names_separator}{Character used to separate column names when dealing with nested or grouped headers.}
 
-\item{facade}{A list of styling options (colors, fonts, sizes, border styles, etc.). Typically provided via
-\code{getOption("tsg.options.facade")}.}
+\item{facade}{A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.}
 }
 \value{
 Invisibly returns \code{NULL}. The function is called for its side-effect of writing Excel file(s).

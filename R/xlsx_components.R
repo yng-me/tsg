@@ -7,7 +7,7 @@ xlsx_write_title <- function(
   offset_col = 0,
   start_col = 1,
   start_row = 1,
-  facade = getOption("tsg.options.facade")
+  facade = get_tsg_facade()
 ) {
 
   if(!is.null(title)) {
@@ -24,7 +24,7 @@ xlsx_write_title <- function(
     xlsx_eval_style(
       wb = wb,
       sheet_name = sheet_name,
-      style = facade$styles$title,
+      style = facade$style$title,
       cols = start_col + offset_col,
       rows = start_row + offset_row
     )
@@ -33,7 +33,7 @@ xlsx_write_title <- function(
       wb = wb,
       sheet = sheet_name,
       rows = start_row + offset_row,
-      heights = facade$heights$title
+      heights = facade$height$title
     )
 
     offset_row <- offset_row + 1
@@ -52,7 +52,7 @@ xlsx_write_title <- function(
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$styles$subtitle,
+        style = facade$style$subtitle,
         rows = start_row + offset_row,
         cols = start_col + offset_col
       )
@@ -61,7 +61,7 @@ xlsx_write_title <- function(
         wb = wb,
         sheet = sheet_name,
         rows = start_row + offset_row,
-        heights = facade$heights$subtitle
+        heights = facade$height$subtitle
       )
 
       offset_row <- offset_row + 1
@@ -84,7 +84,7 @@ xlsx_write_footnotes <- function(
   sheet_name,
   offset_row = 0,
   offset_col = 0,
-  facade = getOption("tsg.options.facade")
+  facade = get_tsg_facade()
 ) {
 
   if(length(footnotes) == 0) return(wb)
@@ -113,7 +113,7 @@ xlsx_write_footnotes <- function(
   xlsx_eval_style(
     wb = wb,
     sheet_name = sheet_name,
-    style = facade$styles$footnote,
+    style = facade$style$footnote,
     cols = offset_col + 1,
     rows = offset_row:(offset_row + length(footnotes))
   )

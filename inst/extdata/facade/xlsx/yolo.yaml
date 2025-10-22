@@ -1,0 +1,60 @@
+gridLines: true
+lastRowBold: false
+decimal:
+  precision: 2
+heights:
+  title: 24
+  subtitle: 22
+  header: 24
+  bottomHeader: 46
+  body: 20
+  sourceNote: 20
+  group: 30
+widths:
+  offset: 2
+  first: 24
+  last: 14
+  all: 14
+styles:
+  body:
+    indent: 1
+    valign: 'center'
+    border:
+      - 'left'
+      - 'right'
+    numFmt: '#,##0'
+    borderStyle: 'thin'
+    borderColour: '#000000'
+  title:
+    fontSize: 13
+    textDecoration: 'bold'
+  subtitle:
+    fontSize: 12
+    textDecoration: 'bold'
+    valign: 'center'
+  footnote:
+    fontSize: 10
+    textDecoration: 'italic'
+  source_note:
+    fontSize: 10
+    textDecoration: 'italic'
+    valign: 'center'
+  header:
+    wrapText: true
+    fgFill: '#FAF7EF'
+    border:
+      - 'top'
+      - 'bottom'
+      - 'left'
+      - 'right'
+    borderStyle: 'thin'
+    borderColour: '#000000'
+  indent:
+    indent: 1
+    valign: 'center'
+  border_outer:
+    borderColour: '#000000'
+  border_header:
+    border: 'bottom'
+    borderColour: '#000000'
+    borderStyle: 'medium'

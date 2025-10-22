@@ -290,8 +290,6 @@ set_group_attrs <- function(data, groups, group_attrs, resolve = TRUE) {
   } else {
     dplyr::select(data, dplyr::any_of(groups), dplyr::everything())
   }
-
-
 }
 
 
@@ -310,22 +308,23 @@ tsg_sort_top_n <- function(data, top_n = NULL, top_n_only = FALSE) {
   if(is.null(top_n)) { return(data) }
   if(nrow(data) <= top_n + 1) { return(data) }
 
-  if(top_n_only) {
-     dplyr::slice_head(data, n = top_n)
-  } else {
-    # Create "Others" row summing frequencies of all rows beyond top_n
-    data_others <- data |>
-      dplyr::slice_tail(n = nrow(data) - top_n) |>
-      dplyr::summarise(
-        .category = "Others",
-        frequency = sum(frequency, na.rm = TRUE),
-        .groups = "drop"
-      )
-    # Bind "Others" row to top_n rows
-    data |>
-      dplyr::slice_head(n = top_n) |>
-      dplyr::bind_rows(data_others)
-  }
+  return(dplyr::slice_head(data, n = top_n))
+
+  # if(top_n_only) {
+  # } else {
+  #   # Create "Others" row summing frequencies of all rows beyond top_n
+  #   data_others <- data |>
+  #     dplyr::slice_tail(n = nrow(data) - top_n) |>
+  #     dplyr::summarise(
+  #       .category = "Others",
+  #       frequency = sum(frequency, na.rm = TRUE),
+  #       .groups = "drop"
+  #     )
+  #   # Bind "Others" row to top_n rows
+  #   data |>
+  #     dplyr::slice_head(n = top_n) |>
+  #     dplyr::bind_rows(data_others)
+  # }
 
 }
 
@@ -361,7 +360,6 @@ tsg_handle_na <- function(data, column_name, include_na) {
   if(!include_na) {
     data <- dplyr::filter(data, !is.na(!!as.name(column_name)))
   }
-
   data
 }
 
