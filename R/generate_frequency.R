@@ -222,8 +222,6 @@ generate_frequency <- function(
     # if with missing .category
     if(include_na & length(data_i$.category[is.na(data_i$.category)]) > 0) {
 
-      print(data_i$.category[is.na(data_i$.category)])
-
       data_i$.category <- add_missing_label(
         value = data_i$.category,
         label_na = label_na,

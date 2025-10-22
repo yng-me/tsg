@@ -19,7 +19,7 @@ write_xlsx(
   collapse_list = FALSE,
   row_group_as_column = FALSE,
   names_separator = "__",
-  facade = getOption("tsg.options.facade")
+  facade = get_tsg_facade()
 )
 }
 \arguments{

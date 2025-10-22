@@ -1,3 +1,14 @@
+#' Rename data labels
+#'
+#' @param data
+#' @param ... A named list of labels to rename. The names should match the column names in the data, and the values should be the new labels.
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#'
+#'
 rename_label <- function(data, ...) {
 
   rename_list <- rlang::list2(...)
@@ -6,6 +17,17 @@ rename_label <- function(data, ...) {
   add_data_label(data, rename_list)
 
 }
+
+#' Remnove data labels
+#'
+#' @param data
+#' @param ...
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#'
 
 remove_label <- function(data, ...) {
 
@@ -42,6 +64,17 @@ remove_label <- function(data, ...) {
   return(data)
 
 }
+
+#' Remove all labels
+#'
+#' @param data
+#' @param ...
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#'
 
 remove_labels <- function(data, ...) {
 
@@ -81,6 +114,7 @@ remove_labels <- function(data, ...) {
   return(data)
 
 }
+
 
 add_data_label <- function(data, labels) {
 

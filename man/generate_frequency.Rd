@@ -28,7 +28,6 @@ generate_frequency(
   expand_categories = TRUE,
   collapse_list = FALSE,
   top_n = NULL,
-  top_n_only = FALSE,
   metadata = NULL
 )
 }
@@ -79,9 +78,9 @@ generate_frequency(
 
 \item{top_n}{Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.}
 
-\item{top_n_only}{Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.}
-
 \item{metadata}{A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.}
+
+\item{top_n_only}{Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.}
 }
 \value{
 A frequency table (\code{tibble}, possibly nested) or a list of such tables. Additional attributes such as labels, metadata, and grouping information may be attached. The returned object is of class \code{"tsg"}.
