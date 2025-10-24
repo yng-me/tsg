@@ -1,3 +1,14 @@
+#' Title
+#'
+#' @param facade A character string specifying the name of the facade to retrieve. Defaults to "default". The facade is a YAML file that defines the styling and layout of the table.
+#' @param which A character string specifying the format of the facade to retrieve. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#'
+
 get_tsg_facade <- function(facade = "default", which = c("xlsx", "pdf", "html")) {
 
   match.arg(which, several.ok = FALSE)

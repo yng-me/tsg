@@ -26,8 +26,10 @@ generate_frequency(
   label_na = "Not reported",
   label_total = "Total",
   expand_categories = TRUE,
+  convert_factor = FALSE,
   collapse_list = FALSE,
   top_n = NULL,
+  top_n_only = FALSE,
   metadata = NULL
 )
 }
@@ -74,13 +76,15 @@ generate_frequency(
 
 \item{expand_categories}{Logical. If \code{TRUE}, ensures all categories (including those with zero counts) are included in the output.}
 
+\item{convert_factor}{Logical. If \code{TRUE}, converts labelled vectors to factors in the output.}
+
 \item{collapse_list}{Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers.}
 
 \item{top_n}{Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.}
 
-\item{metadata}{A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.}
-
 \item{top_n_only}{Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.}
+
+\item{metadata}{A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.}
 }
 \value{
 A frequency table (\code{tibble}, possibly nested) or a list of such tables. Additional attributes such as labels, metadata, and grouping information may be attached. The returned object is of class \code{"tsg"}.

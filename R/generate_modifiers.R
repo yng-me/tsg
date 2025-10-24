@@ -248,3 +248,30 @@ add_table_subtitle <- function(data, subtitle) {
 
   data
 }
+
+
+add_table_number <- function(data, table_number) {
+
+  if(!is.numeric(number)) stop("Table number must be numeric.")
+  if(length(number) > 1) stop("Table number must be a single numeric value.")
+
+  attr(data, "table_number") <- table_number
+
+  data
+
+}
+
+
+#' Convert labelled factors to regular factors
+#'
+#' @param data
+#'
+#' @returns
+#' @export
+#'
+#' @examples
+#'
+
+convert_factor <- function(data) {
+  dplyr::mutate_if(data, haven::is.labelled, haven::as_factor)
+}

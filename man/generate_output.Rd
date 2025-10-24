@@ -4,16 +4,16 @@
 \alias{generate_output}
 \title{Generate output in specified format (e.g., xlsx, html, pdf, word)}
 \usage{
-generate_output(data, path, format, ...)
+generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
 }
 \arguments{
 \item{data}{Preferably a \code{tsg} class object for best results. A data frame, tibble, and list are also supported.}
 
 \item{path}{File path to save the output.}
 
-\item{format}{Output format. One of \code{"xlsx"}, \code{"html"}, \code{"pdf"}, or \code{"word"}.}
-
 \item{...}{Additional arguments passed to specific format functions.}
+
+\item{format}{Output format. One of \code{"xlsx"}, \code{"html"}, \code{"pdf"}, or \code{"word"}.}
 }
 \value{
 Generates and saves the output file in the specified format at the given path.

@@ -30,7 +30,6 @@ style:
     textDecoration: 'bold'
   subtitle:
     fontSize: 12
-    textDecoration: 'bold'
     valign: 'center'
   footnote:
     fontSize: 10

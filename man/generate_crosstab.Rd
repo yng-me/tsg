@@ -29,6 +29,7 @@ generate_crosstab(
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
+  convert_factor = FALSE,
   metadata = NULL
 )
 }

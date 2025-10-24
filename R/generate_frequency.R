@@ -29,6 +29,7 @@
 #' @param top_n_only Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.
 #' @param collapse_list Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers.
 #' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
+#' @param convert_factor Logical. If \code{TRUE}, converts labelled vectors to factors in the output.
 #'
 #' @return A frequency table (\code{tibble}, possibly nested) or a list of such tables. Additional attributes such as labels, metadata, and grouping information may be attached. The returned object is of class \code{"tsg"}.
 #'
@@ -60,9 +61,10 @@ generate_frequency <- function(
   label_na = "Not reported",
   label_total = "Total",
   expand_categories = TRUE,
+  convert_factor = FALSE,
   collapse_list = FALSE,
   top_n = NULL,
-  # top_n_only = FALSE,
+  top_n_only = FALSE,
   metadata = NULL
 ) {
 
@@ -164,6 +166,10 @@ generate_frequency <- function(
 
         }
 
+        if(convert_factor) {
+          data_j <- dplyr::mutate_if(data_j, haven::is.labelled, haven::as_factor)
+        }
+
         data_ij[[list_group_j]] <- dplyr::rename(data_j, category = .category)
 
       }
@@ -216,6 +222,10 @@ generate_frequency <- function(
       }
 
       data_i <- set_data_attrs(data_i, column_name, label, as_proportion)
+
+      if(convert_factor) {
+        data_i <- dplyr::mutate_if(data_i, haven::is.labelled, haven::as_factor)
+      }
 
     }
 

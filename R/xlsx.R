@@ -24,6 +24,8 @@
 #' @param row_group_as_column Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles.
 #' @param names_separator Character used to separate column names when dealing with nested or grouped headers.
 #' @param facade A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.
+#' @param include_table_list
+#' @param table_list_reference
 #'
 #' @return Invisibly returns \code{NULL}. The function is called for its side-effect of writing Excel file(s).
 #'
@@ -65,6 +67,8 @@ write_xlsx <- function(
   collapse_list = FALSE,
   row_group_as_column = FALSE,
   names_separator = "__",
+  include_table_list = FALSE,
+  table_list_reference = NULL,
   facade = get_tsg_facade()
 ) {
 
@@ -101,11 +105,67 @@ write_xlsx <- function(
   # --- and each item in the list is written in its own sheet
   if(inherits(data, "list") & !collapse_list) {
 
+    if(include_table_list) {
+
+      sheet_summary <- 'List of Tables'
+
+      if(!is.null(table_list_reference)) {
+        table_list_reference <- table_list_reference |>
+          dplyr::filter(table_id %in% names(data)) |>
+          dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
+      } else {
+        table_list_reference <- create_table_list(data)
+      }
+
+      wb <- xlsx_write_data(
+        wb,
+        dplyr::select(table_list_reference, table_name, title) |>
+          rename_label(
+            table_name = "Table name",
+            title = "Title"
+          ),
+        sheet_name = sheet_summary,
+        title = sheet_summary,
+        offset_col = 1,
+        offset_row = 1,
+        facade = list(
+          gridLines = FALSE,
+          width = list(
+            first = 16,
+            all = 120
+          )
+        )
+      )
+
+      for (s in 1:nrow(table_list_reference)) {
+
+        hyperlink <- table_list_reference$table_name[s]
+        hyperlink_name <- glue::glue("Table {table_list_reference$table_number[s]}")
+
+        openxlsx::writeFormula(
+          wb,
+          sheet = sheet_summary,
+          startCol = 2,
+          startRow =  4 + s,
+          x = openxlsx::makeHyperlinkString(sheet = hyperlink, text = hyperlink_name)
+        )
+      }
+    }
+
     sheet_names <- names(data)
 
     for(i in seq_along(sheet_names)) {
 
       sheet_name_i <- xlsx_set_valid_sheet_name(sheet_names[i])
+
+      if(include_table_list) {
+        table_list_reference_i <- table_list_reference |>
+          dplyr::filter(table_id == sheet_names[i])
+
+        if(nrow(table_list_reference_i) > 0) {
+          sheet_name_i <- xlsx_set_valid_sheet_name(table_list_reference_i$table_name[1])
+        }
+      }
 
       title_i <- NULL
       if(!is.null(title)) {

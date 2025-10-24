@@ -19,6 +19,8 @@ write_xlsx(
   collapse_list = FALSE,
   row_group_as_column = FALSE,
   names_separator = "__",
+  include_table_list = FALSE,
+  table_list_reference = NULL,
   facade = get_tsg_facade()
 )
 }
@@ -55,6 +57,8 @@ where the Excel file(s) will be saved. File extension \code{.xlsx} is automatica
 \item{row_group_as_column}{Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles.}
 
 \item{names_separator}{Character used to separate column names when dealing with nested or grouped headers.}
+
+\item{table_list_reference}{}
 
 \item{facade}{A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.}
 }

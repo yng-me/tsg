@@ -178,8 +178,38 @@ xlsx_extract_facade <- function(built_in, user_defined) {
     built_in$width$last <- user_defined$width$all
   }
 
-  # TODO
-  # level 3
+  built_in$style$group <- user_defined$height$group %||% built_in$height$group
+
+  built_in$style$body$indent <- user_defined$style$body$indent %||% built_in$style$body$indent
+  built_in$style$body$valign <- user_defined$style$body$valign %||% built_in$style$body$valign
+  built_in$style$body$border <- user_defined$style$body$border %||% built_in$style$body$border
+  built_in$style$body$numFmt <- user_defined$style$body$numFmt %||% built_in$style$body$numFmt
+  built_in$style$body$borderStyle <- user_defined$style$body$borderStyle %||% built_in$style$body$borderStyle
+  built_in$style$body$borderColour <- user_defined$style$body$borderColour %||% built_in$style$body$borderColour
+
+  built_in$style$title$fontSize <- built_in$style$title$fontSize %||% built_in$style$title$fontSize
+  built_in$style$title$textDecoration <- built_in$style$title$textDecoration %||% built_in$style$title$textDecoration
+  built_in$style$subtitle$fontSize <- built_in$style$subtitle$fontSize %||% built_in$style$subtitle$fontSize
+  built_in$style$subtitle$textDecoration <- built_in$style$subtitle$textDecoration %||% built_in$style$subtitle$textDecoration
+  built_in$style$subtitle$valign <- built_in$style$subtitle$valign %||% built_in$style$subtitle$valign
+  built_in$style$footnote$fontSize <- built_in$style$footnote$fontSize %||% built_in$style$footnote$fontSize
+  built_in$style$footnote$textDecoration <- built_in$style$footnote$textDecoration %||% built_in$style$footnote$textDecoration
+  built_in$style$source_note$fontSize <- built_in$style$source_note$fontSize %||% built_in$style$source_note$fontSize
+  built_in$style$source_note$textDecoration <- built_in$style$source_note$textDecoration %||% built_in$style$source_note$textDecoration
+  built_in$style$source_note$valign <- built_in$style$source_note$valign %||% built_in$style$source_note$valign
+  built_in$style$header$wrapText <- built_in$style$header$wrapText %||% built_in$style$header$wrapText
+  built_in$style$header$fgFill <- built_in$style$header$fgFill %||% built_in$style$header$fgFill
+  built_in$style$header$bgFill <- built_in$style$header$bgFill %||% built_in$style$header$bgFill
+  built_in$style$header$border <- built_in$style$header$border %||% built_in$style$header$border
+  built_in$style$header$borderStyle <- built_in$style$header$borderStyle %||% built_in$style$header$borderStyle
+  built_in$style$header$borderColour <- built_in$style$header$borderColour %||% built_in$style$header$borderColour
+  built_in$style$indent$indent <- built_in$style$indent$indent %||% built_in$style$indent$indent
+  built_in$style$indent$valign <- built_in$style$indent$valign %||% built_in$style$indent$valign
+  built_in$style$border_outer$borderColour <- built_in$style$border_outer$borderColour %||% built_in$style$border_outer$borderColour
+  built_in$style$border_header$border <- built_in$style$border_header$border %||% built_in$style$border_header$border
+  built_in$style$border_header$borderColour <- built_in$style$border_header$borderColour %||% built_in$style$border_header$borderColour
+  built_in$style$border_header$borderStyle <- built_in$style$border_header$borderStyle %||% built_in$style$border_header$borderStyle
+
   return(built_in)
 }
 

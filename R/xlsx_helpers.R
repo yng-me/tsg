@@ -1,4 +1,11 @@
-xlsx_header_merge <- function(wb, data, ..., offset_row = 0, offset_col = 0, names_separator = "__") {
+xlsx_header_merge <- function(
+  wb,
+  data,
+  ...,
+  offset_row = 0,
+  offset_col = 0,
+  names_separator = "__"
+) {
 
   depths <- get_header_depth(data, names_separator = names_separator)
   depth_max <- max(depths, na.rm = TRUE)
@@ -90,7 +97,13 @@ get_header <- function(data, names_separator = "__") {
     label <- label %||% column
     column_labels <- c(column_labels, label)
   }
-  x <- stringr::str_split(column_labels, pattern = names_separator)
+
+  x <- stats::setNames(
+    stringr::str_split(column_labels, pattern = names_separator),
+    columns
+  )
+
+  x
 }
 
 get_header_split <- function(data, i = 1, ...) {

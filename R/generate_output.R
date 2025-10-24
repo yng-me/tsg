@@ -20,11 +20,16 @@
 #'  )
 #'
 
-generate_output <- function(data, path, format, ...) {
+generate_output <- function(
+  data,
+  path,
+  ...,
+  format = c("xlsx", "html", "pdf", "word")
+) {
 
   match.arg(format, c("xlsx", "html", "pdf", "word"))
 
-  if (format == "xlsx") {
+  if (format[1] == "xlsx") {
 
     list_depth <- purrr::pluck_depth(data)
 
@@ -35,7 +40,7 @@ generate_output <- function(data, path, format, ...) {
     }
 
   } else if (format == "html") {
-    stop("HTML format not yet implemented")
+
   } else if (format == "pdf") {
     stop("PDF format not yet implemented")
   } else if (format == "word") {
@@ -43,3 +48,45 @@ generate_output <- function(data, path, format, ...) {
   }
 
 }
+
+
+create_table_list <- function(data) {
+
+  if(!inherits(data, "list")) {
+    stop("Data must be a list to create a table list.")
+  }
+
+  tables <- names(data)
+
+  table_list <- dplyr::tibble(
+    table_number = integer(),
+    table_name = character(),
+    title = character()
+  )
+
+  for(i in seq_along(tables)) {
+
+    attr_i <- attributes(data[[i]])
+    title_i <- attr_i$title %||% tables[i]
+
+    table_list_i <- dplyr::tibble(
+      table_number = i,
+      table_id = title_i,
+      table_name = xlsx_set_valid_sheet_name(title_i),
+      title = title_i
+    )
+
+    table_list <- dplyr::bind_rows(
+      table_list,
+      table_list_i
+    )
+  }
+
+  rename_label(
+    table_list,
+    table_number = "Table number",
+    title = "Title"
+  )
+}
+
+

@@ -41,7 +41,8 @@ styles:
     valign: 'center'
   header:
     wrapText: true
-    fgFill: '#FAF7EF'
+    bgFill: 'red',
+    fgFill: 'red'
     border:
       - 'top'
       - 'bottom'

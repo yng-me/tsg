@@ -34,7 +34,6 @@
 # ' data <- generate_crosstab(dplyr::starwars, species, sex)
 #' data
 
-
 generate_crosstab <- function(
   data,
   x,
@@ -60,6 +59,7 @@ generate_crosstab <- function(
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
+  convert_factor = FALSE,
   metadata = NULL
 ) {
 
@@ -154,6 +154,10 @@ generate_crosstab <- function(
             label_na = label_na,
             recode_na = recode_na
           )
+        }
+
+        if(convert_factor) {
+          data_j <- dplyr::mutate_if(data_j, haven::is.labelled, haven::as_factor)
         }
 
         data_ij[[list_group_j]] <- data_j
@@ -318,6 +322,11 @@ generate_crosstab <- function(
           recode_na = recode_na
         )
       }
+
+      if(convert_factor) {
+        data_i <- dplyr::mutate_if(data_i, haven::is.labelled, haven::as_factor)
+      }
+
     }
 
     df_list[[list_name]] <- data_i
