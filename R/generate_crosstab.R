@@ -89,11 +89,7 @@ generate_crosstab <- function(
       if(is.null(list_name)) { list_name <- column_name }
     }
 
-    if(!include_na) {
-      data <- dplyr::filter(data, !is.na({{x}}), !is.na(!!as.name(column_name)))
-    }
-
-    data_i <- tsg_get_crosstab(data, {{x}}, column_name)
+    data_i <- tsg_get_crosstab(data, {{x}}, column_name, include_na)
 
     if(group_as_list & length(groups) > 0) {
 
@@ -172,7 +168,6 @@ generate_crosstab <- function(
       multiplier <- get_multiplier(as_proportion)
 
       if(calculate_per_group & length(groups) > 0) {
-
 
         data_i <- data_i |>
           dplyr::group_by(dplyr::across(dplyr::all_of(groups))) |>

@@ -74,11 +74,11 @@ generate_frequency <- function(
   df <- list()
 
   groups <- dplyr::group_vars(data)
-  group_attrs <- get_group_attrs(data, groups)
 
   if(n_args > 0) {
     data <- dplyr::select(data, dplyr::any_of(groups), ...)
   }
+  group_attrs <- get_group_attrs(data, groups)
 
   column_names <- names(data)
   label_stubs <- get_label_stubs(column_names, label_stub)
@@ -98,17 +98,19 @@ generate_frequency <- function(
 
     categories <- unique(data[[column_name]])
 
+    if(!is.null(sort_except) & sort_value) {
+      sort_value <- !(column_name %in% sort_except)
+    } else if(!is.null(sort_except) & !sort_value) {
+      sort_value <- column_name %in% sort_except
+    }
+
     data_i <- data |>
-      tsg_handle_na(column_name, include_na) |>
-      tsg_get_frequency(column_name) |>
+      tsg_get_frequency(column_name, include_na) |>
       tsg_sort_col_value(
-        column_name = column_name,
         sort_value = sort_value,
         sort_desc = sort_desc,
-        sort_except = sort_except,
         groups = groups
-      ) |>
-      tsg_sort_top_n(top_n, top_n_only)
+      )
 
     if(group_as_list & length(groups) > 0) {
 
@@ -146,7 +148,18 @@ generate_frequency <- function(
             add_total = add_total,
             position = position_total[1],
             label_total = label_total,
-            groups = groups
+            groups = groups,
+            add_cumulative = add_cumulative,
+            add_cumulative_percent = add_cumulative_percent
+          ) |>
+          tsg_sort_top_n(
+            top_n = top_n,
+            top_n_only = top_n_only,
+            sort_value = sort_value,
+            add_total = add_total,
+            add_percent = add_percent,
+            position_total = position_total[1],
+            as_proportion = as_proportion
           ) |>
           set_data_attrs(
             column_name,
@@ -197,7 +210,18 @@ generate_frequency <- function(
                 x = .category,
                 add_total = add_total,
                 position = position_total[1],
-                label_total = label_total
+                label_total = label_total,
+                add_cumulative = add_cumulative,
+                add_cumulative_percent = add_cumulative_percent
+              ) |>
+              tsg_sort_top_n(
+                top_n = top_n,
+                top_n_only = top_n_only,
+                sort_value = sort_value,
+                add_total = add_total,
+                add_percent = add_percent,
+                position_total = position_total[1],
+                as_proportion = as_proportion
               )
           })) |>
           tidyr::unnest(cols = c(data)) |>
@@ -216,27 +240,38 @@ generate_frequency <- function(
             x = .category,
             add_total = add_total,
             position = position_total[1],
-            label_total = label_total
+            label_total = label_total,
+            add_cumulative = add_cumulative,
+            add_cumulative_percent = add_cumulative_percent
+          ) |>
+          tsg_sort_top_n(
+            top_n = top_n,
+            top_n_only = top_n_only,
+            sort_value = sort_value,
+            add_total = add_total,
+            add_percent = add_percent,
+            position_total = position_total[1],
+            as_proportion = as_proportion
           ) |>
           set_group_attrs(groups, group_attrs)
       }
 
       data_i <- set_data_attrs(data_i, column_name, label, as_proportion)
 
+      # if with missing .category
+      if(include_na & length(data_i$.category[is.na(data_i$.category)]) > 0) {
+
+        data_i$.category <- add_missing_label(
+          value = data_i$.category,
+          label_na = label_na,
+          recode_na = recode_na
+        )
+
+      }
+
       if(convert_factor) {
         data_i <- dplyr::mutate_if(data_i, haven::is.labelled, haven::as_factor)
       }
-
-    }
-
-    # if with missing .category
-    if(include_na & length(data_i$.category[is.na(data_i$.category)]) > 0) {
-
-      data_i$.category <- add_missing_label(
-        value = data_i$.category,
-        label_na = label_na,
-        recode_na = recode_na
-      )
 
     }
 

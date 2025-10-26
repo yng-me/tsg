@@ -87,7 +87,9 @@ tsg_add_row_total <- function(
   add_total = TRUE,
   position = "bottom",
   label_total = "Total",
-  groups = NULL
+  groups = NULL,
+  add_cumulative = FALSE,
+  add_cumulative_percent = FALSE
 ) {
 
   if(!add_total) { return(data) }
@@ -95,11 +97,25 @@ tsg_add_row_total <- function(
   attr(data, "category") <- names(dplyr::select(data, {{x}}))
   attr(data, "groups") <- groups
 
-  add_row_total(
+  data <- add_row_total(
     data = data,
     position = position,
     label_total = label_total
   )
+
+  if("cumulative_percent" %in% names(data)) {
+    data$cumulative_percent[[nrow(data)]] <- NA_real_
+  }
+
+  if("cumulative_proportion" %in% names(data)) {
+    data$cumulative_proportion[[nrow(data)]] <- NA_real_
+  }
+
+  if("cumulative" %in% names(data)) {
+    data$cumulative[[nrow(data)]] <- NA_integer_
+  }
+
+  data
 
 }
 
@@ -303,49 +319,109 @@ resolve_group_col <- function(data, condition = TRUE) {
   data
 }
 
-tsg_sort_top_n <- function(data, top_n = NULL, top_n_only = FALSE) {
+tsg_sort_top_n <- function(
+  data,
+  top_n = NULL,
+  top_n_only = FALSE,
+  sort_value = TRUE,
+  add_total = TRUE,
+  add_percent = TRUE,
+  position_total = "bottom",
+  as_proportion = FALSE
+) {
 
-  if(is.null(top_n)) { return(data) }
-  if(nrow(data) <= top_n + 1) { return(data) }
+  multiplier <- get_multiplier(as_proportion)
 
-  return(dplyr::slice_head(data, n = top_n))
+  if(is.null(top_n) | !sort_value) { return(data) }
+  if(nrow(data) <= top_n + 1 + add_total) { return(data) }
 
-  # if(top_n_only) {
-  # } else {
-  #   # Create "Others" row summing frequencies of all rows beyond top_n
-  #   data_others <- data |>
-  #     dplyr::slice_tail(n = nrow(data) - top_n) |>
-  #     dplyr::summarise(
-  #       .category = "Others",
-  #       frequency = sum(frequency, na.rm = TRUE),
-  #       .groups = "drop"
-  #     )
-  #   # Bind "Others" row to top_n rows
-  #   data |>
-  #     dplyr::slice_head(n = top_n) |>
-  #     dplyr::bind_rows(data_others)
-  # }
+  if(position_total == "bottom") {
+    total <- tail(data, add_total)
+    data_top_n <- dplyr::bind_rows(
+      dplyr::slice_head(data, n = top_n),
+      tail(data, add_total)
+    )
+  } else {
+    total <- head(data, add_total)
+    data_top_n <- dplyr::slice_head(data, n = top_n + add_total)
+  }
+
+  if(!top_n_only) {
+
+    if(nrow(total) == 0) {
+      total_frequency <- sum(data$frequency, na.rm = TRUE)
+    } else {
+      total_frequency <- total$frequency
+    }
+
+    if(add_percent) {
+
+      data_others <- dplyr::summarise(
+        dplyr::anti_join(data, data_top_n, by = ".category"),
+        frequency = sum(frequency, na.rm = TRUE),
+        !!as.name(multiplier$col) := (frequency / total_frequency) * multiplier$value,
+        .category = "Others"
+      )
+
+    } else {
+      data_others <- dplyr::summarise(
+        dplyr::anti_join(data, data_top_n, by = ".category"),
+        frequency = sum(frequency, na.rm = TRUE),
+        .category = "Others"
+      )
+    }
+
+    with_cumulative <- "cumulative" %in% names(data)
+    with_cumulative_p <- multiplier$cumulative_col %in% names(data)
+
+    if(with_cumulative & with_cumulative_p) {
+
+      data_others <- dplyr::mutate(
+        data_others,
+        cumulative = total_frequency,
+        !!as.name(multiplier$cumulative_col) := 100
+      )
+
+    } else if (with_cumulative) {
+
+      data_others <- dplyr::mutate(
+        data_others,
+        cumulative = total_frequency
+      )
+
+    } else if (with_cumulative_p) {
+
+      data_others <- dplyr::mutate(
+        data_others,
+        !!as.name(multiplier$cumulative_col) := 100
+      )
+
+    }
+
+    if(position_total == "bottom") {
+      data_top_n <- dplyr::slice_head(data, n = top_n) |>
+        dplyr::bind_rows(data_others) |>
+        dplyr::bind_rows(tail(data, add_total))
+    } else {
+
+      data_top_n <- dplyr::bind_rows(data_top_n, data_others)
+    }
+
+  }
+
+  data_top_n
 
 }
 
 
 tsg_sort_col_value <- function(
   data,
-  column_name,
   sort_value,
   sort_desc,
-  sort_except,
   groups
 ) {
 
   if(length(groups) > 0) { return(data) }
-
-  if(!is.null(sort_except) & sort_value) {
-    sort_value <- !(column_name %in% sort_except)
-  } else if(!is.null(sort_except) & !sort_value) {
-    sort_value <- column_name %in% sort_except
-  }
-
   if(!sort_value) { return(data) }
 
   if(sort_desc) {
@@ -356,14 +432,13 @@ tsg_sort_col_value <- function(
 
 }
 
-tsg_handle_na <- function(data, column_name, include_na) {
+
+tsg_get_frequency <- function(data, column_name, include_na) {
+
   if(!include_na) {
     data <- dplyr::filter(data, !is.na(!!as.name(column_name)))
   }
-  data
-}
 
-tsg_get_frequency <- function(data, column_name) {
   data |>
     dplyr::rename(.category := !!as.name(column_name)) |>
     dplyr::group_by(.category, .add = TRUE) |>
@@ -373,7 +448,12 @@ tsg_get_frequency <- function(data, column_name) {
 }
 
 
-tsg_get_crosstab <- function(data, x, column_name) {
+tsg_get_crosstab <- function(data, x, column_name, include_na) {
+
+  if(!include_na) {
+    data <- dplyr::filter(data, !is.na(!!as.name(column_name)))
+  }
+
   data |>
     dplyr::group_by({{x}}, !!as.name(column_name), .add = TRUE) |>
     dplyr::count(name = "frequency") |>
