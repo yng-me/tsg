@@ -7,7 +7,7 @@
 get_tsg_facade(facade = "default", which = c("xlsx", "pdf", "html"))
 }
 \arguments{
-\item{facade}{A character string specifying the name of the facade to retrieve. Defaults to "default". The facade is a YAML file that defines the styling and layout of the table.}
+\item{facade}{A character string specifying the name of the facade to retrieve. Defaults to "default". The facade is a YAML file that defines the styling and layout of the table}
 
 \item{which}{A character string specifying the format of the facade to retrieve. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".}
 }

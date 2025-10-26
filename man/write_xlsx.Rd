@@ -13,8 +13,6 @@ write_xlsx(
   subtitle = NULL,
   source_note = NULL,
   footnotes = NULL,
-  offset_row = 0,
-  offset_col = 0,
   separate_files = FALSE,
   collapse_list = FALSE,
   row_group_as_column = FALSE,
@@ -45,10 +43,6 @@ where the Excel file(s) will be saved. File extension \code{.xlsx} is automatica
 \item{source_note}{Optional source note displayed below the data.}
 
 \item{footnotes}{Optional character vector of footnotes to display below the source note.}
-
-\item{offset_row}{Number of rows to leave blank before the content starts. Useful for spacing.}
-
-\item{offset_col}{Number of columns to leave blank before the content starts.}
 
 \item{separate_files}{Logical. If \code{TRUE}, each list item in \code{data} is saved as a separate Excel file.}
 

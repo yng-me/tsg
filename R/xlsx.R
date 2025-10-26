@@ -17,8 +17,6 @@
 #' @param subtitle Optional subtitle displayed under the title.
 #' @param source_note Optional source note displayed below the data.
 #' @param footnotes Optional character vector of footnotes to display below the source note.
-#' @param offset_row Number of rows to leave blank before the content starts. Useful for spacing.
-#' @param offset_col Number of columns to leave blank before the content starts.
 #' @param separate_files Logical. If \code{TRUE}, each list item in \code{data} is saved as a separate Excel file.
 #' @param collapse_list Logical. If \code{TRUE}, a list of data frames will be merged into one sheet (if applicable).
 #' @param row_group_as_column Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles.
@@ -61,8 +59,6 @@ write_xlsx <- function(
   subtitle = NULL,
   source_note = NULL,
   footnotes = NULL,
-  offset_row = 0,
-  offset_col = 0,
   separate_files = FALSE,
   collapse_list = FALSE,
   row_group_as_column = FALSE,
@@ -72,8 +68,16 @@ write_xlsx <- function(
   facade = get_tsg_facade()
 ) {
 
+  offset_row <- facade$table.offsetRow
+  offset_col <- facade$table.offsetCol
+
   # --- Data inherits a "list" class and data is
   # --- to be as separate file per item in the list
+
+  if(separate_files & !inherits(data, "list")) {
+    stop("When `separate_files = TRUE`, `data` must be a list of data frames.")
+  }
+
   if(inherits(data, "list") & separate_files) {
     return(
       write_xlsx_multiple_files(
@@ -99,7 +103,11 @@ write_xlsx <- function(
   }
 
   wb <- openxlsx::createWorkbook(...)
-  openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 12)
+  openxlsx::modifyBaseFont(
+    wb,
+    fontName = facade$table.fontName,
+    fontSize = facade$table.fontSize
+  )
 
   # --- Data inherits a "list" class and data is to be exported as one file
   # --- and each item in the list is written in its own sheet
@@ -121,20 +129,13 @@ write_xlsx <- function(
         wb,
         dplyr::select(table_list_reference, table_name, title) |>
           rename_label(
-            table_name = "Table name",
+            table_number = "Table number",
             title = "Title"
           ),
         sheet_name = sheet_summary,
         title = sheet_summary,
         offset_col = 1,
-        offset_row = 1,
-        facade = list(
-          gridLines = FALSE,
-          width = list(
-            first = 16,
-            all = 120
-          )
-        )
+        offset_row = 1
       )
 
       for (s in 1:nrow(table_list_reference)) {
@@ -238,12 +239,12 @@ xlsx_write_data <- function(
   facade = get_tsg_facade()
 ) {
 
-  groups <- attributes(data)$groups
+  facade <- resolve_facade(facade, attributes(data)$facade)
 
   openxlsx::addWorksheet(
     wb,
     sheetName = sheet_name,
-    gridLines = get_facade_prop(facade, 'gridLines'),
+    gridLines = facade$table.gridLines,
     ...
   )
 
@@ -251,18 +252,10 @@ xlsx_write_data <- function(
 
   title <- title %||% attributes(data)$title
   subtitle <- subtitle %||% attributes(data)$subtitle
-  source_note <- source_note %||% attributes(data)$source_note
   footnotes <- footnotes %||% attributes(data)$footnotes
+  source_note <- resolve_source_note(data, source_note)
 
-  facade_temp <- xlsx_extract_facade(
-    built_in = get_tsg_facade(),
-    user_defined = attributes(data)$facade
-  )
-
-  facade <- xlsx_extract_facade(
-    built_in = facade_temp,
-    user_defined = facade
-  )
+  groups <- attributes(data)$groups
 
   wb <- xlsx_write_title(
     wb = wb,
@@ -275,12 +268,6 @@ xlsx_write_data <- function(
   )
 
   offset_row <- attributes(wb)$offset_row
-
-  if(!is.null(source_note)) {
-    if(!grepl('^source', source_note, ignore.case = TRUE)) {
-      source_note <- glue::glue("Source: {source_note}")
-    }
-  }
 
   corners <- c("top", "bottom", "left", "right")
 
@@ -313,7 +300,7 @@ xlsx_write_data <- function(
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$style$header,
+        style = extract_facade(facade, 'header'),
         rows = (1:header_depth_i) + offset_row_i,
         cols = start_col:(ncol(data_first) + start_col - 1)
       )
@@ -323,7 +310,7 @@ xlsx_write_data <- function(
         row_title <- row_titles[i]
 
         data_i <- dplyr::ungroup(data[[i]])
-        border_outer <- facade$style$border_outer
+        border_outer <- extract_facade(facade, 'border_outer')
 
         if(!row_group_as_column) {
 
@@ -379,7 +366,8 @@ xlsx_write_data <- function(
           colNames = FALSE
         )
 
-        if(facade$lastRowBold) {
+        if(extract_facade(facade, 'table', 'lastRowBold')) {
+
           openxlsx::addStyle(
             wb = wb,
             sheet = sheet_name,
@@ -395,7 +383,7 @@ xlsx_write_data <- function(
           wb = wb,
           sheet = sheet_name,
           rows = (header_depth_i + offset_row_i) + 1:nrow(data_i),
-          heights = facade$height$body
+          heights = extract_facade(facade, 'body', 'height')
         )
 
         if(!row_group_as_column) {
@@ -404,8 +392,9 @@ xlsx_write_data <- function(
             wb = wb,
             sheet = sheet_name,
             rows = header_depth_i + offset_row_i,
-            heights = facade$height$group
+            heights = extract_facade(facade, 'row_group', 'height')
           )
+
         } else {
 
           which_group_cols <- which(names(data_i) %in% groups)
@@ -427,7 +416,7 @@ xlsx_write_data <- function(
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$style$border_header,
+        style = extract_facade(facade, 'border_header'),
         rows = header_depth_i + offset_row,
         cols = start_col:(ncol(data_first) + start_col - 1)
       )
@@ -436,21 +425,21 @@ xlsx_write_data <- function(
         wb = wb,
         sheet = sheet_name,
         rows = offset_row + 1,
-        heights = facade$height$header + header_width_pad_i
+        heights = extract_facade(facade, 'header', 'height') + header_width_pad_i
       )
 
       openxlsx::setRowHeights(
         wb = wb,
         sheet = sheet_name,
         rows = header_depth_i + offset_row,
-        heights = facade$height$bottomHeader
+        heights = extract_facade(facade, 'border_bottom', 'height')
       )
 
       # body
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$style$body,
+        style = extract_facade(facade, 'body'),
         rows = (offset_row + 1):(header_depth_i + offset_row_i),
         cols = start_col:(ncol(data_first) + start_col - 1)
       )
@@ -473,12 +462,12 @@ xlsx_write_data <- function(
 
       for(i in 1:4) {
 
-        facade$style$border_outer$border <- corners[i]
+        facade$border_outer.border <- corners[i]
 
         xlsx_eval_style(
           wb = wb,
           sheet_name = sheet_name,
-          style = facade$style$border_outer,
+          style = extract_facade(facade, 'border_outer'),
           rows = corner_rows[[i]],
           cols = corner_cols[[i]]
         )
@@ -490,8 +479,8 @@ xlsx_write_data <- function(
         sheet_name = sheet_name,
         rows = (offset_row + header_depth_i):(offset_row_i + header_depth_i),
         offset = start_col - 1,
-        cols = facade$decimal$cols,
-        precision = facade$decimal$precision
+        cols = extract_facade(facade, 'table', 'decimalCols'),
+        precision = extract_facade(facade, 'table', 'decimalPrecision')
       )
 
       xlsx_colwidths(
@@ -516,7 +505,7 @@ xlsx_write_data <- function(
         xlsx_eval_style(
           wb = wb,
           sheet_name = sheet_name,
-          style = facade$style$source_note,
+          style = extract_facade(facade, 'source_note'),
           rows = offset_row_i + header_depth_i + 1,
           cols = start_col
         )
@@ -525,7 +514,7 @@ xlsx_write_data <- function(
           wb = wb,
           sheet = sheet_name,
           rows = offset_row_i + header_depth_i + 1,
-          heights = facade$height$sourceNote
+          heights = extract_facade(facade, 'source_note', 'height')
         )
 
         offset_row_i <- offset_row_i + 1
@@ -569,14 +558,14 @@ xlsx_write_data <- function(
           wb = wb,
           sheet = sheet_name,
           rows = offset_row_i + 1,
-          heights = facade$height$subtitle
+          heights = extract_facade(facade, 'subtitle', 'height')
         )
 
         # subtitle style
         xlsx_eval_style(
           wb = wb,
           sheet_name = sheet_name,
-          style = facade$style$subtitle,
+          style = extract_facade(facade, 'subtitle'),
           rows = offset_row_i + 1,
           cols = start_col
         )
@@ -600,16 +589,14 @@ xlsx_write_data <- function(
         xlsx_eval_style(
           wb = wb,
           sheet_name = sheet_name,
-          style = facade$style$header,
+          style = extract_facade(facade, 'header'),
           rows = (1:header_depth_i) + offset_row_i,
           cols = start_col:(ncol(data_i) + start_col - 1)
         )
 
         openxlsx::writeData(
           wb = wb,
-          x = data_i |>
-            dplyr::ungroup() |>
-            dplyr::mutate_if(haven::is.labelled, haven::as_factor),
+          x = dplyr::mutate_if(dplyr::ungroup(data_i), haven::is.labelled, haven::as_factor),
           sheet = sheet_name,
           startRow = header_depth_i + offset_row_i + 1,
           startCol = start_col,
@@ -620,12 +607,12 @@ xlsx_write_data <- function(
         xlsx_eval_style(
           wb = wb,
           sheet_name = sheet_name,
-          style = facade$style$body,
+          style = extract_facade(facade, 'body'),
           rows = 1:(header_depth_i + nrow(data_i)) + offset_row_i,
           cols = start_col:(ncol(data_i) + start_col - 1)
         )
 
-        if(facade$lastRowBold) {
+        if(extract_facade(facade, 'table', 'lastRowBold')) {
           openxlsx::addStyle(
             wb = wb,
             sheet = sheet_name,
@@ -641,21 +628,21 @@ xlsx_write_data <- function(
           wb = wb,
           sheet = sheet_name,
           rows = 1:(header_depth_i + nrow(data_i)) + offset_row_i,
-          heights = facade$height$body
+          heights = extract_facade(facade, 'body', 'height')
         )
 
         openxlsx::setRowHeights(
           wb = wb,
           sheet = sheet_name,
           rows = (1:header_depth_i) + offset_row_i,
-          heights = facade$height$header + header_width_pad_i
+          heights = extract_facade(facade, 'header', 'height') + header_width_pad_i
         )
 
         # header border
         xlsx_eval_style(
           wb = wb,
           sheet_name = sheet_name,
-          style = facade$style$border_header,
+          style = extract_facade(facade, 'border_header'),
           rows = header_depth_i + offset_row_i,
           cols = start_col:(ncol(data_i) + start_col - 1)
         )
@@ -664,7 +651,7 @@ xlsx_write_data <- function(
           wb = wb,
           sheet = sheet_name,
           rows = header_depth_i + offset_row_i,
-          heights = facade$height$bottomHeader
+          heights = extract_facade(facade, 'border_bottom', 'height')
         )
 
         # outer borders
@@ -685,12 +672,12 @@ xlsx_write_data <- function(
 
         for(i in 1:4) {
 
-          facade$style$border_outer$border <- corners[i]
+          facade$border_outer.border <- corners[i]
 
           xlsx_eval_style(
             wb = wb,
             sheet_name = sheet_name,
-            style = facade$style$border_outer,
+            style = extract_facade(facade, 'border_outer'),
             rows = corner_rows[[i]],
             cols = corner_cols[[i]]
           )
@@ -712,7 +699,7 @@ xlsx_write_data <- function(
           xlsx_eval_style(
             wb = wb,
             sheet_name = sheet_name,
-            style = facade$style$source_note,
+            style = extract_facade(facade, 'source_note'),
             rows = header_depth_i + offset_row_i + nrow(data_i),
             cols = start_col
           )
@@ -721,7 +708,7 @@ xlsx_write_data <- function(
             wb = wb,
             sheet = sheet_name,
             rows = header_depth_i + offset_row_i + nrow(data_i),
-            heights = facade$height$sourceNote
+            heights = extract_facade(facade, 'source_note', 'height')
           )
 
           wb <- xlsx_write_footnotes(
@@ -743,8 +730,8 @@ xlsx_write_data <- function(
           sheet_name = sheet_name,
           rows = (offset_row_i + 1):(nrow(data_i) + header_depth_i + offset_row_i),
           offset = start_col - 1,
-          cols = facade$decimal$cols,
-          precision = facade$decimal$precision
+          cols = extract_facade(facade, 'table', 'decimalCols'),
+          precision = extract_facade(facade, 'table', 'decimalPrecision')
         )
 
         offset_row_i <- offset_row_i + nrow(data_i) + 3
@@ -780,7 +767,7 @@ xlsx_write_data <- function(
     xlsx_eval_style(
       wb = wb,
       sheet_name = sheet_name,
-      style = facade$style$header,
+      style = extract_facade(facade, 'header'),
       rows = (1:header_depth) + offset_row,
       cols = start_col:(ncol(data) + start_col - 1)
     )
@@ -798,7 +785,7 @@ xlsx_write_data <- function(
     xlsx_eval_style(
       wb = wb,
       sheet_name = sheet_name,
-      style = facade$style$body,
+      style = extract_facade(facade, 'body'),
       rows = 1:(header_depth + nrow(data)) + offset_row,
       cols = start_col:(ncol(data) + start_col - 1)
     )
@@ -809,11 +796,11 @@ xlsx_write_data <- function(
       sheet_name = sheet_name,
       rows = 1:(header_depth + nrow(data)) + offset_row,
       offset = start_col - 1,
-      cols = facade$decimal$cols,
-      precision = facade$decimal$precision
+      cols = extract_facade(facade, 'table', 'decimalCols'),
+      precision = extract_facade(facade, 'table', 'decimalPrecision')
     )
 
-    if(facade$lastRowBold) {
+    if(extract_facade(facade, 'table', 'lastRowBold')) {
       openxlsx::addStyle(
         wb = wb,
         sheet = sheet_name,
@@ -829,21 +816,21 @@ xlsx_write_data <- function(
       wb = wb,
       sheet = sheet_name,
       rows = 1:(header_depth + nrow(data)) + offset_row,
-      heights = facade$height$body
+      heights = extract_facade(facade, 'body', 'height')
     )
 
     openxlsx::setRowHeights(
       wb = wb,
       sheet = sheet_name,
       rows = (1:header_depth) + offset_row,
-      heights = facade$height$header + header_width_pad
+      heights = extract_facade(facade, 'header', 'height') + header_width_pad
     )
 
     # header border
     xlsx_eval_style(
       wb = wb,
       sheet_name = sheet_name,
-      style = facade$style$border_header,
+      style = extract_facade(facade, 'border_header'),
       rows = header_depth + offset_row,
       cols = start_col:(ncol(data) + start_col - 1)
     )
@@ -853,7 +840,7 @@ xlsx_write_data <- function(
         wb = wb,
         sheet = sheet_name,
         rows = header_depth + offset_row,
-        heights = facade$height$bottomHeader
+        heights = extract_facade(facade, 'border_bottom', 'height')
       )
     }
 
@@ -875,12 +862,12 @@ xlsx_write_data <- function(
 
     for(i in 1:4) {
 
-      facade$style$border_outer$border <- corners[i]
+      facade$border_outer.border <- corners[i]
 
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$style$border_outer,
+        style = extract_facade(facade, 'border_outer'),
         rows = corner_rows[[i]],
         cols = corner_cols[[i]]
       )
@@ -900,7 +887,7 @@ xlsx_write_data <- function(
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$style$source_note,
+        style = extract_facade(facade, 'source_note'),
         rows = header_depth + offset_row + 1 + nrow(data),
         cols = start_col
       )
@@ -909,7 +896,7 @@ xlsx_write_data <- function(
         wb = wb,
         sheet = sheet_name,
         rows = header_depth + offset_row + 1 + nrow(data),
-        heights = facade$height$sourceNote
+        heights = extract_facade(facade, 'source_note', 'height')
       )
 
     }
@@ -964,7 +951,11 @@ write_xlsx_multiple_files <- function(
   for(i in seq_along(sheet_names)) {
 
     wb <- openxlsx::createWorkbook(...)
-    openxlsx::modifyBaseFont(wb, fontName = 'Arial', fontSize = 12)
+    openxlsx::modifyBaseFont(
+      wb,
+      fontName = facade$table.fontName,
+      fontSize = facade$table.fontSize
+    )
 
     sheet_name_i <- xlsx_set_valid_sheet_name(sheet_names[i])
     path_i <- file.path(path, glue::glue("{sheet_name_i}.xlsx"))
@@ -995,4 +986,49 @@ write_xlsx_multiple_files <- function(
   }
 
 }
+
+
+tsg_write_table_list <- function(wb, data, table_list_reference = NULL, include_table_list = FALSE) {
+
+  if(!include_table_list) return(wb)
+
+  sheet_summary <- 'List of Tables'
+
+  if(!is.null(table_list_reference)) {
+    table_list_reference <- table_list_reference |>
+      dplyr::filter(table_id %in% names(data)) |>
+      dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
+  } else {
+    table_list_reference <- create_table_list(data)
+  }
+
+  wb <- xlsx_write_data(
+    wb,
+    dplyr::select(table_list_reference, table_name, title) |>
+      rename_label(
+        table_number = "Table number",
+        title = "Title"
+      ),
+    sheet_name = sheet_summary,
+    title = sheet_summary,
+    offset_col = 1,
+    offset_row = 1
+  )
+
+  for (s in 1:nrow(table_list_reference)) {
+
+    hyperlink <- table_list_reference$table_name[s]
+    hyperlink_name <- glue::glue("Table {table_list_reference$table_number[s]}")
+
+    openxlsx::writeFormula(
+      wb,
+      sheet = sheet_summary,
+      startCol = 2,
+      startRow =  4 + s,
+      x = openxlsx::makeHyperlinkString(sheet = hyperlink, text = hyperlink_name)
+    )
+  }
+
+}
+
 

@@ -1,59 +1,200 @@
-gridLines: false
-lastRowBold: false
-decimal:
-  precision: 2
-height:
-  title: 24
-  subtitle: 22
-  header: 24
-  bottomHeader: 46
-  body: 20
-  sourceNote: 20
-  group: 30
-width:
-  offset: 2
-  first: 24
-  last: 14
-  all: 14
-style:
-  body:
-    indent: 1
-    valign: 'center'
-    border:
-      - 'left'
-      - 'right'
-    numFmt: '#,##0'
-    borderStyle: 'dashed'
-    borderColour: '#cfcfcf'
-  title:
-    fontSize: 13
-    textDecoration: 'bold'
-  subtitle:
-    fontSize: 12
-    valign: 'center'
-  footnote:
-    fontSize: 10
-    textDecoration: 'italic'
-  source_note:
-    fontSize: 10
-    textDecoration: 'italic'
-    valign: 'center'
-  header:
-    wrapText: true
-    fgFill: '#f5f5f5'
-    border:
-      - 'top'
-      - 'bottom'
-      - 'left'
-      - 'right'
-    borderStyle: 'dashed'
-    borderColour: '#cfcfcf'
-  indent:
-    indent: 1
-    valign: 'center'
-  border_outer:
-    borderColour: '#8f8f8f'
-  border_header:
-    border: 'bottom'
-    borderColour: '#9f9e9e'
-    borderStyle: 'medium'
+table.offsetRow: 0
+table.offsetCol: 0
+table.gridLines: false
+
+table.tabColour: ~
+table.fontName: 'Arial'
+table.fontSize: 12
+table.fontColour: ~
+table.bgFill: ~
+table.fgFill: ~
+table.halign: ~
+table.valign: "center"
+table.wrapText: FALSE
+table.indent: ~
+table.locked: ~
+table.hidden: ~
+
+table.decimalPrecision: 2
+table.decimalCols: ~
+table.lastRowBold: false
+table.width: 14
+table.widthOffset: 2
+
+border_outer.borderColour: "#8f8f8f"
+border_header.border: "bottom"
+border_header.borderColour: "#9f9e9e"
+border_header.borderStyle: "medium"
+border_bottom.height: 42
+
+body.fontName: ~
+body.fontSize: ~
+body.fontColour: ~
+body.numFmt: "###0"
+body.border: ["left", "right"]
+body.borderColour: "#cfcfcf"
+body.borderStyle: "dashed"
+body.bgFill: ~
+body.fgFill: ~
+body.halign: ~
+body.valign: "center"
+body.textDecoration: ~
+body.wrapText: ~
+body.textRotation: ~
+body.indent: 1
+body.height: 20
+
+title.fontName: ~
+title.fontSize: 13
+title.fontColour: ~
+title.numFmt: ~
+title.border: ~
+title.borderColour: ~
+title.borderStyle: ~
+title.bgFill: ~
+title.fgFill: ~
+title.halign: ~
+title.valign: "center"
+title.textDecoration: "bold"
+title.wrapText: ~
+title.textRotation: ~
+title.indent: ~
+title.height: 24
+
+subtitle.fontName: ~
+subtitle.fontSize: 12
+subtitle.fontColour: ~
+subtitle.numFmt: ~
+subtitle.border: ~
+subtitle.borderColour: ~
+subtitle.borderStyle: ~
+subtitle.bgFill: ~
+subtitle.fgFill: ~
+subtitle.halign: ~
+subtitle.valign: "center"
+subtitle.textDecoration: ~
+subtitle.wrapText: ~
+subtitle.textRotation: ~
+subtitle.indent: ~
+subtitle.height: 22
+
+header.fontName: ~
+header.fontSize: ~
+header.fontColour: ~
+header.numFmt: ~
+header.border: ["top", "bottom", "left", "right"]
+header.borderColour: "#cfcfcf"
+header.borderStyle: "dashed"
+header.bgFill: ~
+header.fgFill: "#f5f5f5"
+header.halign: ~
+header.valign: ~
+header.textDecoration: ~
+header.wrapText: true
+header.textRotation: ~
+header.indent: ~
+header.height: 24
+
+spanner.fontName: ~
+spanner.fontSize: ~
+spanner.fontColour: ~
+spanner.numFmt: ~
+spanner.border: ~
+spanner.borderColour: ~
+spanner.borderStyle: ~
+spanner.bgFill: ~
+spanner.fgFill: ~
+spanner.halign: ~
+spanner.valign: ~
+spanner.textDecoration: ~
+spanner.wrapText: ~
+spanner.textRotation: ~
+spanner.indent: ~
+spanner.height: ~
+
+col_first.fontName: ~
+col_first.fontSize: ~
+col_first.fontColour: ~
+col_first.numFmt: ~
+col_first.border: ~
+col_first.borderColour: ~
+col_first.borderStyle: ~
+col_first.bgFill: ~
+col_first.fgFill: ~
+col_first.halign: ~
+col_first.valign: ~
+col_first.textDecoration: ~
+col_first.wrapText: ~
+col_first.textRotation: ~
+col_first.indent: ~
+col_first.width: 24
+
+col_last.fontName: ~
+col_last.fontSize: ~
+col_last.fontColour: ~
+col_last.numFmt: ~
+col_last.border: ~
+col_last.borderColour: ~
+col_last.borderStyle: ~
+col_last.bgFill: ~
+col_last.fgFill: ~
+col_last.halign: ~
+col_last.valign: ~
+col_last.textDecoration: ~
+col_last.wrapText: ~
+col_last.textRotation: ~
+col_last.indent: ~
+col_last.width: 14
+
+row_group.fontName: ~
+row_group.fontSize: ~
+row_group.fontColour: ~
+row_group.numFmt: ~
+row_group.border: ~
+row_group.borderColour: ~
+row_group.borderStyle: ~
+row_group.bgFill: ~
+row_group.fgFill: ~
+row_group.halign: ~
+row_group.valign: "center"
+row_group.textDecoration: ~
+row_group.wrapText: ~
+row_group.textRotation: ~
+row_group.indent: ~
+row_group.width: ~
+row_group.height: ~
+
+source_note.fontName: 10
+source_note.fontSize: ~
+source_note.fontColour: ~
+source_note.numFmt: ~
+source_note.border: ~
+source_note.borderColour: ~
+source_note.borderStyle: ~
+source_note.bgFill: ~
+source_note.fgFill: ~
+source_note.halign: ~
+source_note.valign: "center"
+source_note.textDecoration: "italic"
+source_note.wrapText: ~
+source_note.textRotation: ~
+source_note.indent: ~
+source_note.height: 20
+
+footnotes.fontName: 10
+footnotes.fontSize: ~
+footnotes.fontColour: ~
+footnotes.numFmt: ~
+footnotes.border: ~
+footnotes.borderColour: ~
+footnotes.borderStyle: ~
+footnotes.bgFill: ~
+footnotes.fgFill: ~
+footnotes.halign: ~
+footnotes.valign: "center"
+footnotes.textDecoration: "italic"
+footnotes.wrapText: ~
+footnotes.textRotation: ~
+footnotes.indent: ~
+footnotes.height: 20
+

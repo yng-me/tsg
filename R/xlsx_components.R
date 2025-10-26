@@ -24,7 +24,7 @@ xlsx_write_title <- function(
     xlsx_eval_style(
       wb = wb,
       sheet_name = sheet_name,
-      style = facade$style$title,
+      style = extract_facade(facade, 'title'),
       cols = start_col + offset_col,
       rows = start_row + offset_row
     )
@@ -33,7 +33,7 @@ xlsx_write_title <- function(
       wb = wb,
       sheet = sheet_name,
       rows = start_row + offset_row,
-      heights = facade$height$title
+      heights = extract_facade(facade, 'title', 'height')
     )
 
     offset_row <- offset_row + 1
@@ -52,7 +52,7 @@ xlsx_write_title <- function(
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
-        style = facade$style$subtitle,
+        style = extract_facade(facade, 'subtitle'),
         rows = start_row + offset_row,
         cols = start_col + offset_col
       )
@@ -61,7 +61,7 @@ xlsx_write_title <- function(
         wb = wb,
         sheet = sheet_name,
         rows = start_row + offset_row,
-        heights = facade$height$subtitle
+        heights = extract_facade(facade, 'subtitle', 'height')
       )
 
       offset_row <- offset_row + 1
@@ -113,14 +113,30 @@ xlsx_write_footnotes <- function(
   xlsx_eval_style(
     wb = wb,
     sheet_name = sheet_name,
-    style = facade$style$footnote,
+    style = extract_facade(facade, 'footnotes'),
     cols = offset_col + 1,
     rows = offset_row:(offset_row + length(footnotes))
   )
-
 
   attr(wb, "offset_row") <- length(footnotes)
 
   return(wb)
 
 }
+
+
+resolve_source_note <- function(data, source_note) {
+
+  source_note <- source_note %||% attributes(data)$source_note
+
+  if(!is.null(source_note)) {
+    if(!grepl('^source', source_note, ignore.case = TRUE)) {
+      source_note <- glue::glue("Source: {source_note}")
+    }
+  }
+
+  source_note
+
+}
+
+
