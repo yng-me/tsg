@@ -4,19 +4,27 @@
 \alias{generate_template}
 \title{Generate a template}
 \usage{
-generate_template(
-  path,
-  template = c("facade", "table-list"),
-  which = c("xlsx", "pdf", "html")
-)
+generate_template(path, template = c("facade", "table-list"))
 }
 \arguments{
 \item{path}{A character string specifying the path where the template should be saved. If a directory is provided, the template will be saved with a default name based on the template type.}
 
 \item{template}{A character string specifying the type of template to generate. Options are "facade" for a YAML facade template or "table-list" for an Excel table list template.}
-
-\item{which}{A character string specifying the format of the template to generate. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".}
+}
+\value{
+Void. A file path where the template has been saved.
 }
 \description{
 Generate a template
+}
+\examples{
+
+template_path_facade <- tempfile(fileext = ".yaml")
+generate_template(template_path_facade, template = "facade")
+
+template_path_table_list <- tempfile(fileext = ".xlsx")
+generate_template(template_path_table_list, template = "table-list")
+
+unlink(template_path_facade)
+unlink(template_path_table_list)
 }

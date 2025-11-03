@@ -5,7 +5,11 @@ utils::globalVariables(
     ":=",
     ".category",
     "category",
-    "frequency"
+    "frequency",
+    "title",
+    "table_id",
+    "table_number",
+    "table_name"
   )
 )
 

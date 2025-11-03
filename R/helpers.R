@@ -336,13 +336,13 @@ tsg_sort_top_n <- function(
   if(nrow(data) <= top_n + 1 + add_total) { return(data) }
 
   if(position_total == "bottom") {
-    total <- tail(data, add_total)
+    total <- utils::tail(data, add_total)
     data_top_n <- dplyr::bind_rows(
       dplyr::slice_head(data, n = top_n),
-      tail(data, add_total)
+      utils::tail(data, add_total)
     )
   } else {
-    total <- head(data, add_total)
+    total <- utils::head(data, add_total)
     data_top_n <- dplyr::slice_head(data, n = top_n + add_total)
   }
 
@@ -401,7 +401,7 @@ tsg_sort_top_n <- function(
     if(position_total == "bottom") {
       data_top_n <- dplyr::slice_head(data, n = top_n) |>
         dplyr::bind_rows(data_others) |>
-        dplyr::bind_rows(tail(data, add_total))
+        dplyr::bind_rows(utils::tail(data, add_total))
     } else {
 
       data_top_n <- dplyr::bind_rows(data_top_n, data_others)

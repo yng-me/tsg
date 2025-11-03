@@ -27,17 +27,50 @@
 #' @param expand_categories Logical. If \code{TRUE}, ensures all categories (including those with zero counts) are included in the output.
 #' @param top_n Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.
 #' @param top_n_only Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.
-#' @param collapse_list Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers.
+#' @param collapse_list Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [`collapse_list()`].
 #' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
-#' @param convert_factor Logical. If \code{TRUE}, converts labelled vectors to factors in the output.
+#' @param convert_factor Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [`convert_factor()`].
 #'
 #' @return A frequency table (\code{tibble}, possibly nested) or a list of such tables. Additional attributes such as labels, metadata, and grouping information may be attached. The returned object is of class \code{"tsg"}.
 #'
 #' @export
 #'
+#' @seealso [`generate_crosstab()`], [`generate_output()`], [`rename_labe()`], [`remove_label()`]
+#'
 #' @examples
-#' data <- generate_frequency(dplyr::starwars, sex)
-#' data
+#' # Using built-in dataset `person_record`
+#'
+#'
+#' # Basic usage
+#' person_record |>
+#'  generate_frequency(sex)
+#'
+#' # Multiple variables
+#' person_record |>
+#'   generate_frequency(sex, age, marital_status)
+#'
+#' # Grouping
+#' person_record |>
+#'   dplyr::group_by(sex) |>
+#'   generate_frequency(marital_status)
+#'
+#' # Output group as list
+#' person_record |>
+#'   dplyr::group_by(sex) |>
+#'   generate_frequency(marital_status, group_as_list = TRUE)
+#'
+#' # Sorting
+#'
+#' # default is TRUE
+#' person_record |>
+#'   generate_frequency(age, sort_value = TRUE)
+#'
+#' # If FALSE, the output will be sorted by the variable values in ascending order.
+#' person_record |>
+#'   generate_frequency(age, sort_value = FALSE)
+#'
+#' # Vignettes for more examples.
+
 
 generate_frequency <- function(
   data,

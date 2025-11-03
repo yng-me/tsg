@@ -7,8 +7,26 @@
 remove_labels(data, ...)
 }
 \arguments{
-\item{...}{}
+\item{data}{A data frame or tibble from which to remove all labels.}
+
+\item{...}{A character vector of column names from which to remove labels. If no columns are specified, all labels will be removed.}
+}
+\value{
+A data frame or tibble with all labels removed. If no columns are specified, all labels will be removed.
 }
 \description{
 Remove all labels
+}
+\examples{
+person_record |>
+  generate_frequency(
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
+  ) |>
+  collapse_list() |>
+  remove_labels()
 }

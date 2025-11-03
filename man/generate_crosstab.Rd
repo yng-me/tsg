@@ -82,6 +82,8 @@ generate_crosstab(
 
 \item{sort_column_names}{Logical. If \code{TRUE}, sorts the column names in the output.}
 
+\item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [`convert_factor()`].}
+
 \item{metadata}{A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.}
 }
 \value{
@@ -90,6 +92,6 @@ A data frame or a list of data frames containing the cross-tabulation results. I
 \description{
 Generate cross-tabulation
 }
-\examples{
-data
+\seealso{
+[`generate_frequency()`], [`generate_output()`], [`rename_labe()`], [`remove_label()`]
 }

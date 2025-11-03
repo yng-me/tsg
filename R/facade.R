@@ -191,7 +191,7 @@ add_facade <- function(
   if (is.null(existing_facade)) {
     attr(data, "facade") <- args
   } else {
-    attr(data, "facade") <- modifyList(existing_facade, args)
+    attr(data, "facade") <- utils::modifyList(existing_facade, args)
   }
 
   return(data)
@@ -203,11 +203,16 @@ add_facade <- function(
 #' @param facade A character string specifying the name of the facade to retrieve. Defaults to "default". The facade is a YAML file that defines the styling and layout of the table
 #' @param which A character string specifying the format of the facade to retrieve. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".
 #'
-#' @returns
+#' @returns A list containing the facade settings for the specified format. The facade includes styling attributes such as font size, color, border styles, and background fills for different parts of the table.
 #' @export
 #'
 #' @examples
 #'
+#' # Default facade
+#' get_tsg_facade()
+#'
+#' # Other built-in facade
+#' get_tsg_facade("yolo")
 
 get_tsg_facade <- function(facade = "default", which = c("xlsx", "pdf", "html")) {
 
@@ -277,11 +282,11 @@ resolve_facade <- function(facade, attrs) {
 
   if(!is.null(attrs)) {
     if(is.null(facade_source)) {
-      facade <- modifyList(attrs, facade)
+      facade <- utils::modifyList(attrs, facade)
     } else if (facade_source == "built-in") {
-      facade <- modifyList(facade, attrs)
+      facade <- utils::modifyList(facade, attrs)
     } else {
-      facade <- modifyList(get_tsg_facade(), facade)
+      facade <- utils::modifyList(get_tsg_facade(), facade)
     }
   }
 

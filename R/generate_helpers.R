@@ -9,21 +9,30 @@
 #' @param name_separator A string to separate the names of the columns in the output data frame. Default is "_".
 #' @param label_separator A string to separate the labels of the columns in the output data frame. Default is "__".
 #'
-#' @returns
+#' @returns A data frame with the specified category column and the frequency and percent columns for each category, along with any additional columns specified in \code{pluck}.
 #' @export
 #'
 #' @examples
-#'
+#' person_record |>
+#'   generate_frequency(
+#'     seeing,
+#'     hearing,
+#'     walking,
+#'     remembering,
+#'     self_caring,
+#'     communicating
+#'   ) |>
+#'   collapse_list()
 
 collapse_list <- function(
-    data,
-    ...,
-    col_id = "category",
-    label = NULL,
-    pluck = NULL,
-    as_proportion = FALSE,
-    name_separator = "_",
-    label_separator = "__"
+  data,
+  ...,
+  col_id = "category",
+  label = NULL,
+  pluck = NULL,
+  as_proportion = FALSE,
+  name_separator = "_",
+  label_separator = "__"
 ) {
 
   if(!inherits(data, "list")) {
@@ -93,15 +102,26 @@ collapse_list <- function(
 
 #' Rename data labels
 #'
-#' @param data
+#' @param data A data frame or tibble to rename labels in.
 #' @param ... A named list of labels to rename. The names should match the column names in the data, and the values should be the new labels.
 #'
-#' @returns
+#' @returns A data frame or tibble with the specified labels renamed.
 #' @export
 #'
 #' @examples
-#'
-#'
+#' person_record |>
+#'   generate_frequency(
+#'     seeing,
+#'     hearing,
+#'     walking,
+#'     remembering,
+#'     self_caring,
+#'     communicating
+#'   ) |>
+#'   collapse_list() |>
+#'   rename_label(category = "Function difficulty")
+
+
 rename_label <- function(data, ...) {
 
   rename_list <- rlang::list2(...)
@@ -111,16 +131,26 @@ rename_label <- function(data, ...) {
 
 }
 
-#' Remnove data labels
+#' Remove data labels
 #'
-#' @param data
-#' @param ...
+#' @param data A data frame or tibble from which to remove labels.
+#' @param ... A character vector of column names from which to remove labels. If no columns are specified, all labels will be removed.
 #'
-#' @returns
+#' @returns A data frame or tibble with the specified labels removed. If no columns are specified, all labels will be removed.
 #' @export
 #'
 #' @examples
-#'
+#' person_record |>
+#'   generate_frequency(
+#'     seeing,
+#'     hearing,
+#'     walking,
+#'     remembering,
+#'     self_caring,
+#'     communicating
+#'   ) |>
+#'   collapse_list() |>
+#'   remove_label()
 
 remove_label <- function(data, ...) {
 
@@ -160,14 +190,24 @@ remove_label <- function(data, ...) {
 
 #' Remove all labels
 #'
-#' @param data
-#' @param ...
+#' @param data A data frame or tibble from which to remove all labels.
+#' @param ... A character vector of column names from which to remove labels. If no columns are specified, all labels will be removed.
 #'
-#' @returns
+#' @returns A data frame or tibble with all labels removed. If no columns are specified, all labels will be removed.
 #' @export
 #'
 #' @examples
-#'
+#' person_record |>
+#'   generate_frequency(
+#'     seeing,
+#'     hearing,
+#'     walking,
+#'     remembering,
+#'     self_caring,
+#'     communicating
+#'   ) |>
+#'   collapse_list() |>
+#'   remove_labels()
 
 remove_labels <- function(data, ...) {
 

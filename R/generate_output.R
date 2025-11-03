@@ -59,6 +59,7 @@ create_table_list <- function(data) {
   tables <- names(data)
 
   table_list <- dplyr::tibble(
+    table_id = character(),
     table_number = integer(),
     table_name = character(),
     title = character()
@@ -84,6 +85,7 @@ create_table_list <- function(data) {
 
   rename_label(
     table_list,
+    table_id = "Table ID",
     table_number = "Table number",
     title = "Title"
   )

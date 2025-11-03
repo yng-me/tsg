@@ -29,7 +29,7 @@ convert_to_nested_list <- function(key_value_pairs) {
   create_nested_list <- function(key_parts, value) {
     # Base case: if there is only one key part, return the value
     if (length(key_parts) == 1) {
-      return(setNames(list(value), key_parts))
+      return(stats::setNames(list(value), key_parts))
     }
 
     # Recursive case: pass the remaining parts to the next level of the list
@@ -39,7 +39,7 @@ convert_to_nested_list <- function(key_value_pairs) {
     # Recursively create the nested structure
     nested_list <- create_nested_list(remaining_parts, value)
 
-    return(setNames(list(nested_list), list_name))
+    return(stats::setNames(list(nested_list), list_name))
   }
 
   # Initialize an empty list to hold the final result
@@ -52,7 +52,7 @@ convert_to_nested_list <- function(key_value_pairs) {
     nested_value <- create_nested_list(key_parts, value)
 
     # Merge the nested value into the result list
-    result <- modifyList(result, nested_value)
+    result <- utils::modifyList(result, nested_value)
   }
 
   return(result)

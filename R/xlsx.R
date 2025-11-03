@@ -22,8 +22,8 @@
 #' @param row_group_as_column Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles.
 #' @param names_separator Character used to separate column names when dealing with nested or grouped headers.
 #' @param facade A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.
-#' @param include_table_list
-#' @param table_list_reference
+#' @param include_table_list Logical. If \code{TRUE}, a table list reference is included in the Excel file.
+#' @param table_list_reference A data frame containing the table list reference. If \code{NULL}, it will be generated from \code{data}.
 #'
 #' @return Invisibly returns \code{NULL}. The function is called for its side-effect of writing Excel file(s).
 #'
@@ -68,8 +68,10 @@ write_xlsx <- function(
   facade = get_tsg_facade()
 ) {
 
-  offset_row <- facade$table.offsetRow
-  offset_col <- facade$table.offsetCol
+  facade <- facade %||% get_tsg_facade()
+
+  offset_row <- attributes(data)$facade$table.offsetRow %||% facade$table.offsetRow
+  offset_col <- attributes(data)$facade$table.offsetCol %||% facade$table.offsetCol
 
   # --- Data inherits a "list" class and data is
   # --- to be as separate file per item in the list
@@ -114,43 +116,8 @@ write_xlsx <- function(
   if(inherits(data, "list") & !collapse_list) {
 
     if(include_table_list) {
-
-      sheet_summary <- 'List of Tables'
-
-      if(!is.null(table_list_reference)) {
-        table_list_reference <- table_list_reference |>
-          dplyr::filter(table_id %in% names(data)) |>
-          dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
-      } else {
-        table_list_reference <- create_table_list(data)
-      }
-
-      wb <- xlsx_write_data(
-        wb,
-        dplyr::select(table_list_reference, table_name, title) |>
-          rename_label(
-            table_number = "Table number",
-            title = "Title"
-          ),
-        sheet_name = sheet_summary,
-        title = sheet_summary,
-        offset_col = 1,
-        offset_row = 1
-      )
-
-      for (s in 1:nrow(table_list_reference)) {
-
-        hyperlink <- table_list_reference$table_name[s]
-        hyperlink_name <- glue::glue("Table {table_list_reference$table_number[s]}")
-
-        openxlsx::writeFormula(
-          wb,
-          sheet = sheet_summary,
-          startCol = 2,
-          startRow =  4 + s,
-          x = openxlsx::makeHyperlinkString(sheet = hyperlink, text = hyperlink_name)
-        )
-      }
+      table_list_reference <- resolve_table_list(data, table_list_reference)
+      wb <- tsg_write_table_list(wb, data, include_table_list)
     }
 
     sheet_names <- names(data)
@@ -158,6 +125,13 @@ write_xlsx <- function(
     for(i in seq_along(sheet_names)) {
 
       sheet_name_i <- xlsx_set_valid_sheet_name(sheet_names[i])
+      data_i <- data[[i]]
+      attr_i <- attributes(data[[i]])
+
+      title_i <- attr_i$title
+      subtitle_i <- attr_i$subtitle
+      source_note_i <- attr_i$source_note
+      footnotes_i <- attr_i$footnotes
 
       if(include_table_list) {
         table_list_reference_i <- table_list_reference |>
@@ -165,15 +139,22 @@ write_xlsx <- function(
 
         if(nrow(table_list_reference_i) > 0) {
           sheet_name_i <- xlsx_set_valid_sheet_name(table_list_reference_i$table_name[1])
+          title_i <- table_list_reference_i$title[1]
+
+          if("subtitle" %in% names(table_list_reference_i)) {
+            subtitle_i <- table_list_reference_i$subtitle[1]
+          }
+
+          if("source_note" %in% names(table_list_reference_i)) {
+            source_note_i <- table_list_reference_i$source_note[1]
+          }
+
+          if("footnotes" %in% names(table_list_reference_i)) {
+            footnotes_i <- table_list_reference_i$footnotes[1]
+          }
+
         }
       }
-
-      title_i <- NULL
-      if(!is.null(title)) {
-        title_i <- glue::glue("{title}: {sheet_name_i}")
-      }
-
-      data_i <- data[[i]]
 
       groups <- attributes(data_i)$groups
 
@@ -182,9 +163,9 @@ write_xlsx <- function(
         data = data_i,
         sheet_name = sheet_name_i,
         title = title_i,
-        subtitle = subtitle,
-        source_note = source_note,
-        footnotes = footnotes,
+        subtitle = subtitle_i,
+        source_note = source_note_i,
+        footnotes = footnotes_i,
         offset_row = offset_row,
         offset_col = offset_row,
         names_separator = names_separator,
@@ -988,27 +969,21 @@ write_xlsx_multiple_files <- function(
 }
 
 
-tsg_write_table_list <- function(wb, data, table_list_reference = NULL, include_table_list = FALSE) {
 
-  if(!include_table_list) return(wb)
+tsg_write_table_list <- function(wb, data, table_list_reference = NULL) {
 
   sheet_summary <- 'List of Tables'
 
-  if(!is.null(table_list_reference)) {
-    table_list_reference <- table_list_reference |>
-      dplyr::filter(table_id %in% names(data)) |>
-      dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
-  } else {
-    table_list_reference <- create_table_list(data)
-  }
+  ref <- dplyr::select(table_list_reference, table_name, title)
+  ref <- rename_label(
+    ref,
+    table_number = "Table number",
+    title = "Title"
+  )
 
   wb <- xlsx_write_data(
     wb,
-    dplyr::select(table_list_reference, table_name, title) |>
-      rename_label(
-        table_number = "Table number",
-        title = "Title"
-      ),
+    ref,
     sheet_name = sheet_summary,
     title = sheet_summary,
     offset_col = 1,
@@ -1032,3 +1007,34 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL, include_
 }
 
 
+resolve_table_list <- function(data, table_list_reference) {
+
+  if(!is.null(table_list_reference)) {
+
+    if(!("table_id" %in% names(table_list_reference))) {
+      stop("`table_list_reference` must contain a `table_id` column.")
+    }
+
+    if(!("table_name" %in% names(table_list_reference))) {
+      stop("`table_list_reference` must contain a `table_name` column.")
+    }
+
+    if(!("table_number" %in% names(table_list_reference))) {
+      stop("`table_list_reference` must contain a `table_number` column.")
+    }
+
+    if(!("title" %in% names(table_list_reference))) {
+      stop("`table_list_reference` must contain a `title` column.")
+    }
+
+    table_list_reference <- table_list_reference |>
+      dplyr::filter(table_id %in% names(data)) |>
+      dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
+
+  } else {
+    table_list_reference <- create_table_list(data)
+  }
+
+  table_list_reference
+
+}

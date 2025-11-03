@@ -1,8 +1,8 @@
 Package: tsg
 Type: Package
-Title: xxx
+Title: Table Summary Generator 
 Version: 0.1.0
-Description: xxx
+Description: A collection of functions for generating frequency, cross-tabulations, and publication-ready statistical tables.
 Authors@R: c(
     person(
       "Bhas", 
@@ -25,7 +25,6 @@ Imports:
   purrr,
   tidyr,
   glue,
-  gt,
   jsonlite (>= 2.0.0),
   yaml (>= 2.3.10),
   dplyr (>= 1.1.0),
@@ -39,8 +38,7 @@ Suggests:
   knitr,
   rmarkdown,
   tibble,
-  withr,
-  gt (>= 0.10.0)
+  withr
 Config/testthat/edition: 3
 RoxygenNote: 7.3.3
 Depends: 

@@ -7,8 +7,21 @@
 convert_factor(data)
 }
 \arguments{
-\item{data}{}
+\item{data}{A data frame, tibble, or \code{tsg} object containing labelled factors.}
+}
+\value{
+A data frame with labelled factors converted to regular factors.
 }
 \description{
 Convert labelled factors to regular factors
+}
+\examples{
+df <- data.frame(
+  category = haven::labelled(
+    c(1, 2, 3),
+    c("One" = 1, "Two" = 2, "Three" = 3)
+   )
+ )
+
+df_converted <- convert_factor(df)
 }

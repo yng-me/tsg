@@ -25,14 +25,14 @@
 #' @param expand_categories Logical. If \code{TRUE}, ensures that all categories of \code{x} are represented in the output, even if they have zero counts.
 #' @param position_total Character. Position of the total row/column; either \code{"bottom"} or \code{"top"} for rows, and \code{"right"} or \code{"left"} for columns.
 #' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
+#' @param convert_factor Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [`convert_factor()`].
 #'
 #' @return A data frame or a list of data frames containing the cross-tabulation results. If \code{group_as_list} is \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s). Otherwise, a single data frame is returned. Each data frame includes counts and, if specified, percentages or proportions for each combination of \code{x} and the additional variables provided in \code{...}.
 #'
+#' @seealso [`generate_frequency()`], [`generate_output()`], [`rename_labe()`], [`remove_label()`]
+#'
 #' @export
 #'
-#' @examples
-# ' data <- generate_crosstab(dplyr::starwars, species, sex)
-#' data
 
 generate_crosstab <- function(
   data,
@@ -347,23 +347,23 @@ generate_crosstab <- function(
 
 
 tsg_pivot_table <- function(
-  data,
-  column_name,
-  add_percent,
-  add_total,
-  add_total_row,
-  add_total_column,
-  data_attr,
-  x_attr,
-  as_proportion,
-  position_total,
-  label_total,
-  label_separator,
-  name_separator,
-  label_na,
-  sort_column_names,
-  percent_by_column = FALSE,
-  groups = NULL
+    data,
+    column_name,
+    add_percent,
+    add_total,
+    add_total_row,
+    add_total_column,
+    data_attr,
+    x_attr,
+    as_proportion,
+    position_total,
+    label_total,
+    label_separator,
+    name_separator,
+    label_na,
+    sort_column_names,
+    percent_by_column = FALSE,
+    groups = NULL
 ) {
 
   multiplier <- get_multiplier(as_proportion)

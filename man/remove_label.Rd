@@ -2,13 +2,31 @@
 % Please edit documentation in R/generate_helpers.R
 \name{remove_label}
 \alias{remove_label}
-\title{Remnove data labels}
+\title{Remove data labels}
 \usage{
 remove_label(data, ...)
 }
 \arguments{
-\item{...}{}
+\item{data}{A data frame or tibble from which to remove labels.}
+
+\item{...}{A character vector of column names from which to remove labels. If no columns are specified, all labels will be removed.}
+}
+\value{
+A data frame or tibble with the specified labels removed. If no columns are specified, all labels will be removed.
 }
 \description{
-Remnove data labels
+Remove data labels
+}
+\examples{
+person_record |>
+  generate_frequency(
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
+  ) |>
+  collapse_list() |>
+  remove_label()
 }

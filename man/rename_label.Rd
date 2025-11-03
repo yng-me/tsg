@@ -7,8 +7,26 @@
 rename_label(data, ...)
 }
 \arguments{
+\item{data}{A data frame or tibble to rename labels in.}
+
 \item{...}{A named list of labels to rename. The names should match the column names in the data, and the values should be the new labels.}
+}
+\value{
+A data frame or tibble with the specified labels renamed.
 }
 \description{
 Rename data labels
+}
+\examples{
+person_record |>
+  generate_frequency(
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
+  ) |>
+  collapse_list() |>
+  rename_label(category = "Function difficulty")
 }

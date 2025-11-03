@@ -1,5 +1,5 @@
 ---
-title: "tsg"
+title: "Working with the tsg package"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{tsg}
@@ -20,14 +20,187 @@ library(tsg)
 
 The `tsg` package provides a set of functions for generating frequency tables, cross-tabulations, and formatted output tables. It is designed to work with data frames and supports various customization options.
 
+Throughout the examples, we will use the `person_record` sample dataset, which is included in the `tsg` package. This dataset contains demographic information about individuals, including `person_id`, `sex`, `age`, `marital_status`, `employed` status, and functional difficulties.
+
+```{r}
+dim(person_record)
+head(person_record)
+```
+
 ## Generate frequency table 
 
 The `generate_frequency()` function creates frequency tables for one or more categorical variables in a data frame. It supports a variety of enhancements, such as sorting, adding totals and percentages, handling missing values, and customizing labels. This function is highly versatile and can work with grouped data, outputting either a single table or a list of tables.
 
 ### Basic usage
 
-### 
+```{r}
+person_record |> 
+  generate_frequency(sex)
+```
 
+### Multiple variables
+
+If you pass multiple variables, it will generate frequency tables for each variable separately in a list.
+
+```{r}
+person_record |>
+  generate_frequency(sex, age, marital_status)
+```
+
+### Grouping
+
+You can also specify grouping using the `group_by()` from `dplyr` and it will calculate the frequency table for each group.
+
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status)
+```
+
+By default, the function will generate a single frequency table for the grouped data. If you want to generate a list of frequency tables for each group, you can set `group_as_list = TRUE`.
+
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status, group_as_list = TRUE)
+```
+
+### Sorting
+
+By default, the output is sorted by frequency in descending order. If `sort_value` is set to `FALSE`, the output will be sorted by the variable values in ascending order.
+
+```{r}
+person_record |>
+  generate_frequency(age, sort_value = TRUE)
+
+person_record |>
+  generate_frequency(age, sort_value = FALSE)
+```
+
+If multiple variables are specified, you can indicate which variable/s is/are excluded from sorting using the `sort_except` argument.
+
+```{r}
+person_record |>
+  generate_frequency(
+    sex, 
+    age, 
+    marital_status, 
+    # vector of variable names (character) to exclude from sorting
+    sort_except = "age" 
+  )
+```
+
+### Top `n` values
+
+You can specify the top `n` most frequent values to display in the frequency table, if `sort_value` is `TRUE`. By default, it will show top-n values plus the remaining values grouped into "Others".
+
+```{r}
+person_record |>
+  generate_frequency(
+    marital_status,
+    #top_n = 3
+  )
+```
+
+If you want to show only the top-n values and exclude the rest, set `top_n_only = TRUE`.
+
+```{r}
+person_record |>
+  generate_frequency(
+    marital_status, 
+    #top_n = 3,
+    #top_n_only = TRUE
+  )
+```
+
+
+### Handling missing values
+
+You can also specify whether to include or exclude `NA`s (missing values) from the frequency table.
+
+```{r}
+person_record |>
+  generate_frequency(
+    employed,
+    include_na = TRUE # default
+  )
+
+# Exclude NA values
+person_record |>
+  generate_frequency(
+    employed,
+    include_na = FALSE
+  )
+```
+
+
+### Collapse list
+
+If the all variables passed to `generate_frequency()` are of the same structure (i.e. have the same number of levels or categories), you can collapse them into a single frequency table by setting `collapse_list = TRUE`.
+
+```{r}
+person_record |>
+  generate_frequency(
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating, 
+    collapse_list = TRUE
+  )
+```
+
+Or equivalently using the `collapse_list()` helper function.
+
+```{r}
+person_record |>
+  generate_frequency(
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
+  ) |> 
+  collapse_list()
+```
+
+
+### More customization options
+
+You can also add cumulative frequency and percentage to the frequency table.
+
+```{r}
+person_record |>
+  generate_frequency(
+    sex, 
+    add_cumulative = TRUE, 
+    add_cumulative_percent = TRUE 
+  )
+```
+
+You can also specify whether to express the value as a proportion.
+
+```{r}
+person_record |>
+  generate_frequency(
+    marital_status,
+    as_proportion = TRUE
+  )
+```
+
+You can also position the total row at the top of the table.
+
+```{r}
+person_record |>
+  generate_frequency(
+    marital_status,
+    position_total = "top"
+  )
+```
+
+NOTE: For labelled data, the value for the row total is automatically set the lowest numeric value. The default label for the total row is "Total"; if you want to set a custom label for the total row, you can use the `label_total` argument.
 
 ## Generate cross-tabulation 
 
@@ -36,6 +209,16 @@ Using the `generate_crosstab()` function
 This function creates a cross-tabulation (contingency table) from the data, allowing for analysis of the relationship between two or more categorical variables.
 
 
-## Generate output using the `generate_output()` function
+
+
+## Generate output
 
 This function generates a formatted output table from the frequency or cross-tabulation data. It supports various formatting options and can include metadata such as titles and subtitles.
+
+
+## More customization options
+
+
+
+
+

@@ -11,6 +11,17 @@ get_tsg_facade(facade = "default", which = c("xlsx", "pdf", "html"))
 
 \item{which}{A character string specifying the format of the facade to retrieve. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".}
 }
+\value{
+A list containing the facade settings for the specified format. The facade includes styling attributes such as font size, color, border styles, and background fills for different parts of the table.
+}
 \description{
 Title
+}
+\examples{
+
+# Default facade
+get_tsg_facade()
+
+# Other built-in facade
+get_tsg_facade("yolo")
 }

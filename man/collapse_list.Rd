@@ -32,6 +32,21 @@ collapse_list(
 
 \item{label_separator}{A string to separate the labels of the columns in the output data frame. Default is "__".}
 }
+\value{
+A data frame with the specified category column and the frequency and percent columns for each category, along with any additional columns specified in \code{pluck}.
+}
 \description{
 Collapse a list of data frames or tibbles into a single data frame
+}
+\examples{
+person_record |>
+  generate_frequency(
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
+  ) |>
+  collapse_list()
 }

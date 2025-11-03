@@ -52,7 +52,9 @@ where the Excel file(s) will be saved. File extension \code{.xlsx} is automatica
 
 \item{names_separator}{Character used to separate column names when dealing with nested or grouped headers.}
 
-\item{table_list_reference}{}
+\item{include_table_list}{Logical. If \code{TRUE}, a table list reference is included in the Excel file.}
+
+\item{table_list_reference}{A data frame containing the table list reference. If \code{NULL}, it will be generated from \code{data}.}
 
 \item{facade}{A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.}
 }

@@ -252,8 +252,8 @@ add_table_subtitle <- function(data, subtitle) {
 
 add_table_number <- function(data, table_number) {
 
-  if(!is.numeric(number)) stop("Table number must be numeric.")
-  if(length(number) > 1) stop("Table number must be a single numeric value.")
+  if(!is.numeric(table_number)) stop("Table number must be numeric.")
+  if(length(table_number) > 1) stop("Table number must be a single numeric value.")
 
   attr(data, "table_number") <- table_number
 
@@ -264,13 +264,20 @@ add_table_number <- function(data, table_number) {
 
 #' Convert labelled factors to regular factors
 #'
-#' @param data
+#' @param data A data frame, tibble, or \code{tsg} object containing labelled factors.
 #'
-#' @returns
+#' @returns A data frame with labelled factors converted to regular factors.
 #' @export
 #'
 #' @examples
+#' df <- data.frame(
+#'   category = haven::labelled(
+#'     c(1, 2, 3),
+#'     c("One" = 1, "Two" = 2, "Three" = 3)
+#'    )
+#'  )
 #'
+#' df_converted <- convert_factor(df)
 
 convert_factor <- function(data) {
   dplyr::mutate_if(data, haven::is.labelled, haven::as_factor)

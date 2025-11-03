@@ -76,9 +76,9 @@ generate_frequency(
 
 \item{expand_categories}{Logical. If \code{TRUE}, ensures all categories (including those with zero counts) are included in the output.}
 
-\item{convert_factor}{Logical. If \code{TRUE}, converts labelled vectors to factors in the output.}
+\item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [`convert_factor()`].}
 
-\item{collapse_list}{Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers.}
+\item{collapse_list}{Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [`collapse_list()`].}
 
 \item{top_n}{Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.}
 
@@ -95,6 +95,39 @@ The function supports various enhancements such as sorting, totals, percentages,
 handling of missing values, and label customization. It returns a single table or a list of frequency tables.
 }
 \examples{
-data <- generate_frequency(dplyr::starwars, sex)
-data
+# Using built-in dataset `person_record`
+
+
+# Basic usage
+person_record |>
+ generate_frequency(sex)
+
+# Multiple variables
+person_record |>
+  generate_frequency(sex, age, marital_status)
+
+# Grouping
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status)
+
+# Output group as list
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status, group_as_list = TRUE)
+
+# Sorting
+
+# default is TRUE
+person_record |>
+  generate_frequency(age, sort_value = TRUE)
+
+# If FALSE, the output will be sorted by the variable values in ascending order.
+person_record |>
+  generate_frequency(age, sort_value = FALSE)
+
+# Vignettes for more examples.
+}
+\seealso{
+[`generate_crosstab()`], [`generate_output()`], [`rename_labe()`], [`remove_label()`]
 }
