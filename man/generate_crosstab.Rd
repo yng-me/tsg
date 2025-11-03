@@ -92,6 +92,39 @@ A data frame or a list of data frames containing the cross-tabulation results. I
 \description{
 Generate cross-tabulation
 }
+\examples{
+# Using built-in dataset `person_record`
+
+# Basic usage
+person_record |>
+ generate_crosstab(marital_status, sex)
+
+
+# Multiple variables
+person_record |>
+ generate_crosstab(
+  sex,
+  seeing,
+  hearing,
+  walking,
+  remembering,
+  self_caring,
+  communicating
+ )
+
+ # Grouping
+ person_record |>
+   dplyr::group_by(sex) |>
+   generate_crosstab(marital_status, employed, group_as_list = TRUE)
+
+# # Percent or proportion by row or column
+person_record |>
+ generate_crosstab(
+   marital_status,
+   sex,
+   percent_by_column = TRUE
+ )
+}
 \seealso{
 \code{\link[=generate_frequency]{generate_frequency()}}, \code{\link[=generate_output]{generate_output()}}, \code{\link[=rename_label]{rename_label()}}, \code{\link[=remove_label]{remove_label()}}
 }

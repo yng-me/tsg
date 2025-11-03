@@ -33,7 +33,38 @@
 #'
 #' @export
 #'
+#' @examples
+#' # Using built-in dataset `person_record`
 #'
+#' # Basic usage
+#' person_record |>
+#'  generate_crosstab(marital_status, sex)
+#'
+#'
+#' # Multiple variables
+#' person_record |>
+#'  generate_crosstab(
+#'   sex,
+#'   seeing,
+#'   hearing,
+#'   walking,
+#'   remembering,
+#'   self_caring,
+#'   communicating
+#'  )
+#'
+#'  # Grouping
+#'  person_record |>
+#'    dplyr::group_by(sex) |>
+#'    generate_crosstab(marital_status, employed, group_as_list = TRUE)
+#'
+#' # # Percent or proportion by row or column
+#' person_record |>
+#'  generate_crosstab(
+#'    marital_status,
+#'    sex,
+#'    percent_by_column = TRUE
+#'  )
 
 generate_crosstab <- function(
   data,
