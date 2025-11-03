@@ -186,6 +186,149 @@
     <div class="dont-index"><p><code><a href="generate_frequency.html">generate_frequency()</a></code>, <code><a href="generate_output.html">generate_output()</a></code>, <code><a href="rename_label.html">rename_label()</a></code>, <code><a href="remove_label.html">remove_label()</a></code></p></div>
     </div>
 
+    <div class="section level2">
+    <h2 id="ref-examples">Examples<a class="anchor" aria-label="anchor" href="#ref-examples"></a></h2>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span class="r-in"><span><span class="co"># Using built-in dataset `person_record`</span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Basic usage</span></span></span>
+<span class="r-in"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span> <span class="fu">generate_crosstab</span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 6</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category                 total frequency_1 frequency_2 percent_1 percent_2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>  <span style="text-decoration: underline;">1</span>544         859         685      55.6      44.4</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                769         387         382      50.3      49.7</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>     424         211         213      49.8      50.2</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                138          40          98      29.0      71.0</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>               43          19          24      44.2      55.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                 <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>402      52.0      48.0</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># Multiple variables</span></span></span>
+<span class="r-in"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span> <span class="fu">generate_crosstab</span><span class="op">(</span></span></span>
+<span class="r-in"><span>  <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>  <span class="va">seeing</span>,</span></span>
+<span class="r-in"><span>  <span class="va">hearing</span>,</span></span>
+<span class="r-in"><span>  <span class="va">walking</span>,</span></span>
+<span class="r-in"><span>  <span class="va">remembering</span>,</span></span>
+<span class="r-in"><span>  <span class="va">self_caring</span>,</span></span>
+<span class="r-in"><span>  <span class="va">communicating</span></span></span>
+<span class="r-in"><span> <span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`Seeing, even if wearing glasses`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category   total frequency_1 frequency_2 frequency_3 frequency_4 frequency_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>    <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>369          40           4           0          103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>  <span style="text-decoration: underline;">1</span>402        <span style="text-decoration: underline;">1</span>254          42           5           1          100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>   <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>623          82           9           1          203</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 5 more variables: percent_1 &lt;dbl&gt;, percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   percent_4 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`Hearing, even if using hearing aid`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category   total frequency_1 frequency_2 frequency_3 frequency_4 frequency_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>    <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>386          23           4           0          103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>  <span style="text-decoration: underline;">1</span>402        <span style="text-decoration: underline;">1</span>280          20           1           1          100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>   <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>666          43           5           1          203</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 5 more variables: percent_1 &lt;dbl&gt;, percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   percent_4 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`Walking or climbing steps, even if with cane or artificial leg`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category   total frequency_1 frequency_2 frequency_3 frequency_4 frequency_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>    <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>381          27           4           1          103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>  <span style="text-decoration: underline;">1</span>402        <span style="text-decoration: underline;">1</span>277          21           3           1          100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>   <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>658          48           7           2          203</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 5 more variables: percent_1 &lt;dbl&gt;, percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   percent_4 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`Remembering or concentrating`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 10</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category   total frequency_1 frequency_2 frequency_3 frequency_NA percent_1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>    <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>393          17           3          103      91.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>  <span style="text-decoration: underline;">1</span>402        <span style="text-decoration: underline;">1</span>287          11           4          100      91.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>   <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>680          28           7          203      91.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 3 more variables: percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`Self-caring (such as wasking all over or dressing)`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category   total frequency_1 frequency_2 frequency_3 frequency_4 frequency_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>    <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>391          19           2           1          103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>  <span style="text-decoration: underline;">1</span>402        <span style="text-decoration: underline;">1</span>280          18           3           1          100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>   <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>671          37           5           2          203</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 5 more variables: percent_1 &lt;dbl&gt;, percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   percent_4 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $`Communicating using his/her casual (customary) language`</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 3 × 12</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category   total frequency_1 frequency_2 frequency_3 frequency_4 frequency_NA</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>    <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>396          13           3           1          103</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>  <span style="text-decoration: underline;">1</span>402        <span style="text-decoration: underline;">1</span>287          12           2           1          100</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>   <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>683          25           5           2          203</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 5 more variables: percent_1 &lt;dbl&gt;, percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;,</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;">#   percent_4 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tsg"  "tsgc" "list"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span> <span class="co"># Grouping</span></span></span>
+<span class="r-in"><span> <span class="va">person_record</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>   <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span>   <span class="fu">generate_crosstab</span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">employed</span>, group_as_list <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Male</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sex       category        total frequency_1 frequency_2 frequency_NA percent_1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>  1<span style="color: #949494;"> [Single/neve…</span>   859         127         330          402      14.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 1<span style="color: #949494;"> [Male]</span>  2<span style="color: #949494;"> [Married]</span>       387         274         108            5      70.8</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 1<span style="color: #949494;"> [Male]</span>  3<span style="color: #949494;"> [Common law/…</span>   211         169          41            1      80.1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 1<span style="color: #949494;"> [Male]</span>  4<span style="color: #949494;"> [Widowed]</span>        40          18          21            1      45  </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 1<span style="color: #949494;"> [Male]</span>  6<span style="color: #949494;"> [Separated]</span>      19          11           8            0      57.9</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 1<span style="color: #949494;"> [Male]</span>  0<span style="color: #949494;"> [Total]</span>        <span style="text-decoration: underline;">1</span>516         599         508          409      39.5</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: percent_2 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> $Female</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 9</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   sex        category       total frequency_1 frequency_2 frequency_NA percent_1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/nev…</span>   685          63         234          388      9.20</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>      382         155         218            9     40.6 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common law…</span>   213          67         142            4     31.5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>       98          26          72            0     26.5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>     24          12          12            0     50   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>       <span style="text-decoration: underline;">1</span>402         323         678          401     23.0 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 2 more variables: percent_2 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"groups")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "sex"</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> attr(,"class")</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> [1] "tsg"  "tsgc" "list"</span>
+<span class="r-in"><span></span></span>
+<span class="r-in"><span><span class="co"># # Percent or proportion by row or column</span></span></span>
+<span class="r-in"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span></span>
+<span class="r-in"><span> <span class="fu">generate_crosstab</span><span class="op">(</span></span></span>
+<span class="r-in"><span>   <span class="va">marital_status</span>,</span></span>
+<span class="r-in"><span>   <span class="va">sex</span>,</span></span>
+<span class="r-in"><span>   percent_by_column <span class="op">=</span> <span class="cn">TRUE</span></span></span>
+<span class="r-in"><span> <span class="op">)</span></span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># A tibble: 6 × 7</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   category       frequency_total frequency_1 frequency_2 percent_total percent_1</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/nev…</span>            <span style="text-decoration: underline;">1</span>544         859         685         52.9      56.7 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                769         387         382         26.4      25.5 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law…</span>             424         211         213         14.5      13.9 </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                138          40          98          4.73      2.64</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>               43          19          24          1.47      1.25</span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                 <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>402        100       100   </span>
+<span class="r-out co"><span class="r-pr">#&gt;</span> <span style="color: #949494;"># ℹ 1 more variable: percent_2 &lt;dbl&gt;</span></span>
+</code></pre></div>
+    </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
     </nav></aside></div>
 
