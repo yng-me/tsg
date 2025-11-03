@@ -1,8 +1,8 @@
 Package: tsg
 Type: Package
-Title: Table Summary Generator 
+Title: Generate Publication-Ready Statistical Tables
 Version: 0.1.0
-Description: A collection of functions for generating frequency, cross-tabulations, and publication-ready statistical tables.
+Description: A collection of functions for generating frequency tables and cross-tabulations of one or more categorical variables. Generated tables can be exported to variouse formats (Excel, PDF, HTLM, etc.) with advanced formatting and layout customizations. 
 Authors@R: c(
     person(
       "Bhas", 

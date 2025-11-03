@@ -27,15 +27,15 @@
 #' @param expand_categories Logical. If \code{TRUE}, ensures all categories (including those with zero counts) are included in the output.
 #' @param top_n Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.
 #' @param top_n_only Logical. If \code{TRUE} and \code{top_n} is specified, only the top \code{n} categories are included, excluding others.
-#' @param collapse_list Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [`collapse_list()`].
+#' @param collapse_list Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [collapse_list()].
 #' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
-#' @param convert_factor Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [`convert_factor()`].
+#' @param convert_factor Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [convert_factor()].
 #'
 #' @return A frequency table (\code{tibble}, possibly nested) or a list of such tables. Additional attributes such as labels, metadata, and grouping information may be attached. The returned object is of class \code{"tsg"}.
 #'
 #' @export
 #'
-#' @seealso [`generate_crosstab()`], [`generate_output()`], [`rename_labe()`], [`remove_label()`]
+#' @seealso [generate_crosstab()], [generate_output()], [rename_label()], [remove_label()]
 #'
 #' @examples
 #' # Using built-in dataset `person_record`

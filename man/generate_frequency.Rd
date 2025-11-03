@@ -76,9 +76,9 @@ generate_frequency(
 
 \item{expand_categories}{Logical. If \code{TRUE}, ensures all categories (including those with zero counts) are included in the output.}
 
-\item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [`convert_factor()`].}
+\item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [convert_factor()].}
 
-\item{collapse_list}{Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [`collapse_list()`].}
+\item{collapse_list}{Logical. If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [collapse_list()].}
 
 \item{top_n}{Integer or \code{NULL}. If specified, limits the output to the top \code{n} categories by frequency.}
 
@@ -129,5 +129,5 @@ person_record |>
 # Vignettes for more examples.
 }
 \seealso{
-[`generate_crosstab()`], [`generate_output()`], [`rename_labe()`], [`remove_label()`]
+[generate_crosstab()], [generate_output()], [rename_label()], [remove_label()]
 }
