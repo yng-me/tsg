@@ -22,7 +22,7 @@ collapse_list(
 
 \item{col_id}{The name of the column to be created for the category.}
 
-\item{label}{A label for the category column. If `NULL`, defaults to "Category".}
+\item{label}{A label for the category column. If \code{NULL}, defaults to "Category".}
 
 \item{pluck}{A character vector of column names to pluck from the data frames. If \code{NULL}, all columns are retained.}
 

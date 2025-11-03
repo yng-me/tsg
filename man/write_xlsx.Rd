@@ -25,8 +25,8 @@ write_xlsx(
 \arguments{
 \item{data}{A \code{data.frame}, tibble, or a named \code{list} of them. When a list is provided:
 \itemize{
-  \item If \code{separate_files = FALSE}, each element is written to a separate sheet in one Excel file.
-  \item If \code{separate_files = TRUE}, each element is written to its own Excel file.
+\item If \code{separate_files = FALSE}, each element is written to a separate sheet in one Excel file.
+\item If \code{separate_files = TRUE}, each element is written to its own Excel file.
 }}
 
 \item{path}{A file path (if \code{separate_files = FALSE}) or directory path (if \code{separate_files = TRUE})
@@ -69,10 +69,10 @@ It leverages the \code{openxlsx} package to create styled Excel reports suitable
 \details{
 This function supports advanced Excel formatting including:
 \itemize{
-  \item Grouped headers
-  \item Dynamic column widths
-  \item Styled titles, subtitles, source notes, and footnotes
-  \item Border styling (inner, outer, header)
+\item Grouped headers
+\item Dynamic column widths
+\item Styled titles, subtitles, source notes, and footnotes
+\item Border styling (inner, outer, header)
 }
 
 The function is designed to handle export needs in professional and reporting contexts.
