@@ -167,7 +167,7 @@ person_record |>
 ```
 
 
-### More customization options
+### More options
 
 You can also add cumulative frequency and percentage to the frequency table.
 
@@ -202,23 +202,191 @@ person_record |>
 
 NOTE: For labelled data, the value for the row total is automatically set the lowest numeric value. The default label for the total row is "Total"; if you want to set a custom label for the total row, you can use the `label_total` argument.
 
+
 ## Generate cross-tabulation 
 
-Using the `generate_crosstab()` function
+The `generate_crosstab()` function allows you to create cross-tabulations between two variables, which is useful for exploring relationships between categorical variables.
 
-This function creates a cross-tabulation (contingency table) from the data, allowing for analysis of the relationship between two or more categorical variables.
+### Basic usage
+
+```{r}
+person_record |>
+  generate_crosstab(marital_status, sex)
+```
+
+NOTE: If you pass only one variable, it will fall back to `generate_frequency()` and generate a frequency table for variable specified.
+
+### Multiple variables
+
+If you pass mutliple variables, it will generate cross-tabulations for each pair of variables separately in a list.
+
+```{r}
+person_record |>
+  generate_crosstab(
+    sex,
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
+  )
+```
 
 
+### Grouping
+
+You can also specify grouping with `group_by()` from `dplyr` and it will calculate the cross-tabulation for each group.
+
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_crosstab(marital_status, employed)
+```
+
+If you want to generate a list of cross-tabulations for each group, you can set `group_as_list = TRUE`.
+
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_crosstab(marital_status, employed, group_as_list = TRUE)
+```
+
+
+### Percent or proportion by row or column
+
+You can specify whether to calculate the percentage or proportion by row or column using the `percent_by_column` argument. If it is set to `TRUE`, the percentage will be calculated by column; if set to `FALSE`, it will be calculated by row. The default is `FALSE`.
+
+```{r}
+person_record |>
+  generate_crosstab(
+    marital_status,
+    sex,
+    percent_by_column = TRUE
+  )
+```
+
+
+### More options
+
+Just like `generate_frequency()`, you can also specify whether to express the value as a proportion.
+
+```{r}
+person_record |>
+  generate_crosstab(
+    marital_status,
+    sex,
+    as_proportion = TRUE
+  )
+```
+
+You can also position the total row at the top of the table.
+
+```{r}
+person_record |>
+  generate_crosstab(
+    marital_status,
+    sex,
+    position_total = "top"
+  )
+```
 
 
 ## Generate output
 
-This function generates a formatted output table from the frequency or cross-tabulation data. It supports various formatting options and can include metadata such as titles and subtitles.
+You can export your frequency table or cross-tabulation to Excel using the `write_xlsx()`.
+
+### Basic usage
+
+```{r, eval=FALSE}
+person_record |> 
+  generate_frequency(sex) |> 
+  write_xlsx(path = "table-01.xlsx")
+```
+
+### Add table info
+
+You can add a title and subtitle to your table using the `add_table_title()` and `add_table_subtitle()` functions.
+
+```{r, eval=FALSE}
+person_record |> 
+  generate_crosstab(marital_status, sex) |> 
+  add_table_title("Marital Status by Sex") |>
+  add_table_subtitle("Sample dataset: person_record") |>
+  write_xlsx(path = "table-02.xlsx")
+```
+
+You can also add end notes to your table using the `add_source_note()` and `add_footnote()` functions.
+
+```{r, eval=FALSE}
+person_record |> 
+  generate_crosstab(marital_status, sex) |> 
+  add_table_title("Marital Status by Sex") |>
+  add_table_subtitle("Sample dataset: person_record") |>
+  add_source_note("Source: person_record dataset") |>
+  add_footnote("This is a footnote for the table") |>
+  write_xlsx(path = "table-03.xlsx")
+```
+
+Alternatively, you can directly add table title, subtitle, source_note, and footnotes by specifying them in the arguments of the `write_xlsx()` function.
 
 
-## More customization options
+```{r, eval=FALSE}
+person_record |> 
+  generate_crosstab(marital_status, sex) |> 
+  write_xlsx(
+    path = "table-03.xlsx",
+    table_title = "Marital Status by Sex",
+    table_subtitle = "Sample dataset: person_record",
+    source_note = "Source: person_record dataset",
+    footnotes = "This is a footnote for the table"
+  )
+```
+
+### Facade
+
+You can use the `add_facade()` function to apply a facade to your table. A facade is a set of styling options that can be applied to the table to customize its appearance.
+
+```{r, eval=FALSE}
+person_record |> 
+  generate_frequency(sex) |> 
+  add_facade(
+    table.offsetRow = 2, 
+    table.offsetCol = 1
+  ) |> 
+  write_xlsx(
+    path = "table-04.xlsx",
+    # Using built-in facade
+    facade = get_tsg_facade("yolo")
+  )
+```
 
 
+If you want to further customize the appearance of your table, you can use the `facade` argument to specify a YAML facade file. The facade file contains styling options for the table, such as font size, border style, background color, and text alignment.
+
+```{r, eval=FALSE}
+person_record |> 
+  generate_frequency(sex) |> 
+  write_xlsx(
+    path = "table-05.xlsx",
+    # Using built-in facade
+    facade = get_tsg_facade("yolo")
+  )
+```
+
+You can generate a template facade file using the `generate_template()` function and then customize it to your needs.
 
 
+### The `generate_output()` function
+
+The `generate_output()` function is a convenience function that allows you to generate and save the output file in the specified format (e.g., Excel, HTML, PDF, Word). It supports various formats and can handle different data structures.
+
+```{r, eval=FALSE}
+person_record |> 
+  generate_frequency(sex) |> 
+  generate_output(path = "table-06.xlsx")
+```
+
+
+NOTE: At the moment, it only supports Excel output. The other formats are not yet implemented.
 

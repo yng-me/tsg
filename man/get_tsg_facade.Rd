@@ -2,7 +2,7 @@
 % Please edit documentation in R/facade.R
 \name{get_tsg_facade}
 \alias{get_tsg_facade}
-\title{Title}
+\title{Get a facade from the package or a file}
 \usage{
 get_tsg_facade(facade = "default", which = c("xlsx", "pdf", "html"))
 }
@@ -15,7 +15,7 @@ get_tsg_facade(facade = "default", which = c("xlsx", "pdf", "html"))
 A list containing the facade settings for the specified format. The facade includes styling attributes such as font size, color, border styles, and background fills for different parts of the table.
 }
 \description{
-Title
+Get a facade from the package or a file
 }
 \examples{
 

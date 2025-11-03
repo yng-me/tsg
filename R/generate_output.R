@@ -27,7 +27,7 @@ generate_output <- function(
   format = c("xlsx", "html", "pdf", "word")
 ) {
 
-  match.arg(format, c("xlsx", "html", "pdf", "word"))
+  match.arg(format[1], c("xlsx", "html", "pdf", "word"), several.ok = FALSE)
 
   if (format[1] == "xlsx") {
 
