@@ -39,6 +39,7 @@
 <li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json">
 </form></li>
+<li class="nav-item"><a class="external-link nav-link" href="https://github.com/yng-me/tsg/" aria-label="GitHub"><span class="fa fab fa-github fa-lg"></span></a></li>
       </ul>
 </div>
 
@@ -55,7 +56,7 @@
       <h1>Working with the tsg package</h1>
             
       
-
+      <small class="dont-index">Source: <a href="https://github.com/yng-me/tsg/blob/main/vignettes/tsg.Rmd" class="external-link"><code>vignettes/tsg.Rmd</code></a></small>
       <div class="d-none name"><code>tsg.Rmd</code></div>
     </div>
 
@@ -818,10 +819,9 @@ needs.</p>
 <div class="section level3">
 <h3 id="the-generate_output-function">The <code>generate_output()</code> function<a class="anchor" aria-label="anchor" href="#the-generate_output-function"></a>
 </h3>
-<p>The <code><a href="../reference/generate_output.html">generate_output()</a></code> function is a convenience function
-that allows you to generate and save the output file in the specified
-format (e.g., Excel, HTML, PDF, Word). It supports various formats and
-can handle different data structures.</p>
+<p><code><a href="../reference/generate_output.html">generate_output()</a></code> can be used to generate and save the
+output file in the specified format (e.g., Excel, HTML, PDF, Word). It
+supports various formats and can handle different data structures.</p>
 <div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
