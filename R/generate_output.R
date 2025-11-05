@@ -12,12 +12,14 @@
 #' #' # Generate an xlsx file from a tsg object
 #' data <- generate_frequency(dplyr::starwars, sex)
 #'
-#' dir_to <- tempfile()
+#' dir_to <- tempdir()
 #' generate_output(
 #'   data,
 #'   file.path(dir_to, "starwars_frequency.xlsx"),
 #'   format = "xlsx"
-#'  )
+#' )
+#'
+#' unlink(file.path(dir_to, "starwars_frequency.xlsx"))
 #'
 
 generate_output <- function(
@@ -28,8 +30,9 @@ generate_output <- function(
 ) {
 
   match.arg(format[1], c("xlsx", "html", "pdf", "word"), several.ok = FALSE)
+  format <- format[1]
 
-  if (format[1] == "xlsx") {
+  if (format == "xlsx") {
 
     list_depth <- purrr::pluck_depth(data)
 
@@ -40,7 +43,7 @@ generate_output <- function(
     }
 
   } else if (format == "html") {
-
+    stop("HTML format not yet implemented")
   } else if (format == "pdf") {
     stop("PDF format not yet implemented")
   } else if (format == "word") {

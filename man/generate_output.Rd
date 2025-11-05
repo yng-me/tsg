@@ -25,11 +25,13 @@ Generate output in specified format (e.g., xlsx, html, pdf, word)
 #' # Generate an xlsx file from a tsg object
 data <- generate_frequency(dplyr::starwars, sex)
 
-dir_to <- tempfile()
+dir_to <- tempdir()
 generate_output(
   data,
   file.path(dir_to, "starwars_frequency.xlsx"),
   format = "xlsx"
- )
+)
+
+unlink(file.path(dir_to, "starwars_frequency.xlsx"))
 
 }
