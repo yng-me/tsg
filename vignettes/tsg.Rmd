@@ -164,7 +164,6 @@ person_record |>
   collapse_list()
 ```
 
-
 ### More options
 
 You can also add cumulative frequency and percentage to the frequency table.
@@ -200,7 +199,6 @@ person_record |>
 
 NOTE: For labelled data, the value for the row total is automatically set the lowest numeric value. The default label for the total row is "Total"; if you want to set a custom label for the total row, you can use the `label_total` argument.
 
-
 ## Generate cross-tabulation 
 
 The `generate_crosstab()` function allows you to create cross-tabulations between two variables, which is useful for exploring relationships between categorical variables.
@@ -231,7 +229,6 @@ person_record |>
   )
 ```
 
-
 ### Grouping
 
 You can also specify grouping with `group_by()` from `dplyr` and it will calculate the cross-tabulation for each group.
@@ -249,7 +246,6 @@ person_record |>
   dplyr::group_by(sex) |>
   generate_crosstab(marital_status, employed, group_as_list = TRUE)
 ```
-
 
 ### Percent or proportion by row or column
 
@@ -328,7 +324,6 @@ person_record |>
 
 Alternatively, you can directly add table title, subtitle, source_note, and footnotes by specifying them in the arguments of the `write_xlsx()` function.
 
-
 ```{r, eval=FALSE}
 person_record |> 
   generate_crosstab(marital_status, sex) |> 
@@ -359,7 +354,6 @@ person_record |>
   )
 ```
 
-
 If you want to further customize the appearance of your table, you can use the `facade` argument to specify a YAML facade file. The facade file contains styling options for the table, such as font size, border style, background color, and text alignment.
 
 ```{r, eval=FALSE}
@@ -384,7 +378,6 @@ person_record |>
   generate_frequency(sex) |> 
   generate_output(path = "table-06.xlsx")
 ```
-
 
 NOTE: At the moment, it only supports Excel output. The other formats are not yet implemented.
 

@@ -105,6 +105,7 @@ write_xlsx <- function(
   }
 
   wb <- openxlsx::createWorkbook(...)
+
   openxlsx::modifyBaseFont(
     wb,
     fontName = facade$table.fontName,
@@ -117,7 +118,8 @@ write_xlsx <- function(
 
     if(include_table_list) {
       table_list_reference <- resolve_table_list(data, table_list_reference)
-      wb <- tsg_write_table_list(wb, data, include_table_list)
+      wb <- tsg_write_table_list(wb, data, table_list_reference)
+
     }
 
     sheet_names <- names(data)
@@ -974,16 +976,19 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL) {
 
   sheet_summary <- 'List of Tables'
 
-  ref <- dplyr::select(table_list_reference, table_name, title)
-  ref <- rename_label(
-    ref,
-    table_number = "Table number",
-    title = "Title"
-  )
+  ref <- dplyr::select(table_list_reference, table_number, table_name, title)
 
   wb <- xlsx_write_data(
     wb,
-    ref,
+    data = ref |>
+      dplyr::transmute(
+        table = paste0("Table ", table_number, ".", table_name),
+        title = title
+      ) |>
+      rename_label(
+        table = "Table",
+        title = "Title"
+      ),
     sheet_name = sheet_summary,
     title = sheet_summary,
     offset_col = 1,
@@ -993,7 +998,7 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL) {
   for (s in 1:nrow(table_list_reference)) {
 
     hyperlink <- table_list_reference$table_name[s]
-    hyperlink_name <- glue::glue("Table {table_list_reference$table_number[s]}")
+    hyperlink_name <- glue::glue("Table {table_list_reference$table_number[s]}. {table_list_reference$table_name[s]}")
 
     openxlsx::writeFormula(
       wb,
@@ -1003,6 +1008,8 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL) {
       x = openxlsx::makeHyperlinkString(sheet = hyperlink, text = hyperlink_name)
     )
   }
+
+  return(wb)
 
 }
 

@@ -161,3 +161,57 @@ test_that("write_xlsx handles missing facade parameters", {
 })
 
 
+
+test_that("write_xlsx generates output with reference table list", {
+
+  ref <- data.frame(
+    table_number = 1:2,
+    table_id = c("table1", "table2"),
+    table_name = c("Table 1", "Table 2"),
+    title = c("Table 1 Title", "Table 2 Title"),
+    subtitle = c("Subtitle 1", "Subtitle 2"),
+    source_note = c("Source 1", "Source 2"),
+    footnotes = c("Footnote 1", "Footnote 2")
+  )
+
+  temp_path <- tempfile(fileext = ".xlsx")
+
+  write_xlsx(
+    data = list(
+      table1 = data.frame(A = 1:3, B = letters[1:3]),
+      table2 = data.frame(X = 1:2, Y = letters[4:5])
+    ),
+    path = temp_path,
+    include_table_list = TRUE,
+    table_list_reference = ref
+  )
+
+  expect_true("List of Tables" %in% openxlsx::getSheetNames(temp_path))
+  expect_true(file.exists(temp_path))
+
+  unlink(temp_path)
+
+})
+
+
+test_that("write_xlsx generates output without reference table list but `include_table_list` is TRUE", {
+
+  temp_path_no_ref <- tempfile(fileext = ".xlsx")
+
+  write_xlsx(
+    data = list(
+      table1 = data.frame(A = 1:3, B = letters[1:3]),
+      table2 = data.frame(X = 1:2, Y = letters[4:5])
+    ),
+    path = temp_path_no_ref,
+    include_table_list = TRUE
+  )
+
+  expect_true("List of Tables" %in% openxlsx::getSheetNames(temp_path_no_ref))
+  expect_true(file.exists(temp_path_no_ref))
+
+  unlink(temp_path_no_ref)
+
+})
+
+
