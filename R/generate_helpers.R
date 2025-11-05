@@ -3,7 +3,7 @@
 #' @param data A list of data frames or tibbles to be collapsed.
 #' @param ... Additional arguments passed to \code{dplyr::filter()}.
 #' @param col_id The name of the column to be created for the category.
-#' @param label  A label for the category column. If `NULL`, defaults to "Category".
+#' @param label  A label for the category column. If \code{NULL}, defaults to "Category".
 #' @param pluck A character vector of column names to pluck from the data frames. If \code{NULL}, all columns are retained.
 #' @param as_proportion  If \code{TRUE}, the frequency values will be converted to proportions. Default is \code{FALSE}.
 #' @param name_separator A string to separate the names of the columns in the output data frame. Default is "_".
@@ -119,7 +119,7 @@ collapse_list <- function(
 #'     communicating
 #'   ) |>
 #'   collapse_list() |>
-#'   rename_label(category = "Function difficulty")
+#'   rename_label(category = "Functional difficulty")
 
 
 rename_label <- function(data, ...) {

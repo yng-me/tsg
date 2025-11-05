@@ -24,22 +24,24 @@ generate_template <- function(
 ) {
 
   match.arg(template[1], c("facade", "table-list"), several.ok = FALSE)
-  ext <- ifelse(template[1] == "facade", "yaml", "xlsx")
+  template <- template[1]
+
+  ext <- ifelse(template == "facade", "yaml", "xlsx")
 
   if(fs::is_dir(path)) {
-    path <- file.path(path, paste0(template[1], "-template.", ext))
+    path <- file.path(path, paste0(template, "-template.", ext))
   }
 
   if(!grepl("\\.(yml|yaml|xlsx)$", path)) {
     path <- paste0(path, ".", ext)
   }
 
-  if (template[1] == "facade") {
+  if (template == "facade") {
     template_from <- system.file("extdata", "facade", "xlsx", "default.yaml", package = "tsg")
 
     fs::file_copy(template_from, path, overwrite = TRUE)
 
-  } else if (template[1] == "table-list") {
+  } else if (template == "table-list") {
 
     data <- dplyr::tibble(
       table_number = 1:3,

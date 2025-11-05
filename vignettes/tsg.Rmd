@@ -371,7 +371,7 @@ You can generate a template facade file using the `generate_template()` function
 
 ### The `generate_output()` function
 
-The `generate_output()` function is a convenience function that allows you to generate and save the output file in the specified format (e.g., Excel, HTML, PDF, Word). It supports various formats and can handle different data structures.
+`generate_output()` can be used to generate and save the output file in the specified format (e.g., Excel, HTML, PDF, Word). It supports various formats and can handle different data structures.
 
 ```{r, eval=FALSE}
 person_record |> 

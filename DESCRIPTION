@@ -45,4 +45,5 @@ Roxygen: list(markdown = TRUE)
 Depends: 
     R (>= 4.1.0)
 VignetteBuilder: knitr
-URL: https://yng-me.github.io/tsg/
+URL: https://yng-me.github.io/tsg/, https://github.com/yng-me/tsg
+BugReports: https://github.com/yng-me/tsg/issues

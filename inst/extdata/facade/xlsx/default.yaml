@@ -40,7 +40,6 @@ body.halign: ~
 body.valign: "center"
 body.textDecoration: ~
 body.wrapText: ~
-body.textRotation: ~
 body.indent: 1
 body.height: 20
 
@@ -57,7 +56,6 @@ title.halign: ~
 title.valign: "center"
 title.textDecoration: "bold"
 title.wrapText: ~
-title.textRotation: ~
 title.indent: ~
 title.height: 24
 
@@ -74,7 +72,6 @@ subtitle.halign: ~
 subtitle.valign: "center"
 subtitle.textDecoration: ~
 subtitle.wrapText: ~
-subtitle.textRotation: ~
 subtitle.indent: ~
 subtitle.height: 22
 
@@ -91,7 +88,6 @@ header.halign: ~
 header.valign: ~
 header.textDecoration: ~
 header.wrapText: true
-header.textRotation: ~
 header.indent: ~
 header.height: 24
 
@@ -108,7 +104,6 @@ spanner.halign: ~
 spanner.valign: ~
 spanner.textDecoration: ~
 spanner.wrapText: ~
-spanner.textRotation: ~
 spanner.indent: ~
 spanner.height: ~
 
@@ -125,7 +120,6 @@ col_first.halign: ~
 col_first.valign: ~
 col_first.textDecoration: ~
 col_first.wrapText: ~
-col_first.textRotation: ~
 col_first.indent: ~
 col_first.width: 24
 
@@ -142,7 +136,6 @@ col_last.halign: ~
 col_last.valign: ~
 col_last.textDecoration: ~
 col_last.wrapText: ~
-col_last.textRotation: ~
 col_last.indent: ~
 col_last.width: 14
 
@@ -159,7 +152,6 @@ row_group.halign: ~
 row_group.valign: "center"
 row_group.textDecoration: ~
 row_group.wrapText: ~
-row_group.textRotation: ~
 row_group.indent: ~
 row_group.width: ~
 row_group.height: ~
@@ -177,7 +169,6 @@ source_note.halign: ~
 source_note.valign: "center"
 source_note.textDecoration: "italic"
 source_note.wrapText: ~
-source_note.textRotation: ~
 source_note.indent: ~
 source_note.height: 20
 
@@ -194,7 +185,6 @@ footnotes.halign: ~
 footnotes.valign: "center"
 footnotes.textDecoration: "italic"
 footnotes.wrapText: ~
-footnotes.textRotation: ~
 footnotes.indent: ~
 footnotes.height: 20
 

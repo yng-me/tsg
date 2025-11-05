@@ -24,7 +24,7 @@ add_facade(
   table.decimalPrecision = NULL,
   table.decimalCols = NULL,
   table.lastRowBold = NULL,
-  table.widths = NULL,
+  table.width = NULL,
   table.widthOffset = NULL,
   title.fontName = NULL,
   title.fontSize = NULL,
@@ -38,9 +38,8 @@ add_facade(
   title.valign = NULL,
   title.textDecoration = NULL,
   title.wrapText = NULL,
-  title.textRotation = NULL,
   title.indent = NULL,
-  title.heights = NULL,
+  title.height = NULL,
   subtitle.fontName = NULL,
   subtitle.fontSize = NULL,
   subtitle.fontColour = NULL,
@@ -53,9 +52,8 @@ add_facade(
   subtitle.valign = NULL,
   subtitle.textDecoration = NULL,
   subtitle.wrapText = NULL,
-  subtitle.textRotation = NULL,
   subtitle.indent = NULL,
-  subtitle.heights = NULL,
+  subtitle.height = NULL,
   header.fontName = NULL,
   header.fontSize = NULL,
   header.fontColour = NULL,
@@ -68,9 +66,8 @@ add_facade(
   header.valign = NULL,
   header.textDecoration = NULL,
   header.wrapText = NULL,
-  header.textRotation = NULL,
   header.indent = NULL,
-  header.heights = NULL,
+  header.height = NULL,
   spanner.fontName = NULL,
   spanner.fontSize = NULL,
   spanner.fontColour = NULL,
@@ -83,9 +80,8 @@ add_facade(
   spanner.valign = NULL,
   spanner.textDecoration = NULL,
   spanner.wrapText = NULL,
-  spanner.textRotation = NULL,
   spanner.indent = NULL,
-  spanner.heights = NULL,
+  spanner.height = NULL,
   body.fontName = NULL,
   body.fontSize = NULL,
   body.fontColour = NULL,
@@ -99,9 +95,8 @@ add_facade(
   body.valign = NULL,
   body.textDecoration = NULL,
   body.wrapText = NULL,
-  body.textRotation = NULL,
   body.indent = NULL,
-  body.heights = NULL,
+  body.height = NULL,
   col_first.fontName = NULL,
   col_first.fontSize = NULL,
   col_first.fontColour = NULL,
@@ -115,9 +110,8 @@ add_facade(
   col_first.valign = NULL,
   col_first.textDecoration = NULL,
   col_first.wrapText = NULL,
-  col_first.textRotation = NULL,
   col_first.indent = NULL,
-  col_first.widths = NULL,
+  col_first.width = NULL,
   col_last.fontName = NULL,
   col_last.fontSize = NULL,
   col_last.fontColour = NULL,
@@ -131,9 +125,8 @@ add_facade(
   col_last.valign = NULL,
   col_last.textDecoration = NULL,
   col_last.wrapText = NULL,
-  col_last.textRotation = NULL,
   col_last.indent = NULL,
-  col_last.widths = NULL,
+  col_last.width = NULL,
   row_group.fontName = NULL,
   row_group.fontSize = NULL,
   row_group.fontColour = NULL,
@@ -146,9 +139,8 @@ add_facade(
   row_group.valign = NULL,
   row_group.textDecoration = NULL,
   row_group.wrapText = NULL,
-  row_group.textRotation = NULL,
   row_group.indent = NULL,
-  row_group.widths = NULL,
+  row_group.width = NULL,
   source_note.fontName = NULL,
   source_note.fontSize = NULL,
   source_note.fontColour = NULL,
@@ -161,9 +153,8 @@ add_facade(
   source_note.valign = NULL,
   source_note.textDecoration = NULL,
   source_note.wrapText = NULL,
-  source_note.textRotation = NULL,
   source_note.indent = NULL,
-  source_note.heights = NULL,
+  source_note.height = NULL,
   footnotes.fontName = NULL,
   footnotes.fontSize = NULL,
   footnotes.fontColour = NULL,
@@ -176,9 +167,13 @@ add_facade(
   footnotes.valign = NULL,
   footnotes.textDecoration = NULL,
   footnotes.wrapText = NULL,
-  footnotes.textRotation = NULL,
   footnotes.indent = NULL,
-  footnotes.heights = NULL
+  footnotes.height = NULL,
+  border_header.border = NULL,
+  border_header.borderColour = NULL,
+  border_header.borderStyle = NULL,
+  border_outer.borderColour = NULL,
+  border_bottom.height = NULL
 )
 }
 \arguments{
@@ -190,351 +185,57 @@ add_facade(
 
 \item{table.gridLines}{Boolean indicating whether to show grid lines in the table}
 
-\item{table.tabColour}{Color of the table tab in Excel. Hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red"). Defaults to NULL, which means no tab colour.}
+\item{table.tabColour}{Color of the table tab (Excel worksheet) in the output file. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").}
 
-\item{table.fontName}{Font name for the table text. Defaults to NULL, which means the default font will be used.}
+\item{table.fontName, title.fontName, subtitle.fontName, header.fontName, spanner.fontName, body.fontName, row_group.fontName, col_first.fontName, col_last.fontName, source_note.fontName, footnotes.fontName}{Font name or font family for the table, title, subtitle, header, spanner, body, row group header, source note, and footnotes respectively.}
 
-\item{table.fontSize}{Font size for the table text. Defaults to NULL, which means the default font size will be used.}
+\item{table.fontSize, title.fontSize, subtitle.fontSize, header.fontSize, spanner.fontSize, body.fontSize, col_first.fontSize, col_last.fontSize, row_group.fontSize, source_note.fontSize, footnotes.fontSize}{Font size for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.}
 
-\item{table.fontColour}{Font colour for the table text. Hexadecimal color code (e.g., "#FFFFFF" for white) or a named color (e.g., "white"). Defaults to NULL, which means no specific font colour will be applied.}
+\item{table.fontColour, title.fontColour, subtitle.fontColour, header.fontColour, spanner.fontColour, body.fontColour, col_first.fontColour, col_last.fontColour, row_group.fontColour, source_note.fontColour, footnotes.fontColour}{Font color for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").}
 
-\item{table.bgFill}{Background fill for the table cells. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
+\item{table.bgFill, title.bgFill, subtitle.bgFill, header.bgFill, spanner.bgFill, body.bgFill, col_first.bgFill, col_last.bgFill, row_group.bgFill, source_note.bgFill, footnotes.bgFill}{Background fill color for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").}
 
-\item{table.fgFill}{Foreground fill for the table cells. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
+\item{table.fgFill, title.fgFill, subtitle.fgFill, header.fgFill, spanner.fgFill, body.fgFill, col_first.fgFill, col_last.fgFill, row_group.fgFill, source_note.fgFill, footnotes.fgFill}{Foreground fill color for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").}
 
-\item{table.halign}{Horizontal alignment of the table text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
+\item{table.halign, title.halign, subtitle.halign, header.halign, spanner.halign, body.halign, col_first.halign, col_last.halign, row_group.halign, source_note.halign, footnotes.halign}{Horizontal alignment for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be "left", "center", or "right".}
 
-\item{table.valign}{Vertical alignment of the table text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
+\item{table.valign, title.valign, subtitle.valign, header.valign, spanner.valign, body.valign, col_first.valign, col_last.valign, row_group.valign, source_note.valign, footnotes.valign}{Vertical alignment for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be "top", "middle", or "bottom".}
 
-\item{table.wrapText}{Boolean indicating whether to wrap text in the table cells. Defaults to FALSE, which means text will not be wrapped.}
+\item{table.wrapText, title.wrapText, subtitle.wrapText, header.wrapText, spanner.wrapText, body.wrapText, col_first.wrapText, col_last.wrapText, row_group.wrapText, source_note.wrapText, footnotes.wrapText}{Logical indicating whether to wrap text in the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.}
 
-\item{table.indent}{Indentation for the table text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
+\item{table.indent, title.indent, subtitle.indent, header.indent, spanner.indent, body.indent, col_first.indent, col_last.indent, row_group.indent, source_note.indent, footnotes.indent}{Indentation for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a numeric value indicating the number of spaces to indent. Defaults to NULL.}
 
-\item{table.locked}{Boolean indicating whether the table cells should be locked for editing. Defaults to NULL, which means the default lock setting will be used.}
+\item{table.locked}{Logical indicating whether the table is locked.}
 
-\item{table.hidden}{Boolean indicating whether the table cells should be hidden. Defaults to NULL, which means the default visibility setting will be used.}
+\item{table.hidden}{Logical indicating whether the table (Excel worksheet) is hidden.}
 
-\item{table.decimalPrecision}{Number of decimal places to display for numeric columns in the table. Defaults to NULL, which means no specific precision will be applied.}
+\item{table.decimalPrecision}{Numeric value indicating the number of decimal places to display in numeric columns.}
 
-\item{table.decimalCols}{A character vector specifying which columns should have decimal precision applied. Defaults to NULL, which means no specific columns will be targeted.}
+\item{table.decimalCols}{Character vector of column names that should have decimal formatting applied.}
 
-\item{table.lastRowBold}{Boolean indicating whether the last row of the table should be bold. Defaults to NULL, which means the default setting will be used.}
+\item{table.lastRowBold}{Logical indicating whether the last row of the table should be bold.}
 
-\item{table.widths}{A numeric vector specifying the widths of the columns in the table. Defaults to NULL, which means the default column widths will be used.}
+\item{table.width, col_first.width, col_last.width, row_group.width}{Column widths for the table, first column, last column, and row group header respectively. Can be a numeric value indicating the width in points.}
 
-\item{table.widthOffset}{Numeric value indicating the offset to apply to the column widths. Defaults to NULL, which means no offset will be applied.}
+\item{table.widthOffset}{Numeric value indicating the width offset for the table.}
 
-\item{title.fontName}{Font name for the table title. Defaults to NULL, which means the default font will be used.}
+\item{title.border, subtitle.border, header.border, spanner.border, body.border, col_first.border, col_last.border, row_group.border, source_note.border, footnotes.border, border_header.border}{Border style for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a string representing the border style. The \code{border_header.border} is used for the header border style.}
 
-\item{title.fontSize}{Font size for the table title. Defaults to NULL, which means the default font size will be used.}
+\item{title.borderColour, subtitle.borderColour, header.borderColour, spanner.borderColour, body.borderColour, col_first.borderColour, col_last.borderColour, row_group.borderColour, source_note.borderColour, footnotes.borderColour, border_header.borderColour, border_outer.borderColour}{Border color for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red"). The \code{border_header.borderColour} and \code{border_outer.borderColour} are used for the header and outer borders of the table.}
 
-\item{title.fontColour}{Font colour for the table title. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
+\item{title.borderStyle, subtitle.borderStyle, header.borderStyle, spanner.borderStyle, body.borderStyle, col_first.borderStyle, col_last.borderStyle, row_group.borderStyle, source_note.borderStyle, footnotes.borderStyle, border_header.borderStyle}{Border style for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. The \code{border_header.borderStyle} is used for the header border style.}
 
-\item{title.border}{Boolean indicating whether to apply a border to the table title. Defaults to NULL, which means no border will be applied.}
+\item{title.textDecoration, subtitle.textDecoration, header.textDecoration, spanner.textDecoration, body.textDecoration, col_first.textDecoration, col_last.textDecoration, row_group.textDecoration, source_note.textDecoration, footnotes.textDecoration}{Text decoration for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.}
 
-\item{title.borderColour}{Border colour for the table title. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
+\item{title.height, subtitle.height, header.height, spanner.height, body.height, source_note.height, footnotes.height, border_bottom.height}{Height for the title, subtitle, header, spanner, body, source note, footnotes, and bottom border of the table respectively. Can be a numeric value indicating the height in points.}
 
-\item{title.borderStyle}{Border style for the table title. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{title.bgFill}{Background fill for the table title. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{title.fgFill}{Foreground fill for the table title. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{title.halign}{Horizontal alignment of the table title text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{title.valign}{Vertical alignment of the table title text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{title.textDecoration}{Text decoration for the table title. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{title.wrapText}{Boolean indicating whether to wrap text in the table title. Defaults to NULL, which means the default setting will be used.}
-
-\item{title.textRotation}{Text rotation for the table title. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{title.indent}{Indentation for the table title text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{title.heights}{A numeric vector specifying the heights of the rows in the table title. Defaults to NULL, which means the default row heights will be used.}
-
-\item{subtitle.fontName}{Font name for the table subtitle. Defaults to NULL, which means the default font will be used.}
-
-\item{subtitle.fontSize}{Font size for the table subtitle. Defaults to NULL, which means the default font size will be used.}
-
-\item{subtitle.fontColour}{Font colour for the table subtitle. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{subtitle.border}{Boolean indicating whether to apply a border to the table subtitle. Defaults to NULL, which means no border will be applied.}
-
-\item{subtitle.borderColour}{Border colour for the table subtitle. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{subtitle.borderStyle}{Border style for the table subtitle. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{subtitle.bgFill}{Background fill for the table subtitle. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{subtitle.fgFill}{Foreground fill for the table subtitle. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{subtitle.halign}{Horizontal alignment of the table subtitle text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{subtitle.valign}{Vertical alignment of the table subtitle text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{subtitle.textDecoration}{Text decoration for the table subtitle. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{subtitle.wrapText}{Boolean indicating whether to wrap text in the table subtitle. Defaults to NULL, which means the default setting will be used.}
-
-\item{subtitle.textRotation}{Text rotation for the table subtitle. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{subtitle.indent}{Indentation for the table subtitle text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{subtitle.heights}{A numeric vector specifying the heights of the rows in the table subtitle. Defaults to NULL, which means the default row heights will be used.}
-
-\item{header.fontName}{Font name for the table header. Defaults to NULL, which means the default font will be used.}
-
-\item{header.fontSize}{Font size for the table header. Defaults to NULL, which means the default font size will be used.}
-
-\item{header.fontColour}{Font colour for the table header. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{header.border}{Boolean indicating whether to apply a border to the table header. Defaults to NULL, which means no border will be applied.}
-
-\item{header.borderColour}{Border colour for the table header. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{header.borderStyle}{Border style for the table header. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{header.bgFill}{Background fill for the table header. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{header.fgFill}{Foreground fill for the table header. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{header.halign}{Horizontal alignment of the table header text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{header.valign}{Vertical alignment of the table header text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{header.textDecoration}{Text decoration for the table header. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{header.wrapText}{Boolean indicating whether to wrap text in the table header. Defaults to NULL, which means the default setting will be used.}
-
-\item{header.textRotation}{Text rotation for the table header. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{header.indent}{Indentation for the table header text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{header.heights}{A numeric vector specifying the heights of the rows in the table header. Defaults to NULL, which means the default row heights will be used.}
-
-\item{spanner.fontName}{Font name for the table spanner (a spanning header). Defaults to NULL, which means the default font will be used.}
-
-\item{spanner.fontSize}{Font size for the table spanner. Defaults to NULL, which means the default font size will be used.}
-
-\item{spanner.fontColour}{Font colour for the table spanner. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{spanner.border}{Boolean indicating whether to apply a border to the table spanner. Defaults to NULL, which means no border will be applied.}
-
-\item{spanner.borderColour}{Border colour for the table spanner. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{spanner.borderStyle}{Border style for the table spanner. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{spanner.bgFill}{Background fill for the table spanner. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{spanner.fgFill}{Foreground fill for the table spanner. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{spanner.halign}{Horizontal alignment of the table spanner text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{spanner.valign}{Vertical alignment of the table spanner text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{spanner.textDecoration}{Text decoration for the table spanner. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{spanner.wrapText}{Boolean indicating whether to wrap text in the table spanner. Defaults to NULL, which means the default setting will be used.}
-
-\item{spanner.textRotation}{Text rotation for the table spanner. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{spanner.indent}{Indentation for the table spanner text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{spanner.heights}{A numeric vector specifying the heights of the rows in the table spanner. Defaults to NULL, which means the default row heights will be used.}
-
-\item{body.fontName}{Font name for the table body. Defaults to NULL, which means the default font will be used.}
-
-\item{body.fontSize}{Font size for the table body. Defaults to NULL, which means the default font size will be used.}
-
-\item{body.fontColour}{Font colour for the table body. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{body.numFmt}{Number format for the table body. This can be a string representing a number format (e.g., "0.00" for two decimal places). Defaults to NULL, which means no specific number format will be applied.}
-
-\item{body.border}{Boolean indicating whether to apply a border to the table body. Defaults to NULL, which means no border will be applied.}
-
-\item{body.borderColour}{Border colour for the table body. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{body.borderStyle}{Border style for the table body. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{body.bgFill}{Background fill for the table body. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{body.fgFill}{Foreground fill for the table body. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{body.halign}{Horizontal alignment of the table body text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{body.valign}{Vertical alignment of the table body text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{body.textDecoration}{Text decoration for the table body. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{body.wrapText}{Boolean indicating whether to wrap text in the table body. Defaults to NULL, which means the default setting will be used.}
-
-\item{body.textRotation}{Text rotation for the table body. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{body.indent}{Indentation for the table body text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{body.heights}{A numeric vector specifying the heights of the rows in the table body. Defaults to NULL, which means the default row heights will be used.}
-
-\item{col_first.fontName}{Font name for the first column of the table. Defaults to NULL, which means the default font will be used.}
-
-\item{col_first.fontSize}{Font size for the first column of the table. Defaults to NULL, which means the default font size will be used.}
-
-\item{col_first.fontColour}{Font colour for the first column of the table. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{col_first.numFmt}{Number format for the first column of the table. This can be a string representing a number format (e.g., "0.00" for two decimal places). Defaults to NULL, which means no specific number format will be applied.}
-
-\item{col_first.border}{Boolean indicating whether to apply a border to the first column of the table. Defaults to NULL, which means no border will be applied.}
-
-\item{col_first.borderColour}{Border colour for the first column of the table. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{col_first.borderStyle}{Border style for the first column of the table. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{col_first.bgFill}{Background fill for the first column of the table. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{col_first.fgFill}{Foreground fill for the first column of the table. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{col_first.halign}{Horizontal alignment of the first column text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{col_first.valign}{Vertical alignment of the first column text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{col_first.textDecoration}{Text decoration for the first column. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{col_first.wrapText}{Boolean indicating whether to wrap text in the first column. Defaults to NULL, which means the default setting will be used.}
-
-\item{col_first.textRotation}{Text rotation for the first column. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{col_first.indent}{Indentation for the first column text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{col_first.widths}{A numeric vector specifying the widths of the first column. Defaults to NULL, which means the default column width will be used.}
-
-\item{col_last.fontName}{Font name for the last column of the table. Defaults to NULL, which means the default font will be used.}
-
-\item{col_last.fontSize}{Font size for the last column of the table. Defaults to NULL, which means the default font size will be used.}
-
-\item{col_last.fontColour}{Font colour for the last column of the table. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{col_last.numFmt}{Number format for the last column of the table. This can be a string representing a number format (e.g., "0.00" for two decimal places). Defaults to NULL, which means no specific number format will be applied.}
-
-\item{col_last.border}{Boolean indicating whether to apply a border to the last column of the table. Defaults to NULL, which means no border will be applied.}
-
-\item{col_last.borderColour}{Border colour for the last column of the table. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{col_last.borderStyle}{Border style for the last column of the table. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{col_last.bgFill}{Background fill for the last column of the table. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{col_last.fgFill}{Foreground fill for the last column of the table. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{col_last.halign}{Horizontal alignment of the last column text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{col_last.valign}{Vertical alignment of the last column text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{col_last.textDecoration}{Text decoration for the last column. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{col_last.wrapText}{Boolean indicating whether to wrap text in the last column. Defaults to NULL, which means the default setting will be used.}
-
-\item{col_last.textRotation}{Text rotation for the last column. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{col_last.indent}{Indentation for the last column text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{col_last.widths}{A numeric vector specifying the widths of the last column. Defaults to NULL, which means the default column width will be used.}
-
-\item{row_group.fontName}{Font name for the row group header. Defaults to NULL, which means the default font will be used.}
-
-\item{row_group.fontSize}{Font size for the row group header. Defaults to NULL, which means the default font size will be used.}
-
-\item{row_group.fontColour}{Font colour for the row group header. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{row_group.border}{Boolean indicating whether to apply a border to the row group header. Defaults to NULL, which means no border will be applied.}
-
-\item{row_group.borderColour}{Border colour for the row group header. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{row_group.borderStyle}{Border style for the row group header. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{row_group.bgFill}{Background fill for the row group header. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{row_group.fgFill}{Foreground fill for the row group header. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{row_group.halign}{Horizontal alignment of the row group header text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{row_group.valign}{Vertical alignment of the row group header text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{row_group.textDecoration}{Text decoration for the row group header. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{row_group.wrapText}{Boolean indicating whether to wrap text in the row group header. Defaults to NULL, which means the default setting will be used.}
-
-\item{row_group.textRotation}{Text rotation for the row group header. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{row_group.indent}{Indentation for the row group header text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{row_group.widths}{A numeric vector specifying the widths of the columns in the row group header. Defaults to NULL, which means the default column widths will be used.}
-
-\item{source_note.fontName}{Font name for the source note. Defaults to NULL, which means the default font will be used.}
-
-\item{source_note.fontSize}{Font size for the source note. Defaults to NULL, which means the default font size will be used.}
-
-\item{source_note.fontColour}{Font colour for the source note. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{source_note.border}{Boolean indicating whether to apply a border to the source note. Defaults to NULL, which means no border will be applied.}
-
-\item{source_note.borderColour}{Border colour for the source note. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{source_note.borderStyle}{Border style for the source note. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{source_note.bgFill}{Background fill for the source note. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{source_note.fgFill}{Foreground fill for the source note. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{source_note.halign}{Horizontal alignment of the source note text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{source_note.valign}{Vertical alignment of the source note text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{source_note.textDecoration}{Text decoration for the source note. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{source_note.wrapText}{Boolean indicating whether to wrap text in the source note. Defaults to NULL, which means the default setting will be used.}
-
-\item{source_note.textRotation}{Text rotation for the source note. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{source_note.indent}{Indentation for the source note text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{source_note.heights}{A numeric vector specifying the heights of the rows in the source note. Defaults to NULL, which means the default row heights will be used.}
-
-\item{footnotes.fontName}{Font name for the footnotes. Defaults to NULL, which means the default font will be used.}
-
-\item{footnotes.fontSize}{Font size for the footnotes. Defaults to NULL, which means the default font size will be used.}
-
-\item{footnotes.fontColour}{Font colour for the footnotes. Hexadecimal color code. Defaults to NULL, which means no specific font colour will be applied.}
-
-\item{footnotes.border}{Boolean indicating whether to apply a border to the footnotes. Defaults to NULL, which means no border will be applied.}
-
-\item{footnotes.borderColour}{Border colour for the footnotes. Hexadecimal color code. Defaults to NULL, which means no specific border colour will be applied.}
-
-\item{footnotes.borderStyle}{Border style for the footnotes. Options are "thin", "medium", "thick", etc. Defaults to NULL, which means no specific border style will be applied.}
-
-\item{footnotes.bgFill}{Background fill for the footnotes. Hexadecimal color code. Defaults to NULL, which means no specific background fill will be applied.}
-
-\item{footnotes.fgFill}{Foreground fill for the footnotes. Hexadecimal color code. Defaults to NULL, which means no specific foreground fill will be applied.}
-
-\item{footnotes.halign}{Horizontal alignment of the footnotes text. Options are "left", "center", or "right". Defaults to NULL, which means the default alignment will be used.}
-
-\item{footnotes.valign}{Vertical alignment of the footnotes text. Options are "top", "middle", or "bottom". Defaults to NULL, which means the default alignment will be used.}
-
-\item{footnotes.textDecoration}{Text decoration for the footnotes. Options are "none", "bold", "italic", etc. Defaults to NULL, which means no specific text decoration will be applied.}
-
-\item{footnotes.wrapText}{Boolean indicating whether to wrap text in the footnotes. Defaults to NULL, which means the default setting will be used.}
-
-\item{footnotes.textRotation}{Text rotation for the footnotes. Numeric value indicating the angle of rotation in degrees. Defaults to NULL, which means no rotation will be applied.}
-
-\item{footnotes.indent}{Indentation for the footnotes text. Numeric value indicating the number of spaces to indent. Defaults to NULL, which means no indentation will be applied.}
-
-\item{footnotes.heights}{A numeric vector specifying the heights of the rows in the footnotes. Defaults to NULL, which means the default row heights will be used.}
+\item{body.numFmt, col_first.numFmt, col_last.numFmt}{Numeric format for the body, first column, and last column respectively. Can be a string representing the numeric format.}
 }
 \value{
-A tsg object with the specified facade settings applied as attributes.
+A \code{tsg} object with the specified facade settings applied as attributes.
 }
 \description{
-Add a facade to a tsg table
+This function adds a facade to a \code{tsg} table object. A facade is a set of styling options that can be applied to the table to customize its appearance. For Excel output, see \code{\link[openxlsx:createStyle]{openxlsx::createStyle()}} for all valid values.
 }
 \examples{
 person_record |>

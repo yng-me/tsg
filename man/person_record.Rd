@@ -8,7 +8,7 @@
 A labelled data frame with 2918 rows and 11 variables:
 \describe{
 \item{person_id}{Numeric identifier for each person}
-\item{sex}{Factor indicating the sex of the person ("Male", "Female", "Other")}
+\item{sex}{Factor indicating the sex of the person}
 \item{age}{Numeric age of the person}
 \item{marital_status}{Factor indicating marital status}
 \item{employed}{Employment status}

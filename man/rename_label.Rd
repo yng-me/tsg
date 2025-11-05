@@ -28,5 +28,5 @@ person_record |>
     communicating
   ) |>
   collapse_list() |>
-  rename_label(category = "Function difficulty")
+  rename_label(category = "Functional difficulty")
 }
