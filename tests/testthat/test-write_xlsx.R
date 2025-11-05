@@ -186,8 +186,14 @@ test_that("write_xlsx generates output with reference table list", {
     table_list_reference = ref
   )
 
-  expect_true("List of Tables" %in% openxlsx::getSheetNames(temp_path))
   expect_true(file.exists(temp_path))
+
+  data <- openxlsx::read.xlsx(temp_path, sheet = "List of Tables", startRow = 3)
+
+  expect_equal(nrow(data), 2)
+  expect_equal(data$Title, c("Table 1 Title", "Table 2 Title"))
+
+  expect_true("List of Tables" %in% openxlsx::getSheetNames(temp_path))
 
   unlink(temp_path)
 
@@ -207,8 +213,13 @@ test_that("write_xlsx generates output without reference table list but `include
     include_table_list = TRUE
   )
 
-  expect_true("List of Tables" %in% openxlsx::getSheetNames(temp_path_no_ref))
   expect_true(file.exists(temp_path_no_ref))
+
+  data <- openxlsx::read.xlsx(temp_path_no_ref, sheet = "List of Tables", startRow = 3)
+
+  expect_equal(nrow(data), 2)
+  expect_equal(data$Title, c("table1", "table2"))
+  expect_true("List of Tables" %in% openxlsx::getSheetNames(temp_path_no_ref))
 
   unlink(temp_path_no_ref)
 

@@ -83,12 +83,7 @@ create_table_list <- function(data) {
     )
   }
 
-  rename_label(
-    table_list,
-    table_id = "Table ID",
-    table_number = "Table number",
-    title = "Title"
-  )
+  table_list
 }
 
 
