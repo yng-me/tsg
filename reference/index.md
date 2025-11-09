@@ -1,0 +1,42 @@
+# Package index
+
+## All functions
+
+- [`add_column_total()`](https://yng-me.github.io/tsg/reference/add_column_total.md)
+  : Add a column total
+- [`add_facade()`](https://yng-me.github.io/tsg/reference/add_facade.md)
+  : Add a facade to a tsg table
+- [`add_footnote()`](https://yng-me.github.io/tsg/reference/add_footnote.md)
+  : Add a footnote attribute to a table
+- [`add_row_total()`](https://yng-me.github.io/tsg/reference/add_row_total.md)
+  : Add a row total
+- [`add_source_note()`](https://yng-me.github.io/tsg/reference/add_source_note.md)
+  : Add a source note attribute to a table
+- [`add_table_subtitle()`](https://yng-me.github.io/tsg/reference/add_table_subtitle.md)
+  : Add a subtitle attribute to a table
+- [`add_table_title()`](https://yng-me.github.io/tsg/reference/add_table_title.md)
+  : Add a title attribute to a table
+- [`collapse_list()`](https://yng-me.github.io/tsg/reference/collapse_list.md)
+  : Collapse a list of data frames or tibbles into a single data frame
+- [`convert_factor()`](https://yng-me.github.io/tsg/reference/convert_factor.md)
+  : Convert labelled factors to regular factors
+- [`generate_crosstab()`](https://yng-me.github.io/tsg/reference/generate_crosstab.md)
+  : Generate cross-tabulation
+- [`generate_frequency()`](https://yng-me.github.io/tsg/reference/generate_frequency.md)
+  : Generate frequency table
+- [`generate_output()`](https://yng-me.github.io/tsg/reference/generate_output.md)
+  : Generate output in specified format (e.g., xlsx, html, pdf, word)
+- [`generate_template()`](https://yng-me.github.io/tsg/reference/generate_template.md)
+  : Generate a template
+- [`get_tsg_facade()`](https://yng-me.github.io/tsg/reference/get_tsg_facade.md)
+  : Get a facade from the package or a file
+- [`person_record`](https://yng-me.github.io/tsg/reference/person_record.md)
+  : Sample dataset of persons
+- [`remove_label()`](https://yng-me.github.io/tsg/reference/remove_label.md)
+  : Remove data labels
+- [`remove_labels()`](https://yng-me.github.io/tsg/reference/remove_labels.md)
+  : Remove all labels
+- [`rename_label()`](https://yng-me.github.io/tsg/reference/rename_label.md)
+  : Rename data labels
+- [`write_xlsx()`](https://yng-me.github.io/tsg/reference/write_xlsx.md)
+  : Write Data to Excel with Titles, Notes, and Styling

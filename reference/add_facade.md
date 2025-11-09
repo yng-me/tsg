@@ -1,0 +1,393 @@
+# Add a facade to a tsg table
+
+This function adds a facade to a `tsg` table object. A facade is a set
+of styling options that can be applied to the table to customize its
+appearance. For Excel output, see
+[`openxlsx::createStyle()`](https://rdrr.io/pkg/openxlsx/man/createStyle.html)
+for all valid values.
+
+## Usage
+
+``` r
+add_facade(
+  data,
+  table.offsetRow = 0,
+  table.offsetCol = 0,
+  table.gridLines = NULL,
+  table.tabColour = NULL,
+  table.fontName = NULL,
+  table.fontSize = NULL,
+  table.fontColour = NULL,
+  table.bgFill = NULL,
+  table.fgFill = NULL,
+  table.halign = NULL,
+  table.valign = NULL,
+  table.wrapText = FALSE,
+  table.indent = NULL,
+  table.locked = NULL,
+  table.hidden = NULL,
+  table.decimalPrecision = NULL,
+  table.decimalCols = NULL,
+  table.lastRowBold = NULL,
+  table.width = NULL,
+  table.widthOffset = NULL,
+  title.fontName = NULL,
+  title.fontSize = NULL,
+  title.fontColour = NULL,
+  title.border = NULL,
+  title.borderColour = NULL,
+  title.borderStyle = NULL,
+  title.bgFill = NULL,
+  title.fgFill = NULL,
+  title.halign = NULL,
+  title.valign = NULL,
+  title.textDecoration = NULL,
+  title.wrapText = NULL,
+  title.indent = NULL,
+  title.height = NULL,
+  subtitle.fontName = NULL,
+  subtitle.fontSize = NULL,
+  subtitle.fontColour = NULL,
+  subtitle.border = NULL,
+  subtitle.borderColour = NULL,
+  subtitle.borderStyle = NULL,
+  subtitle.bgFill = NULL,
+  subtitle.fgFill = NULL,
+  subtitle.halign = NULL,
+  subtitle.valign = NULL,
+  subtitle.textDecoration = NULL,
+  subtitle.wrapText = NULL,
+  subtitle.indent = NULL,
+  subtitle.height = NULL,
+  header.fontName = NULL,
+  header.fontSize = NULL,
+  header.fontColour = NULL,
+  header.border = NULL,
+  header.borderColour = NULL,
+  header.borderStyle = NULL,
+  header.bgFill = NULL,
+  header.fgFill = NULL,
+  header.halign = NULL,
+  header.valign = NULL,
+  header.textDecoration = NULL,
+  header.wrapText = NULL,
+  header.indent = NULL,
+  header.height = NULL,
+  spanner.fontName = NULL,
+  spanner.fontSize = NULL,
+  spanner.fontColour = NULL,
+  spanner.border = NULL,
+  spanner.borderColour = NULL,
+  spanner.borderStyle = NULL,
+  spanner.bgFill = NULL,
+  spanner.fgFill = NULL,
+  spanner.halign = NULL,
+  spanner.valign = NULL,
+  spanner.textDecoration = NULL,
+  spanner.wrapText = NULL,
+  spanner.indent = NULL,
+  spanner.height = NULL,
+  body.fontName = NULL,
+  body.fontSize = NULL,
+  body.fontColour = NULL,
+  body.numFmt = NULL,
+  body.border = NULL,
+  body.borderColour = NULL,
+  body.borderStyle = NULL,
+  body.bgFill = NULL,
+  body.fgFill = NULL,
+  body.halign = NULL,
+  body.valign = NULL,
+  body.textDecoration = NULL,
+  body.wrapText = NULL,
+  body.indent = NULL,
+  body.height = NULL,
+  col_first.fontName = NULL,
+  col_first.fontSize = NULL,
+  col_first.fontColour = NULL,
+  col_first.numFmt = NULL,
+  col_first.border = NULL,
+  col_first.borderColour = NULL,
+  col_first.borderStyle = NULL,
+  col_first.bgFill = NULL,
+  col_first.fgFill = NULL,
+  col_first.halign = NULL,
+  col_first.valign = NULL,
+  col_first.textDecoration = NULL,
+  col_first.wrapText = NULL,
+  col_first.indent = NULL,
+  col_first.width = NULL,
+  col_last.fontName = NULL,
+  col_last.fontSize = NULL,
+  col_last.fontColour = NULL,
+  col_last.numFmt = NULL,
+  col_last.border = NULL,
+  col_last.borderColour = NULL,
+  col_last.borderStyle = NULL,
+  col_last.bgFill = NULL,
+  col_last.fgFill = NULL,
+  col_last.halign = NULL,
+  col_last.valign = NULL,
+  col_last.textDecoration = NULL,
+  col_last.wrapText = NULL,
+  col_last.indent = NULL,
+  col_last.width = NULL,
+  row_group.fontName = NULL,
+  row_group.fontSize = NULL,
+  row_group.fontColour = NULL,
+  row_group.border = NULL,
+  row_group.borderColour = NULL,
+  row_group.borderStyle = NULL,
+  row_group.bgFill = NULL,
+  row_group.fgFill = NULL,
+  row_group.halign = NULL,
+  row_group.valign = NULL,
+  row_group.textDecoration = NULL,
+  row_group.wrapText = NULL,
+  row_group.indent = NULL,
+  row_group.width = NULL,
+  source_note.fontName = NULL,
+  source_note.fontSize = NULL,
+  source_note.fontColour = NULL,
+  source_note.border = NULL,
+  source_note.borderColour = NULL,
+  source_note.borderStyle = NULL,
+  source_note.bgFill = NULL,
+  source_note.fgFill = NULL,
+  source_note.halign = NULL,
+  source_note.valign = NULL,
+  source_note.textDecoration = NULL,
+  source_note.wrapText = NULL,
+  source_note.indent = NULL,
+  source_note.height = NULL,
+  footnotes.fontName = NULL,
+  footnotes.fontSize = NULL,
+  footnotes.fontColour = NULL,
+  footnotes.border = NULL,
+  footnotes.borderColour = NULL,
+  footnotes.borderStyle = NULL,
+  footnotes.bgFill = NULL,
+  footnotes.fgFill = NULL,
+  footnotes.halign = NULL,
+  footnotes.valign = NULL,
+  footnotes.textDecoration = NULL,
+  footnotes.wrapText = NULL,
+  footnotes.indent = NULL,
+  footnotes.height = NULL,
+  border_header.border = NULL,
+  border_header.borderColour = NULL,
+  border_header.borderStyle = NULL,
+  border_outer.borderColour = NULL,
+  border_bottom.height = NULL
+)
+```
+
+## Arguments
+
+- data:
+
+  A tsg table object to which the facade will be added. This is
+  typically a data frame or tibble that has been processed using tsg
+  functions.
+
+- table.offsetRow:
+
+  Row offset of the table
+
+- table.offsetCol:
+
+  Column offset of the table
+
+- table.gridLines:
+
+  Boolean indicating whether to show grid lines in the table
+
+- table.tabColour:
+
+  Color of the table tab (Excel worksheet) in the output file. Can be a
+  hexadecimal color code (e.g., "#FF0000" for red) or a named color
+  (e.g., "red").
+
+- table.fontName, title.fontName, subtitle.fontName, header.fontName,
+  spanner.fontName, body.fontName, row_group.fontName,
+  col_first.fontName, col_last.fontName, source_note.fontName,
+  footnotes.fontName:
+
+  Font name or font family for the table, title, subtitle, header,
+  spanner, body, row group header, source note, and footnotes
+  respectively.
+
+- table.fontSize, title.fontSize, subtitle.fontSize, header.fontSize,
+  spanner.fontSize, body.fontSize, col_first.fontSize,
+  col_last.fontSize, row_group.fontSize, source_note.fontSize,
+  footnotes.fontSize:
+
+  Font size for the table, title, subtitle, header, spanner, body, first
+  column, last column, row group header, source note, and footnotes
+  respectively.
+
+- table.fontColour, title.fontColour, subtitle.fontColour,
+  header.fontColour, spanner.fontColour, body.fontColour,
+  col_first.fontColour, col_last.fontColour, row_group.fontColour,
+  source_note.fontColour, footnotes.fontColour:
+
+  Font color for the table, title, subtitle, header, spanner, body,
+  first column, last column, row group header, source note, and
+  footnotes respectively. Can be a hexadecimal color code (e.g.,
+  "#FF0000" for red) or a named color (e.g., "red").
+
+- table.bgFill, title.bgFill, subtitle.bgFill, header.bgFill,
+  spanner.bgFill, body.bgFill, col_first.bgFill, col_last.bgFill,
+  row_group.bgFill, source_note.bgFill, footnotes.bgFill:
+
+  Background fill color for the table, title, subtitle, header, spanner,
+  body, first column, last column, row group header, source note, and
+  footnotes respectively. Can be a hexadecimal color code (e.g.,
+  "#FF0000" for red) or a named color (e.g., "red").
+
+- table.fgFill, title.fgFill, subtitle.fgFill, header.fgFill,
+  spanner.fgFill, body.fgFill, col_first.fgFill, col_last.fgFill,
+  row_group.fgFill, source_note.fgFill, footnotes.fgFill:
+
+  Foreground fill color for the table, title, subtitle, header, spanner,
+  body, first column, last column, row group header, source note, and
+  footnotes respectively. Can be a hexadecimal color code (e.g.,
+  "#FF0000" for red) or a named color (e.g., "red").
+
+- table.halign, title.halign, subtitle.halign, header.halign,
+  spanner.halign, body.halign, col_first.halign, col_last.halign,
+  row_group.halign, source_note.halign, footnotes.halign:
+
+  Horizontal alignment for the table, title, subtitle, header, spanner,
+  body, first column, last column, row group header, source note, and
+  footnotes respectively. Can be "left", "center", or "right".
+
+- table.valign, title.valign, subtitle.valign, header.valign,
+  spanner.valign, body.valign, col_first.valign, col_last.valign,
+  row_group.valign, source_note.valign, footnotes.valign:
+
+  Vertical alignment for the table, title, subtitle, header, spanner,
+  body, first column, last column, row group header, source note, and
+  footnotes respectively. Can be "top", "middle", or "bottom".
+
+- table.wrapText, title.wrapText, subtitle.wrapText, header.wrapText,
+  spanner.wrapText, body.wrapText, col_first.wrapText,
+  col_last.wrapText, row_group.wrapText, source_note.wrapText,
+  footnotes.wrapText:
+
+  Logical indicating whether to wrap text in the table, title, subtitle,
+  header, spanner, body, first column, last column, row group header,
+  source note, and footnotes respectively.
+
+- table.indent, title.indent, subtitle.indent, header.indent,
+  spanner.indent, body.indent, col_first.indent, col_last.indent,
+  row_group.indent, source_note.indent, footnotes.indent:
+
+  Indentation for the table, title, subtitle, header, spanner, body,
+  first column, last column, row group header, source note, and
+  footnotes respectively. Can be a numeric value indicating the number
+  of spaces to indent. Defaults to NULL.
+
+- table.locked:
+
+  Logical indicating whether the table is locked.
+
+- table.hidden:
+
+  Logical indicating whether the table (Excel worksheet) is hidden.
+
+- table.decimalPrecision:
+
+  Numeric value indicating the number of decimal places to display in
+  numeric columns.
+
+- table.decimalCols:
+
+  Character vector of column names that should have decimal formatting
+  applied.
+
+- table.lastRowBold:
+
+  Logical indicating whether the last row of the table should be bold.
+
+- table.width, col_first.width, col_last.width, row_group.width:
+
+  Column widths for the table, first column, last column, and row group
+  header respectively. Can be a numeric value indicating the width in
+  points.
+
+- table.widthOffset:
+
+  Numeric value indicating the width offset for the table.
+
+- title.border, subtitle.border, header.border, spanner.border,
+  body.border, col_first.border, col_last.border, row_group.border,
+  source_note.border, footnotes.border, border_header.border:
+
+  Border style for the title, subtitle, header, spanner, body, first
+  column, last column, row group header, source note, and footnotes
+  respectively. Can be a string representing the border style. The
+  `border_header.border` is used for the header border style.
+
+- title.borderColour, subtitle.borderColour, header.borderColour,
+  spanner.borderColour, body.borderColour, col_first.borderColour,
+  col_last.borderColour, row_group.borderColour,
+  source_note.borderColour, footnotes.borderColour,
+  border_header.borderColour, border_outer.borderColour:
+
+  Border color for the title, subtitle, header, spanner, body, first
+  column, last column, row group header, source note, and footnotes
+  respectively. Can be a hexadecimal color code (e.g., "#FF0000" for
+  red) or a named color (e.g., "red"). The `border_header.borderColour`
+  and `border_outer.borderColour` are used for the header and outer
+  borders of the table.
+
+- title.borderStyle, subtitle.borderStyle, header.borderStyle,
+  spanner.borderStyle, body.borderStyle, col_first.borderStyle,
+  col_last.borderStyle, row_group.borderStyle, source_note.borderStyle,
+  footnotes.borderStyle, border_header.borderStyle:
+
+  Border style for the title, subtitle, header, spanner, body, first
+  column, last column, row group header, source note, and footnotes
+  respectively. The `border_header.borderStyle` is used for the header
+  border style.
+
+- title.textDecoration, subtitle.textDecoration, header.textDecoration,
+  spanner.textDecoration, body.textDecoration, col_first.textDecoration,
+  col_last.textDecoration, row_group.textDecoration,
+  source_note.textDecoration, footnotes.textDecoration:
+
+  Text decoration for the title, subtitle, header, spanner, body, first
+  column, last column, row group header, source note, and footnotes
+  respectively.
+
+- title.height, subtitle.height, header.height, spanner.height,
+  body.height, source_note.height, footnotes.height,
+  border_bottom.height:
+
+  Height for the title, subtitle, header, spanner, body, source note,
+  footnotes, and bottom border of the table respectively. Can be a
+  numeric value indicating the height in points.
+
+- body.numFmt, col_first.numFmt, col_last.numFmt:
+
+  Numeric format for the body, first column, and last column
+  respectively. Can be a string representing the numeric format.
+
+## Value
+
+A `tsg` object with the specified facade settings applied as attributes.
+
+## Examples
+
+``` r
+person_record |>
+ generate_frequency(sex) |>
+ add_facade(table.offsetRow = 2, table.offsetCol = 1)
+#> # A tibble: 3 × 3
+#>   category   frequency percent
+#>   <int+lbl>      <int>   <dbl>
+#> 1 1 [Male]        1516    52.0
+#> 2 2 [Female]      1402    48.0
+#> 3 0 [Total]       2918   100  
+```
