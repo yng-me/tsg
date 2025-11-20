@@ -328,6 +328,12 @@ test_that("generate_frequency handles top_n parameter correctly", {
   df_large <- dplyr::tibble(category = sample(LETTERS[1:10], 140, replace = TRUE))
   result_top_3 <- generate_frequency(df_large, category, top_n = 3, add_total = FALSE)
 
+  df_top_n <- generate_frequency(person_record, marital_status, top_n = 3)
+  df_top_n_only <- generate_frequency(person_record, marital_status, top_n = 3, top_n_only = TRUE)
+
+  expect_equal(nrow(df_top_n), 5)
+  expect_equal(nrow(df_top_n_only), 4)
+
   expect_equal(nrow(result_top_3), 4)
   expect_true("Others" %in% result_top_3$category)
 

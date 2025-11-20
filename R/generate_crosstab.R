@@ -25,6 +25,7 @@
 #' @param expand_categories Logical. If \code{TRUE}, ensures that all categories of \code{x} are represented in the output, even if they have zero counts.
 #' @param position_total Character. Position of the total row/column; either \code{"bottom"} or \code{"top"} for rows, and \code{"right"} or \code{"left"} for columns.
 #' @param metadata A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.
+#' @param collapse_list Logical (NOT YET IMPLEMENTED). If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [collapse_list()].
 #' @param convert_factor Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [convert_factor()].
 #'
 #' @return A data frame or a list of data frames containing the cross-tabulation results. If \code{group_as_list} is \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s). Otherwise, a single data frame is returned. Each data frame includes counts and, if specified, percentages or proportions for each combination of \code{x} and the additional variables provided in \code{...}.
@@ -91,14 +92,13 @@ generate_crosstab <- function(
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
+  collapse_list = FALSE,
   convert_factor = FALSE,
   metadata = NULL
 ) {
 
   n_args <- rlang::dots_n(...)
-  if(n_args == 0) {
-    return(generate_frequency(data, {{x}}))
-  }
+  cols_grouping <- names(dplyr::select(dplyr::ungroup(data), {{x}}))
 
   data <- dplyr::select(data, dplyr::group_cols(), {{x}}, ...)
   groups <- dplyr::group_vars(data)
@@ -109,6 +109,86 @@ generate_crosstab <- function(
   x_attr <- data_attrs[[rlang::as_label(rlang::enquo(x))]]
 
   column_names <- names(dplyr::select(dplyr::ungroup(data), ...))
+
+  if(length(cols_grouping) > 1) {
+
+    separated_cols <- names(dplyr::select(dplyr::ungroup(data), {{x}}))
+    united_names <- paste0(separated_cols, collapse = "__")
+
+    data <- tidyr::unite(data, category, {{x}}, remove = FALSE, sep = "__")
+    data <- dplyr::rename(data, !!united_names := category)
+
+    df <- generate_crosstab(
+      data,
+      x = !!as.name(united_names),
+      ...,
+      add_total = add_total,
+      add_total_row = add_total_row,
+      add_total_column = add_total_column,
+      add_percent = add_percent,
+      as_proportion = as_proportion,
+      percent_by_column = percent_by_column,
+      name_separator = name_separator,
+      label_separator = label_separator,
+      label_total = label_total,
+      label_total_column = label_total_column,
+      label_total_row = label_total_row,
+      label_na = label_na,
+      include_na = include_na,
+      recode_na = recode_na,
+      label_as_group_name = label_as_group_name,
+      group_separator = group_separator,
+      group_as_list = group_as_list,
+      calculate_per_group = calculate_per_group,
+      expand_categories = expand_categories,
+      position_total = position_total,
+      sort_column_names = sort_column_names,
+      collapse_list = FALSE,
+      convert_factor = convert_factor,
+      metadata = metadata
+    )
+
+    # if(inherits(df, "list") & collapse_list) {
+    #   df <- collapse_list(data = df)
+    # }
+
+    df <- separate_cols(
+      data = df,
+      cols = separated_cols,
+      data_attrs = data_attrs,
+      label_total = label_total,
+      add_total = add_total | add_total_row,
+      convert_factor = convert_factor
+    )
+
+    return(df)
+  }
+
+  if(n_args == 0) {
+
+    df <- generate_frequency(
+      data,
+      {{x}},
+      add_total = add_total,
+      as_proportion = as_proportion,
+      include_na = include_na,
+      recode_na = recode_na,
+      position_total = position_total,
+      calculate_per_group = calculate_per_group,
+      group_separator = group_separator,
+      group_as_list = group_as_list,
+      label_as_group_name = label_as_group_name,
+      label_na = label_na,
+      label_total = label_total,
+      expand_categories = expand_categories,
+      collapse_list = collapse_list,
+      convert_factor = convert_factor,
+      metadata = metadata
+    )
+
+    return(df)
+
+  }
 
   df_list <- list()
   categories <- unique(data[[rlang::as_label(rlang::enquo(x))]])
@@ -360,7 +440,11 @@ generate_crosstab <- function(
 
   }
 
-  if(length(df_list) == 1) { df_list <- df_list[[1]] }
+  if(length(df_list) == 1) {
+    df_list <- df_list[[1]]
+  } #else if (length(df_list) > 1 & collapse_list) {
+  #   df_list <- collapse_list(data = df_list)
+  # }
 
   if(group_as_list & length(groups) > 0) {
     attr(df_list, "groups") <- groups

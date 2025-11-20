@@ -13,3 +13,5 @@
 playground
 docs
 inst/doc
+
+*.xlsx

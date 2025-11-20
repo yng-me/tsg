@@ -40,7 +40,10 @@ collapse_list <- function(
   }
 
   multiplier_col <- get_multiplier(as_proportion, key = "col")
-  cols_to_pivot <- c("frequency", multiplier_col)
+  cols_to_pivot <- paste0("^", c("frequency", multiplier_col))
+
+  is_tsgc <- inherits(data, "tsgc")
+  is_tsgf <- inherits(data, "tsgf")
 
   class(data) <- "list"
 
@@ -67,7 +70,7 @@ collapse_list <- function(
     dplyr::select(-dplyr::any_of("value"), -dplyr::matches("^cumulative")) |>
     tidyr::pivot_wider(
       names_from = category,
-      values_from = dplyr::any_of(cols_to_pivot),
+      values_from = dplyr::matches(cols_to_pivot),
       names_sep = name_separator,
       values_fill = 0,
       names_sort = TRUE
@@ -279,4 +282,79 @@ add_data_label <- function(data, labels) {
 }
 
 
+separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_total = TRUE, convert_factor = FALSE) {
 
+  if(inherits(data, "list")) {
+    for(i in seq_along(data)) {
+      data[[i]] <- separate_cols(
+        data = data[[i]],
+        cols = cols,
+        data_attrs = data_attrs,
+        label_total = label_total,
+        add_total = add_total,
+        convert_factor = convert_factor
+      )
+    }
+
+    return(data)
+
+  } else {
+
+    data <- tidyr::separate(
+      data,
+      col = category,
+      into = cols,
+      sep = "__",
+      remove = TRUE,
+      fill = "right"
+    )
+
+    for(i in seq_along(cols)) {
+      col_name <- cols[i]
+      data_attr <- data_attrs[[col_name]]
+
+      if(!is.null(data_attr)) {
+
+        if(!is.null(data_attr$labels)) {
+
+          if(data_attr$type == "integer") {
+            data[[col_name]] <- suppressWarnings(as.integer(data[[col_name]]))
+          } else if(data_attr$type == "double") {
+            data[[col_name]] <- suppressWarnings(as.double(data[[col_name]]))
+          } else if(data_attr$type == "character") {
+            data[[col_name]] <- suppressWarnings(as.character(data[[col_name]]))
+          }
+
+          attr_labels <- data_attr$labels
+
+          if(add_total) {
+            .value <- 0L
+            if(min(as.integer(data[[col_name]]), na.rm = TRUE) == 0) { .value <- -1L }
+            data[[col_name]][is.na(data[[col_name]])] <- .value
+
+            attr_labels <- c(attr_labels, stats::setNames(.value, label_total))
+
+          }
+
+          data[[col_name]] <- haven::labelled(
+            data[[col_name]],
+            label = data_attr$label,
+            labels = attr_labels
+          )
+
+        } else {
+          attr(data[[col_name]], "label") <- data_attr$label
+        }
+      } else {
+        attr(data[[col_name]], "label") <- col_name
+      }
+    }
+
+    if(convert_factor) {
+      data <- dplyr::mutate_if(data, haven::is.labelled, haven::as_factor)
+    }
+
+    return(data)
+  }
+
+}

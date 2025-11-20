@@ -17,10 +17,14 @@ xlsx_write_data <- function(
 
   facade <- resolve_facade(facade, attributes(data)$facade)
 
+  table_hidden <- FALSE %||% facade$table.hidden
+
   openxlsx::addWorksheet(
     wb,
     sheetName = sheet_name,
     gridLines = facade$table.gridLines,
+    tabColour = facade$table.tabColour,
+    visible = !table_hidden,
     ...
   )
 
@@ -248,7 +252,7 @@ xlsx_write_data <- function(
           cols = corner_cols[[i]]
         )
       }
-
+      
       xlsx_decimal_format(
         wb = wb,
         data = data_i,
