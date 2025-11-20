@@ -27,7 +27,7 @@
 #' @param title.borderStyle,subtitle.borderStyle,header.borderStyle,spanner.borderStyle,body.borderStyle,col_first.borderStyle,col_last.borderStyle,row_group.borderStyle,source_note.borderStyle,footnotes.borderStyle,border_header.borderStyle Border style for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. The \code{border_header.borderStyle} is used for the header border style.
 #' @param title.textDecoration,subtitle.textDecoration,header.textDecoration,spanner.textDecoration,body.textDecoration,col_first.textDecoration,col_last.textDecoration,row_group.textDecoration,source_note.textDecoration,footnotes.textDecoration Text decoration for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.
 #' @param body.numFmt,col_first.numFmt,col_last.numFmt Numeric format for the body, first column, and last column respectively. Can be a string representing the numeric format.
-#' @param title.height,subtitle.height,header.height,spanner.height,body.height,source_note.height,footnotes.height,border_bottom.height Height for the title, subtitle, header, spanner, body, source note, footnotes, and bottom border of the table respectively. Can be a numeric value indicating the height in points.
+#' @param title.height,subtitle.height,header.height,spanner.height,body.height,row_group.height,source_note.height,footnotes.height,border_bottom.height Height for the title, subtitle, header, spanner, body, row group, source note, footnotes, and bottom border of the table respectively. Can be a numeric value indicating the height in points.
 #' @param table.width,col_first.width,col_last.width,row_group.width Column widths for the table, first column, last column, and row group header respectively. Can be a numeric value indicating the width in points.
 #'
 #' @returns A \code{tsg} object with the specified facade settings applied as attributes.
@@ -175,6 +175,7 @@ add_facade <- function(
   row_group.wrapText = NULL,
   row_group.indent = NULL,
   row_group.width = NULL,
+  row_group.height = NULL,
   source_note.fontName = NULL,
   source_note.fontSize = NULL,
   source_note.fontColour = NULL,

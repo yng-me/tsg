@@ -154,7 +154,7 @@ row_group.textDecoration: ~
 row_group.wrapText: ~
 row_group.indent: ~
 row_group.width: ~
-row_group.height: ~
+row_group.height: 24
 
 source_note.fontName: 10
 source_note.fontSize: ~
