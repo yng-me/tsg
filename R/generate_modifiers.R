@@ -160,14 +160,12 @@ add_footnote <- function(data, footnote, locations = NULL, placement = c("auto",
   if(length(footnote) > 1) stop("Footnote must be a single character string.")
 
   value <- list(
-    text = footnote,
-    locations = locations,
-    placement = placement[1]
+    text = c(attributes(data)$footnotes$text, footnote),
+    locations = c(attributes(data)$footnotes$locations, locations),
+    placement = c(attributes(data)$footnotes$placement, placement[1])
   )
 
-  footnotes <- c(attributes(data)$footnotes, value)
-  footnotes <- purrr::discard(footnotes, is.null)
-  attr(data, "footnotes") <- footnotes
+  attr(data, "footnotes") <- value
 
   data
 

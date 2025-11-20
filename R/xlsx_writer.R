@@ -32,7 +32,7 @@ xlsx_write_data <- function(
 
   title <- title %||% attributes(data)$title
   subtitle <- subtitle %||% attributes(data)$subtitle
-  footnotes <- footnotes %||% attributes(data)$footnotes
+  footnotes <- footnotes %||% attributes(data)$footnotes$text
   source_note <- resolve_source_note(data, source_note)
 
   groups <- attributes(data)$groups
@@ -252,7 +252,7 @@ xlsx_write_data <- function(
           cols = corner_cols[[i]]
         )
       }
-      
+
       xlsx_decimal_format(
         wb = wb,
         data = data_i,
