@@ -84,6 +84,6 @@ person_record |>
 #> 4 Remembering or co…        2918        2680          28           7           0
 #> 5 Self-caring (such…        2918        2671          37           5           2
 #> 6 Communicating usi…        2918        2683          25           5           2
-#> # ℹ 7 more variables: frequency_9 <int>, percent_0 <dbl>, percent_1 <dbl>,
-#> #   percent_2 <dbl>, percent_3 <dbl>, percent_4 <dbl>, percent_9 <dbl>
+#> # ℹ 7 more variables: frequency_8 <int>, percent_0 <dbl>, percent_1 <dbl>,
+#> #   percent_2 <dbl>, percent_3 <dbl>, percent_4 <dbl>, percent_8 <dbl>
 ```

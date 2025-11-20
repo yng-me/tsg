@@ -11,12 +11,12 @@ Source:
 [`DESCRIPTION`](https://github.com/yng-me/tsg/blob/main/DESCRIPTION)
 
 Abdulsamad B (2025). *tsg: Generate Publication-Ready Statistical
-Tables*. R package version 0.1.0, <https://yng-me.github.io/tsg/>.
+Tables*. R package version 0.1.1, <https://yng-me.github.io/tsg/>.
 
     @Manual{,
       title = {tsg: Generate Publication-Ready Statistical Tables},
       author = {Bhas Abdulsamad},
       year = {2025},
-      note = {R package version 0.1.0},
+      note = {R package version 0.1.1},
       url = {https://yng-me.github.io/tsg/},
     }

@@ -30,6 +30,7 @@ generate_crosstab(
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
+  collapse_list = FALSE,
   convert_factor = FALSE,
   metadata = NULL
 )
@@ -144,6 +145,13 @@ generate_crosstab(
 - sort_column_names:
 
   Logical. If `TRUE`, sorts the column names in the output.
+
+- collapse_list:
+
+  Logical (NOT YET IMPLEMENTED). If `TRUE` and `group_as_list = TRUE`,
+  collapses the list of frequency tables into a single data frame with
+  group identifiers. See also
+  [`collapse_list()`](https://yng-me.github.io/tsg/reference/collapse_list.md).
 
 - convert_factor:
 

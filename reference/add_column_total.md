@@ -39,8 +39,8 @@ df <- data.frame(
  value2 = c(5, 15, 25)
  )
 add_column_total(df)
-#>   value1 value2 total
-#> 1     10      5    15
-#> 2     20     15    35
-#> 3     30     25    55
+#>   category value1 value2 total
+#> 1        A     10      5    15
+#> 2        B     20     15    35
+#> 3        C     30     25    55
 ```
