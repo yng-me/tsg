@@ -122,12 +122,11 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
 #'
 
 add_column_total <- function(data, label_total = "Total", ...) {
-  data <- data |>
-    dplyr::select(dplyr::where(is.numeric)) |>
-    dplyr::mutate(
-      total = rowSums(dplyr::across(dplyr::everything()), na.rm = TRUE),
-      ...
-    )
+  data <- dplyr::mutate(
+    data,
+    total = rowSums(dplyr::across(dplyr::where(is.numeric)), na.rm = TRUE),
+    ...
+  )
 
   attr(data$total, "label") <- label_total
 

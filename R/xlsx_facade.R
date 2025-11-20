@@ -54,6 +54,21 @@ xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
 
 xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, cols = NULL, precision = 3) {
 
+  is_int <- names(dplyr::select(data, dplyr::where(is.integer)))
+  which_int <- which(names(data) %in% is_int)
+
+  if(length(which_int) > 0) {
+    openxlsx::addStyle(
+      wb = wb,
+      sheet = sheet_name,
+      cols = which_int + offset,
+      rows = rows,
+      gridExpand = TRUE,
+      stack = TRUE,
+      style = openxlsx::createStyle(numFmt = "#,##0")
+    )
+  }
+
   if(is.null(precision)) { precision <- 2 }
   if(!is.numeric(precision)) { precision <- 2 }
 
@@ -61,7 +76,6 @@ xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, cols = NULL,
   which_dbl <- which(names(data) %in% c(is_dbl, cols))
 
   if(length(which_dbl) > 0) {
-
     openxlsx::addStyle(
       wb = wb,
       sheet = sheet_name,
@@ -70,7 +84,7 @@ xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, cols = NULL,
       gridExpand = TRUE,
       stack = TRUE,
       style = openxlsx::createStyle(
-        numFmt = paste0('#,#0.', paste0(rep(0, as.integer(precision)), collapse = ''))
+        numFmt = paste0('#,##0.', paste0(rep(0, as.integer(precision)), collapse = ''))
       )
     )
   }

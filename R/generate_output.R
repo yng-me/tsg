@@ -43,11 +43,17 @@ generate_output <- function(
     }
 
   } else if (format == "html") {
+
     stop("HTML format not yet implemented")
+
   } else if (format == "pdf") {
+
     stop("PDF format not yet implemented")
+
   } else if (format == "word") {
+
     stop("Word format not yet implemented")
+
   }
 
 }

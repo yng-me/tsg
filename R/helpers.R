@@ -1,20 +1,24 @@
-add_missing_label <- function(value, label_na = "Not reported", recode_na = "auto") {
+get_na_value <- function(value, recode_na = "auto", pattern = "^8", offset = 1) {
+
+  if(recode_na != "auto") return(recode_na)
+
+  max_value <- as.integer(max(as.integer(value), na.rm = TRUE))
+
+  attr_value <- attributes(value)$labels
+  max_value_attr <- as.integer(max(as.integer(attr_value), na.rm = TRUE))
+
+  if(grepl(pattern, max_value) | grepl(pattern, max_value_attr)) {
+    as.integer(paste0(rep(9, 1 + nchar(max_value)), collapse = "")) - offset
+  } else {
+    as.integer(paste0(rep(9, nchar(max_value)), collapse = "")) - offset
+  }
+}
+
+add_missing_label <- function(value, label_na = "Not reported", recode_na = "auto", pattern = "^8") {
 
   if(haven::is.labelled(value)) {
 
-    get_na_value <- function() {
-
-      if(recode_na != "auto") return(recode_na)
-
-      max_value <- as.integer(max(as.integer(value), na.rm = TRUE))
-      if(grepl("^9+$", max_value)) {
-        as.integer(paste0(rep(9, 1 + nchar(max_value)), collapse = ""))
-      } else {
-        as.integer(paste0(rep(9, nchar(max_value)), collapse = ""))
-      }
-    }
-
-    value_na <- get_na_value()
+    value_na <- get_na_value(value, recode_na, pattern)
 
     labels <- attributes(value)$labels
     labels_with_na <- c(labels, value_na)
@@ -120,7 +124,7 @@ tsg_add_row_total <- function(
 }
 
 
-coerce_total <- function(data, col, x, label_total = "Total") {
+coerce_total <- function(data, col, x, label_total = "Total", value = NULL) {
 
   if(!haven::is.labelled(x) & !is.factor(x)) {
     data[[col]] <- label_total
@@ -128,7 +132,12 @@ coerce_total <- function(data, col, x, label_total = "Total") {
   }
 
   .value <- 0L
-  if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L }
+  if(!is.null(value)) {
+    .value <- value
+  } else {
+    if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L }
+  }
+
   data[[col]] <- .value
 
   if(haven::is.labelled(x)) {
@@ -364,12 +373,22 @@ tsg_sort_top_n <- function(
       )
 
     } else {
+
       data_others <- dplyr::summarise(
         dplyr::anti_join(data, data_top_n, by = ".category"),
         frequency = sum(frequency, na.rm = TRUE),
         .category = "Others"
       )
     }
+
+    data_others <- coerce_total(
+      data_others,
+      col = ".category",
+      x = data[[".category"]],
+      label_total = "Others",
+      value = get_na_value(data[[".category"]], pattern = "^9", offset = 0)
+    )
+
 
     with_cumulative <- "cumulative" %in% names(data)
     with_cumulative_p <- multiplier$cumulative_col %in% names(data)
@@ -399,9 +418,11 @@ tsg_sort_top_n <- function(
     }
 
     if(position_total == "bottom") {
+
       data_top_n <- dplyr::slice_head(data, n = top_n) |>
         dplyr::bind_rows(data_others) |>
         dplyr::bind_rows(utils::tail(data, add_total))
+
     } else {
 
       data_top_n <- dplyr::bind_rows(data_top_n, data_others)
@@ -422,7 +443,12 @@ tsg_sort_col_value <- function(
 ) {
 
   if(length(groups) > 0) { return(data) }
-  if(!sort_value) { return(data) }
+  if(!sort_value) {
+
+    data <- suppressWarnings(dplyr::arrange(data, as.integer(.category), .category))
+    return(data)
+
+  }
 
   if(sort_desc) {
     dplyr::arrange(data, dplyr::desc(frequency))

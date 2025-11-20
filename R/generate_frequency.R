@@ -334,7 +334,10 @@ generate_frequency <- function(
   if(length(df) == 1) {
     df <- df[[1]]
   } else if (length(df) > 1 & collapse_list) {
-    df <- collapse_list(df)
+    df <- collapse_list(
+      data = df,
+      as_proportion = as_proportion
+    )
   }
 
   if(group_as_list & length(groups) > 0) {
