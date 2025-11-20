@@ -468,7 +468,7 @@ get_tsg_facade()
 #> NULL
 #> 
 #> $row_group.height
-#> NULL
+#> [1] 24
 #> 
 #> $source_note.fontName
 #> [1] 10
@@ -1001,7 +1001,7 @@ get_tsg_facade("yolo")
 #> NULL
 #> 
 #> $row_group.height
-#> NULL
+#> [1] 24
 #> 
 #> $source_note.fontName
 #> [1] 10
