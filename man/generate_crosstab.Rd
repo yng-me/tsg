@@ -29,6 +29,7 @@ generate_crosstab(
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
+  collapse_list = FALSE,
   convert_factor = FALSE,
   metadata = NULL
 )
@@ -81,6 +82,8 @@ generate_crosstab(
 \item{position_total}{Character. Position of the total row/column; either \code{"bottom"} or \code{"top"} for rows, and \code{"right"} or \code{"left"} for columns.}
 
 \item{sort_column_names}{Logical. If \code{TRUE}, sorts the column names in the output.}
+
+\item{collapse_list}{Logical (NOT YET IMPLEMENTED). If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also \code{\link[=collapse_list]{collapse_list()}}.}
 
 \item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also \code{\link[=convert_factor]{convert_factor()}}.}
 
