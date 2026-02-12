@@ -7,6 +7,7 @@ utils::globalVariables(
     "category",
     "frequency",
     "title",
+    "subtitle",
     "table_id",
     "table_number",
     "table_name"

@@ -224,6 +224,7 @@ add_facade <- function(
   }
 
   return(data)
+
 }
 
 
@@ -265,6 +266,37 @@ get_tsg_facade <- function(facade = "default", which = c("xlsx", "pdf", "html"))
   attr(facade, "source") <- "built-in"
   facade
 
+}
+
+
+#' Add a facade to a tsg table (alternative way)
+#'
+#' @description This function adds a facade to a \code{tsg}, an alternative way to allow dynamic values and programmatic evaluation.
+#'
+#' @param data a \code{tsg} data frame
+#' @param ... List of supported facade items (see [tsg::add_facade()])
+#'
+#' @returns A \code{tsg} object with the specified facade settings applied as attributes.
+#' @export
+#'
+#' @examples
+#' person_record |>
+#'  generate_frequency(sex) |>
+#'  add_facade_alt(table.offsetRow = 2, table.offsetCol = 1)
+
+add_facade_alt <- function(data, ...) {
+  dots <- list(...)
+  args <- purrr::discard(dots, is.null)
+
+  existing_facade <- attributes(data)$facade
+
+  if (is.null(existing_facade)) {
+    attr(data, "facade") <- args
+  } else {
+    attr(data, "facade") <- utils::modifyList(existing_facade, args)
+  }
+
+  data
 }
 
 

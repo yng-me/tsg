@@ -143,6 +143,21 @@ write_xlsx <- function(
           sheet_name_i <- xlsx_set_valid_sheet_name(table_list_reference_i$table_name[1])
           title_i <- table_list_reference_i$title[1]
 
+          if("table_number" %in% names(table_list_reference_i)) {
+            table_number_i <- table_list_reference_i$table_number[1]
+
+            if(!is.na(table_number_i) & table_number_i != '') {
+
+              if(grepl('^\\d', table_number_i)) {
+                table_number_i <- paste0("Table ", table_number_i)
+              }
+
+              title_i <- paste0(table_number_i, ". ", title_i)
+
+            }
+
+          }
+
           if("subtitle" %in% names(table_list_reference_i)) {
             subtitle_i <- table_list_reference_i$subtitle[1]
           }
@@ -169,10 +184,11 @@ write_xlsx <- function(
         source_note = source_note_i,
         footnotes = footnotes_i,
         offset_row = offset_row,
-        offset_col = offset_row,
+        offset_col = offset_col,
         names_separator = names_separator,
         collapse_list = FALSE,
         row_group_as_column = row_group_as_column,
+        include_table_list = include_table_list,
         facade = facade
       )
     }
@@ -191,7 +207,7 @@ write_xlsx <- function(
       source_note = source_note,
       footnotes = footnotes,
       offset_row = offset_row,
-      offset_col = offset_row,
+      offset_col = offset_col,
       collapse_list = collapse_list,
       names_separator = names_separator,
       row_group_as_column = row_group_as_column,
@@ -268,9 +284,9 @@ write_xlsx_multiple_files <- function(
 
 
 
-tsg_write_table_list <- function(wb, data, table_list_reference = NULL) {
+tsg_write_table_list <- function(wb, data, table_list_reference = NULL, facade = get_tsg_facade()) {
 
-  sheet_summary <- 'List of Tables'
+  sheet_summary <- 'List of Tables' %||% facade$label.titleTableList
 
   ref <- dplyr::select(table_list_reference, table_number, table_name, title)
 
@@ -290,6 +306,8 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL) {
     offset_col = 1,
     offset_row = 1
   )
+
+  openxlsx::setColWidths(wb, sheet = sheet_summary, cols = c(2, 3), widths = c(40, 150))
 
   for (s in 1:nrow(table_list_reference)) {
 
@@ -331,8 +349,20 @@ resolve_table_list <- function(data, table_list_reference) {
     }
 
     table_list_reference <- table_list_reference |>
+      dplyr::mutate(
+        table_id = stringr::str_trim(table_id),
+        table_name = stringr::str_trim(table_name),
+        title = stringr::str_trim(title)
+      ) |>
       dplyr::filter(table_id %in% names(data)) |>
       dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
+
+    if("subtitle" %in% names(table_list_reference)) {
+
+      table_list_reference <- table_list_reference |>
+        dplyr::mutate(subtitle = stringr::str_trim(subtitle))
+
+    }
 
   } else {
     table_list_reference <- create_table_list(data)

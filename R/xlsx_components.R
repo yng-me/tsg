@@ -40,31 +40,34 @@ xlsx_write_title <- function(
 
     if(!is.null(subtitle)) {
 
-      openxlsx::writeData(
-        wb = wb,
-        x = subtitle,
-        sheet = sheet_name,
-        startRow = start_row + offset_row,
-        startCol = start_col + offset_col,
-        colNames = FALSE
-      )
+      if(!is.na(subtitle) & subtitle != '') {
 
-      xlsx_eval_style(
-        wb = wb,
-        sheet_name = sheet_name,
-        style = extract_facade(facade, 'subtitle'),
-        rows = start_row + offset_row,
-        cols = start_col + offset_col
-      )
+        openxlsx::writeData(
+          wb = wb,
+          x = subtitle,
+          sheet = sheet_name,
+          startRow = start_row + offset_row,
+          startCol = start_col + offset_col,
+          colNames = FALSE
+        )
 
-      openxlsx::setRowHeights(
-        wb = wb,
-        sheet = sheet_name,
-        rows = start_row + offset_row,
-        heights = extract_facade(facade, 'subtitle', 'height')
-      )
+        xlsx_eval_style(
+          wb = wb,
+          sheet_name = sheet_name,
+          style = extract_facade(facade, 'subtitle'),
+          rows = start_row + offset_row,
+          cols = start_col + offset_col
+        )
 
-      offset_row <- offset_row + 1
+        openxlsx::setRowHeights(
+          wb = wb,
+          sheet = sheet_name,
+          rows = start_row + offset_row,
+          heights = extract_facade(facade, 'subtitle', 'height')
+        )
+
+        offset_row <- offset_row + 1
+      }
 
     }
 
