@@ -17,9 +17,9 @@ test_that("write_xlsx works with a basic dataframe", {
   expect_true("Sheet1" %in% sheet_names)
 
   wb <- openxlsx::loadWorkbook(temp_path)
-  expect_equal(as.integer(wb$colWidths[[1]][1]), 24L)
+  expect_equal(as.integer(wb$colWidths[[1]][1]), 32L)
   expect_equal(as.integer(wb$colWidths[[1]][2]), 14L)
-  expect_equal(as.integer(wb$rowHeights[[1]][1]), 30L)
+  expect_equal(as.integer(wb$rowHeights[[1]][1]), 34L)
   expect_equal(as.integer(wb$rowHeights[[1]][2]), 20L)
 
   # Clean up

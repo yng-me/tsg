@@ -4,9 +4,12 @@ is_valid_input_data <- function(x) {
   error_message <- "data input must be a valid data frame or Arrow format."
 
   if(is.vector(x) | is.character(x)) stop(error_message)
-  if(!(inherits(x, 'data.frame') |
+  if(
+    !(inherits(x, 'data.frame') |
        inherits(x, 'ArrowObject') |
-       inherits(x, 'arrow_dplyr_query')
+       inherits(x, 'arrow_dplyr_query') |
+       inherits(x, 'rcdf_tbl_db') |
+       inherits(x, 'tbl_lazy')
   )
   ) stop(error_message)
 }

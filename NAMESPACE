@@ -2,6 +2,7 @@
 
 export(add_column_total)
 export(add_facade)
+export(add_facade_alt)
 export(add_footnote)
 export(add_row_total)
 export(add_source_note)

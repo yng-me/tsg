@@ -55,7 +55,17 @@ xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
 xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, cols = NULL, precision = 3) {
 
   is_int <- names(dplyr::select(data, dplyr::where(is.integer)))
-  which_int <- which(names(data) %in% is_int)
+  maybe_int <- names(dplyr::select(data, dplyr::where(is.numeric)))
+  maybe_int <- maybe_int[!(maybe_int %in% is_int)]
+
+  for(i in maybe_int) {
+
+    if(sum(data[[i]], na.rm = TRUE) == sum(as.integer(data[[i]]), na.rm = TRUE)) {
+      is_int <- c(is_int, i)
+    }
+  }
+
+  which_int <- which(names(data) %in% c(is_int, maybe_int))
 
   if(length(which_int) > 0) {
     openxlsx::addStyle(
@@ -73,7 +83,9 @@ xlsx_decimal_format <- function(wb, data, sheet_name, rows, offset, cols = NULL,
   if(!is.numeric(precision)) { precision <- 2 }
 
   is_dbl <- names(dplyr::select(data, dplyr::where(is.double)))
-  which_dbl <- which(names(data) %in% c(is_dbl, cols))
+  is_dbl <- is_dbl[!(is_dbl %in% is_int)]
+
+  which_dbl <- which(names(data) %in% is_dbl)
 
   if(length(which_dbl) > 0) {
     openxlsx::addStyle(

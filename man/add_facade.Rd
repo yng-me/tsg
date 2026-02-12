@@ -141,6 +141,7 @@ add_facade(
   row_group.wrapText = NULL,
   row_group.indent = NULL,
   row_group.width = NULL,
+  row_group.height = NULL,
   source_note.fontName = NULL,
   source_note.fontSize = NULL,
   source_note.fontColour = NULL,
@@ -227,7 +228,7 @@ add_facade(
 
 \item{title.textDecoration, subtitle.textDecoration, header.textDecoration, spanner.textDecoration, body.textDecoration, col_first.textDecoration, col_last.textDecoration, row_group.textDecoration, source_note.textDecoration, footnotes.textDecoration}{Text decoration for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.}
 
-\item{title.height, subtitle.height, header.height, spanner.height, body.height, source_note.height, footnotes.height, border_bottom.height}{Height for the title, subtitle, header, spanner, body, source note, footnotes, and bottom border of the table respectively. Can be a numeric value indicating the height in points.}
+\item{title.height, subtitle.height, header.height, spanner.height, body.height, row_group.height, source_note.height, footnotes.height, border_bottom.height}{Height for the title, subtitle, header, spanner, body, row group, source note, footnotes, and bottom border of the table respectively. Can be a numeric value indicating the height in points.}
 
 \item{body.numFmt, col_first.numFmt, col_last.numFmt}{Numeric format for the body, first column, and last column respectively. Can be a string representing the numeric format.}
 }

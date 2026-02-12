@@ -25,7 +25,7 @@ border_outer.borderColour: "#8f8f8f"
 border_header.border: "bottom"
 border_header.borderColour: "#9f9e9e"
 border_header.borderStyle: "medium"
-border_bottom.height: 42
+border_bottom.height: 52
 
 body.fontName: ~
 body.fontSize: ~
@@ -89,7 +89,7 @@ header.valign: ~
 header.textDecoration: ~
 header.wrapText: true
 header.indent: ~
-header.height: 24
+header.height: 28
 
 spanner.fontName: ~
 spanner.fontSize: ~
@@ -121,7 +121,7 @@ col_first.valign: ~
 col_first.textDecoration: ~
 col_first.wrapText: ~
 col_first.indent: ~
-col_first.width: 24
+col_first.width: 32
 
 col_last.fontName: ~
 col_last.fontSize: ~
@@ -156,8 +156,25 @@ row_group.indent: ~
 row_group.width: ~
 row_group.height: 24
 
-source_note.fontName: 10
-source_note.fontSize: ~
+sub_group.fontName: ~
+sub_group.fontSize: 12
+sub_group.fontColour: ~
+sub_group.numFmt: ~
+sub_group.border: ~
+sub_group.borderColour: ~
+sub_group.borderStyle: ~
+sub_group.bgFill: ~
+sub_group.fgFill: ~
+sub_group.halign: ~
+sub_group.valign: "center"
+sub_group.textDecoration: "bold"
+sub_group.wrapText: ~
+sub_group.indent: ~
+sub_group.width: ~
+sub_group.height: 24
+
+source_note.fontName: ~
+source_note.fontSize: 10
 source_note.fontColour: ~
 source_note.numFmt: ~
 source_note.border: ~
@@ -172,8 +189,8 @@ source_note.wrapText: ~
 source_note.indent: ~
 source_note.height: 20
 
-footnotes.fontName: 10
-footnotes.fontSize: ~
+footnotes.fontName: ~
+footnotes.fontSize: 10
 footnotes.fontColour: ~
 footnotes.numFmt: ~
 footnotes.border: ~
@@ -187,4 +204,9 @@ footnotes.textDecoration: "italic"
 footnotes.wrapText: ~
 footnotes.indent: ~
 footnotes.height: 20
+
+label.backHyperlink: "← Back"
+label.titleTableList: "List of Tables"
+
+
 
