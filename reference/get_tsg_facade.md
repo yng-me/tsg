@@ -105,7 +105,7 @@ get_tsg_facade()
 #> [1] "medium"
 #> 
 #> $border_bottom.height
-#> [1] 52
+#> [1] 42
 #> 
 #> $body.fontName
 #> NULL
@@ -285,7 +285,7 @@ get_tsg_facade()
 #> NULL
 #> 
 #> $header.height
-#> [1] 28
+#> [1] 24
 #> 
 #> $spanner.fontName
 #> NULL
@@ -375,7 +375,7 @@ get_tsg_facade()
 #> NULL
 #> 
 #> $col_first.width
-#> [1] 32
+#> [1] 24
 #> 
 #> $col_last.fontName
 #> NULL
@@ -468,61 +468,13 @@ get_tsg_facade()
 #> NULL
 #> 
 #> $row_group.height
-#> [1] 24
-#> 
-#> $sub_group.fontName
 #> NULL
-#> 
-#> $sub_group.fontSize
-#> [1] 12
-#> 
-#> $sub_group.fontColour
-#> NULL
-#> 
-#> $sub_group.numFmt
-#> NULL
-#> 
-#> $sub_group.border
-#> NULL
-#> 
-#> $sub_group.borderColour
-#> NULL
-#> 
-#> $sub_group.borderStyle
-#> NULL
-#> 
-#> $sub_group.bgFill
-#> NULL
-#> 
-#> $sub_group.fgFill
-#> NULL
-#> 
-#> $sub_group.halign
-#> NULL
-#> 
-#> $sub_group.valign
-#> [1] "center"
-#> 
-#> $sub_group.textDecoration
-#> [1] "bold"
-#> 
-#> $sub_group.wrapText
-#> NULL
-#> 
-#> $sub_group.indent
-#> NULL
-#> 
-#> $sub_group.width
-#> NULL
-#> 
-#> $sub_group.height
-#> [1] 24
 #> 
 #> $source_note.fontName
-#> NULL
+#> [1] 10
 #> 
 #> $source_note.fontSize
-#> [1] 10
+#> NULL
 #> 
 #> $source_note.fontColour
 #> NULL
@@ -564,10 +516,10 @@ get_tsg_facade()
 #> [1] 20
 #> 
 #> $footnotes.fontName
-#> NULL
+#> [1] 10
 #> 
 #> $footnotes.fontSize
-#> [1] 10
+#> NULL
 #> 
 #> $footnotes.fontColour
 #> NULL
@@ -607,12 +559,6 @@ get_tsg_facade()
 #> 
 #> $footnotes.height
 #> [1] 20
-#> 
-#> $label.backHyperlink
-#> [1] "← Back"
-#> 
-#> $label.titleTableList
-#> [1] "List of Tables"
 #> 
 #> attr(,"source")
 #> [1] "built-in"
@@ -1055,7 +1001,7 @@ get_tsg_facade("yolo")
 #> NULL
 #> 
 #> $row_group.height
-#> [1] 24
+#> NULL
 #> 
 #> $source_note.fontName
 #> [1] 10
@@ -1146,12 +1092,6 @@ get_tsg_facade("yolo")
 #> 
 #> $footnotes.height
 #> [1] 20
-#> 
-#> $label.backHyperlink
-#> [1] "← Back"
-#> 
-#> $label.titleTableList
-#> [1] "List of Tables"
 #> 
 #> attr(,"source")
 #> [1] "built-in"
