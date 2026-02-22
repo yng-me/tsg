@@ -6,6 +6,8 @@
   : Add a column total
 - [`add_facade()`](https://yng-me.github.io/tsg/reference/add_facade.md)
   : Add a facade to a tsg table
+- [`add_facade_alt()`](https://yng-me.github.io/tsg/reference/add_facade_alt.md)
+  : Add a facade to a tsg table (alternative way)
 - [`add_footnote()`](https://yng-me.github.io/tsg/reference/add_footnote.md)
   : Add a footnote attribute to a table
 - [`add_row_total()`](https://yng-me.github.io/tsg/reference/add_row_total.md)
