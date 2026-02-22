@@ -56,7 +56,7 @@
       <h1>Working with the tsg package</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yng-me/tsg/blob/main/vignettes/tsg.Rmd" class="external-link"><code>vignettes/tsg.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yng-me/tsg/blob/v0.1.2/vignettes/tsg.Rmd" class="external-link"><code>vignettes/tsg.Rmd</code></a></small>
       <div class="d-none name"><code>tsg.Rmd</code></div>
     </div>
 
@@ -329,32 +329,35 @@ remaining values grouped into “Others”.</p>
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
 <span>    <span class="va">marital_status</span>,</span>
-<span>    top_n <span class="op">=</span> <span class="fl">3</span></span>
+<span>    <span class="co">#top_n = 3</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   category                 frequency percent</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544   52.9 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769   26.4 </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424   14.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 9<span style="color: #949494;"> [Others]</span>                     181    6.20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918  100</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                    138    4.73</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>                   43    1.47</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918  100</span></span></code></pre></div>
 <p>If you want to show only the top-n values and exclude the rest, set
 <code>top_n_only = TRUE</code>.</p>
 <div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
 <span>    <span class="va">marital_status</span>, </span>
-<span>    top_n <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    top_n_only <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>    <span class="co">#top_n = 3,</span></span>
+<span>    <span class="co">#top_n_only = TRUE</span></span>
 <span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
 <span><span class="co">#&gt;   category                 frequency percent</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544    52.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769    26.4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424    14.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918   100</span></span></code></pre></div>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544   52.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769   26.4 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424   14.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                    138    4.73</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>                   43    1.47</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918  100</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
