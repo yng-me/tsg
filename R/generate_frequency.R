@@ -20,6 +20,8 @@
 #' @param position_total Character. Where to place the total row: \code{"top"} or \code{"bottom"}.
 #' @param group_separator Character. Separator used when concatenating group values in list output (if \code{group_as_list = TRUE}).
 #' @param group_as_list Logical. If \code{TRUE}, output is a list of frequency tables for each group combination.
+#' @param group_grand_total `r lifecycle::badge("experimental")` Logical. Compute grand total based on the grouping variable.
+#' @param group_grand_total_label `r lifecycle::badge("experimental")` Character. Apply label to the grand total if \code{group_grand_total} is set to \code{TRUE}.
 #' @param label_stub Optional character vector used for labeling output tables (e.g., for export or display).
 #' @param label_na Character. Label to use for missing (\code{NA}) values.
 #' @param label_total Character. Label used for the total row/category.
@@ -89,6 +91,8 @@ generate_frequency <- function(
   calculate_per_group = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
+  group_grand_total = FALSE,
+  group_grand_total_label = "All",
   label_as_group_name = TRUE,
   label_stub = NULL,
   label_na = "Not reported",
@@ -158,6 +162,52 @@ generate_frequency <- function(
         dplyr::mutate(list_group = glue::glue(glue_arg))
 
       data_ij <- list()
+
+      if(group_grand_total) {
+
+        data_g <- dplyr::ungroup(data)
+
+        for(g in groups) {
+
+          data_g <- coerce_total(
+            data = data_g,
+            col = g,
+            x = data_g[[g]],
+            label_total = group_grand_total_label,
+            default_code = -1L
+          )
+        }
+
+        data_ij[[group_grand_total_label]] <- data_g |>
+          dplyr::group_by(dplyr::across(dplyr::all_of(groups))) |>
+          generate_frequency(
+            !!as.name(column_name),
+            sort_value = sort_value,
+            sort_desc = sort_desc,
+            sort_except = sort_except,
+            add_total = add_total,
+            add_percent = add_percent,
+            add_cumulative = add_cumulative,
+            add_cumulative_percent = add_cumulative_percent,
+            as_proportion = as_proportion,
+            include_na = include_na,
+            recode_na = recode_na,
+            position_total = position_total,
+            calculate_per_group = calculate_per_group,
+            group_separator = group_separator,
+            group_as_list = FALSE,
+            label_as_group_name = label_as_group_name,
+            label_stub = label_stub,
+            label_na = label_na,
+            label_total = label_total,
+            expand_categories = expand_categories,
+            convert_factor = convert_factor,
+            collapse_list = collapse_list,
+            top_n = top_n,
+            top_n_only = top_n_only,
+            metadata = metadata
+          )
+      }
 
       for(j in seq_along(df_groups$list_group)) {
 
@@ -259,6 +309,73 @@ generate_frequency <- function(
           })) |>
           tidyr::unnest(cols = c(data)) |>
           dplyr::ungroup()
+
+
+        if(group_grand_total) {
+
+          data_g <- dplyr::ungroup(data)
+
+          for(g in groups) {
+
+            data_g <- coerce_total(
+              data = data_g,
+              col = g,
+              x = data_g[[g]],
+              label_total = group_grand_total_label,
+              default_code = -1L
+            )
+
+            if(is.numeric(data_i[[g]])) {
+              data_i <- dplyr::mutate(data_i, !!as.name(g) := as.character(!!as.name(g)))
+            }
+
+          }
+
+          data_i <- dplyr::bind_rows(
+            data_g |>
+              dplyr::group_by(dplyr::across(dplyr::all_of(groups))) |>
+              tsg_get_frequency(column_name, include_na) |>
+              tsg_sort_col_value(
+                sort_value = sort_value,
+                sort_desc = sort_desc,
+                groups = groups
+              ) |>
+              tidyr::nest(data = -dplyr::all_of(groups)) |>
+              dplyr::mutate(data = purrr::map(data, function(x) {
+                x |>
+                  expand_category_values(categories, expand = expand_categories) |>
+                  add_column_values(
+                    as_proportion = as_proportion,
+                    add_percent = add_percent,
+                    add_cumulative = add_cumulative,
+                    add_cumulative_percent = add_cumulative_percent
+                  ) |>
+                  tsg_add_row_total(
+                    x = .category,
+                    add_total = add_total,
+                    position = position_total[1],
+                    label_total = label_total,
+                    add_cumulative = add_cumulative,
+                    add_cumulative_percent = add_cumulative_percent
+                  ) |>
+                  tsg_sort_top_n(
+                    top_n = top_n,
+                    top_n_only = top_n_only,
+                    sort_value = sort_value,
+                    add_total = add_total,
+                    add_percent = add_percent,
+                    position_total = position_total[1],
+                    as_proportion = as_proportion
+                  )
+              })) |>
+              tidyr::unnest(cols = c(data)) |>
+              dplyr::ungroup(),
+            data_i
+          )
+
+
+        }
+
 
       } else {
 

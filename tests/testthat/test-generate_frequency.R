@@ -249,6 +249,51 @@ test_that("generate_frequency calculates per group and returns a list", {
 })
 
 
+test_that("generate_frequency calculates per group and returns a data frame", {
+
+  result <- df |>
+    dplyr::group_by(value) |>
+    generate_frequency(category, group_as_list = FALSE)
+
+  result_g <- df |>
+    dplyr::group_by(value) |>
+    generate_frequency(category, group_as_list = FALSE, group_grand_total = TRUE)
+
+  expect_true(inherits(result, 'data.frame'))
+  expect_equal(nrow(result), 12)
+
+  expect_true(inherits(result_g, 'data.frame'))
+  expect_equal(nrow(result_g), 16)
+
+})
+
+
+# Group as list with grand total
+test_that("generate_frequency calculates per group with grand total and returns a list", {
+
+  result <- df |>
+    dplyr::group_by(value) |>
+    generate_frequency(category, group_as_list = TRUE, group_grand_total = TRUE)
+
+
+  expect_true(inherits(result, 'list'))
+  expect_equal(length(result), 4)  # Three unique values in 'value' column
+  expect_true(all(sapply(result, function(x) inherits(x, 'data.frame'))))
+
+  expect_true(identical(names(result), c("All", "1", "2", "3")))
+
+  result_warn <- df |>
+    dplyr::group_by(category) |>
+    generate_frequency(value, group_as_list = TRUE)
+
+  expect_equal(names(result_warn), c("A", "B", "C"))
+
+  expect_warning(result_warn, regexp = NA)
+
+
+})
+
+
 # With multiple grouping variables
 test_that("generate_frequency works with multiple grouping variables", {
 

@@ -205,8 +205,8 @@ footnotes.wrapText: ~
 footnotes.indent: ~
 footnotes.height: 20
 
-label.backHyperlink: "← Back"
 label.titleTableList: "List of Tables"
+label.backHyperlink: "← Back"
 
 
 

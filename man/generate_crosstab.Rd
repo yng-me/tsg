@@ -25,6 +25,8 @@ generate_crosstab(
   label_as_group_name = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
+  group_grand_total = FALSE,
+  group_grand_total_label = "All",
   calculate_per_group = TRUE,
   expand_categories = TRUE,
   position_total = "bottom",
@@ -74,6 +76,10 @@ generate_crosstab(
 \item{group_separator}{Character. Separator used when constructing group names in the output list.}
 
 \item{group_as_list}{Logical. If \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s).}
+
+\item{group_grand_total}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Logical. Compute grand total based on the grouping variable.}
+
+\item{group_grand_total_label}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Character. Apply label to the grand total if \code{group_grand_total} is set to \code{TRUE}.}
 
 \item{calculate_per_group}{Logical. If \code{TRUE}, calculates the cross-tabulation separately for each group defined by the grouping variable(s).}
 

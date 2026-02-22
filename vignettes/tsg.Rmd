@@ -96,7 +96,7 @@ You can specify the top `n` most frequent values to display in the frequency tab
 person_record |>
   generate_frequency(
     marital_status,
-    #top_n = 3
+    top_n = 3
   )
 ```
 
@@ -106,8 +106,8 @@ If you want to show only the top-n values and exclude the rest, set `top_n_only 
 person_record |>
   generate_frequency(
     marital_status, 
-    #top_n = 3,
-    #top_n_only = TRUE
+    top_n = 3,
+    top_n_only = TRUE
   )
 ```
 

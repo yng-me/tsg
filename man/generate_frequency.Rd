@@ -21,6 +21,8 @@ generate_frequency(
   calculate_per_group = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
+  group_grand_total = FALSE,
+  group_grand_total_label = "All",
   label_as_group_name = TRUE,
   label_stub = NULL,
   label_na = "Not reported",
@@ -65,6 +67,10 @@ generate_frequency(
 \item{group_separator}{Character. Separator used when concatenating group values in list output (if \code{group_as_list = TRUE}).}
 
 \item{group_as_list}{Logical. If \code{TRUE}, output is a list of frequency tables for each group combination.}
+
+\item{group_grand_total}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Logical. Compute grand total based on the grouping variable.}
+
+\item{group_grand_total_label}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Character. Apply label to the grand total if \code{group_grand_total} is set to \code{TRUE}.}
 
 \item{label_as_group_name}{Logical. If \code{TRUE}, uses variable labels as names in the output list; otherwise, uses variable names.}
 

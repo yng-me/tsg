@@ -1,7 +1,7 @@
 Package: tsg
 Type: Package
 Title: Generate Publication-Ready Statistical Tables
-Version: 0.1.1
+Version: 0.1.2
 Description: A collection of functions for generating frequency tables and cross-tabulations of categorical variables. The resulting tables can be exported to various formats (Excel, PDF, HTML, etc.) with extensive formatting and layout customization options.
 Authors@R: c(
     person(
@@ -18,18 +18,19 @@ License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Imports:
-  haven,
-  openxlsx,
-  fs,
-  forcats,
-  purrr,
-  tidyr,
-  glue,
-  jsonlite (>= 2.0.0),
-  yaml (>= 2.3.10),
-  dplyr (>= 1.1.0),
-  stringr (>= 1.4.0),
-  rlang (>= 1.0.2)
+    haven,
+    openxlsx,
+    fs,
+    forcats,
+    purrr,
+    tidyr,
+    glue,
+    jsonlite (>= 2.0.0),
+    yaml (>= 2.3.10),
+    dplyr (>= 1.1.0),
+    stringr (>= 1.4.0),
+    rlang (>= 1.0.2),
+    lifecycle
 Suggests: 
   testthat (>= 3.0.0),
   utils (>= 4.0.0),
