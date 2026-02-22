@@ -44,25 +44,13 @@ generate_template <- function(
   } else if (template == "table-list") {
 
     data <- dplyr::tibble(
+      table_id = paste0("sample_table_id_", 1:3),
       table_number = 1:3,
       table_name = paste0("Sample Table ", 1:3),
       title = rep("Table title here...", 3),
-      subtitle = rep("Table subtitle here...", 3),
-      footnotes = rep("Footnote for table ", 3),
-      source_note = rep(NA_character_, 3),
-      facade = jsonlite::toJSON(
-        list(
-          fontSize = 11,
-          border = "none",
-          borderColour = "#000000",
-          borderStyle = "thin",
-          bgFill = "#FFFFFF",
-          halign = "left",
-          textDecoration = "none",
-          wrapText = FALSE
-        ),
-        auto_unbox = TRUE
-      )
+      subtitle = rep(NA_character_, 3),
+      footnotes = rep(NA_character_, 3),
+      source_note = rep(NA_character_, 3)
     )
 
     wb <- openxlsx::createWorkbook()
@@ -73,7 +61,7 @@ generate_template <- function(
       wb = wb,
       sheet = "Sheet1",
       cols = 1:ncol(data),
-      widths = c(15, 30, 40, 60, 50, 50, 150)
+      widths = c(15, 30, 40, 60, 50, 40, 40)
     )
 
     openxlsx::saveWorkbook(wb, path, overwrite = TRUE)

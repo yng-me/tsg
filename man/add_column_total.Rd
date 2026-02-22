@@ -4,10 +4,12 @@
 \alias{add_column_total}
 \title{Add a column total}
 \usage{
-add_column_total(data, label_total = "Total", ...)
+add_column_total(data, name = "total", label_total = "Total", ...)
 }
 \arguments{
 \item{data}{A data frame, tibble, or \code{tsg} object to which a column row will be added.}
+
+\item{name}{Column name for total. Default value is \code{"total"}.}
 
 \item{label_total}{Label for the total column. Default is "Total".}
 

@@ -22,6 +22,12 @@
 
 add_row_total <- function(data, position = c("bottom", "top"), label_total = "Total", fill = "-") {
 
+  nn_cols <- ncol(dplyr::select(data, dplyr::where(is.numeric)))
+
+  if(nn_cols == 0) {
+    stop("No numeric columns in the dataset")
+  }
+
   position <- match.arg(position[1], c("top", "bottom"))
 
   col <- attributes(data)$category
@@ -82,7 +88,7 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
 
   data <- dplyr::select(data, dplyr::any_of(names_order))
 
-  if(is.null(col)) {
+  if(is.null(col) & ncol(data) > nn_cols) {
 
     if(position[1] == "bottom") {
 
@@ -105,6 +111,7 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
 #' Add a column total
 #'
 #' @param data A data frame, tibble, or \code{tsg} object to which a column row will be added.
+#' @param name Column name for total. Default value is \code{"total"}.
 #' @param label_total Label for the total column. Default is "Total".
 #' @param ... Additional named arguments to be added as columns alongside the total column.
 #'
@@ -121,10 +128,10 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
 #' add_column_total(df)
 #'
 
-add_column_total <- function(data, label_total = "Total", ...) {
+add_column_total <- function(data, name = 'total', label_total = "Total", ...) {
   data <- dplyr::mutate(
     data,
-    total = rowSums(dplyr::across(dplyr::where(is.numeric)), na.rm = TRUE),
+    !!as.name(name) := rowSums(dplyr::across(dplyr::where(is.numeric)), na.rm = TRUE),
     ...
   )
 

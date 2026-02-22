@@ -124,18 +124,19 @@ tsg_add_row_total <- function(
 }
 
 
-coerce_total <- function(data, col, x, label_total = "Total", value = NULL) {
+coerce_total <- function(data, col, x, label_total = "Total", value = NULL, default_code = 0L) {
 
   if(!haven::is.labelled(x) & !is.factor(x)) {
+
     data[[col]] <- label_total
     return(data)
   }
 
   .value <- 0L
   if(!is.null(value)) {
-    .value <- value
+    .value <- value - default_code
   } else {
-    if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L }
+    if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L - default_code }
   }
 
   data[[col]] <- .value

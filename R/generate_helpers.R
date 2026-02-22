@@ -350,10 +350,7 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
       }
     }
 
-    if(convert_factor) {
-      data <- dplyr::mutate_if(data, haven::is.labelled, haven::as_factor)
-    }
-
+    if(convert_factor) { data <- convert_factor(data) }
     return(data)
   }
 

@@ -162,6 +162,14 @@ test_that("generate_croosstab handles grouping correctly", {
     dplyr::group_by(type) |>
     generate_crosstab(age_group, sex, calculate_per_group = FALSE)
 
+  df_6 <- mock_data_labelled |>
+    dplyr::group_by(type) |>
+    generate_crosstab(age_group, sex, calculate_per_group = TRUE, group_grand_total = TRUE)
+
+  df_7 <- mock_data_labelled |>
+    dplyr::group_by(type) |>
+    generate_crosstab(age_group, sex, group_as_list = TRUE, group_grand_total = TRUE)
+
   expect_equal(dim(df_1), c(9, 7))
   expect_equal(dim(df_2), c(8, 7))
   expect_equal(length(df_3), 3)
@@ -176,6 +184,10 @@ test_that("generate_croosstab handles grouping correctly", {
   expect_equal(dim(df_4$B), c(2, 7))
   expect_equal(dim(df_3$C), c(3, 7))
   expect_equal(dim(df_4$C), c(3, 7))
+
+  expect_equal(nrow(df_6), 12)
+  expect_true(identical(names(df_7), c("All", "A", "B", "C")))
+
 
   expect_identical(
     names(df_1),

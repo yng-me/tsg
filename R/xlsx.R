@@ -127,62 +127,33 @@ write_xlsx <- function(
     for(i in seq_along(sheet_names)) {
 
       sheet_name_i <- xlsx_set_valid_sheet_name(sheet_names[i])
+
       data_i <- data[[i]]
-      attr_i <- attributes(data[[i]])
 
-      title_i <- attr_i$title
-      subtitle_i <- attr_i$subtitle
-      source_note_i <- attr_i$source_note
-      footnotes_i <- attr_i$footnotes
+      attr_i <- resolve_table_meta(
+        attr = attributes(data[[i]]),
+        sheet_name = sheet_name_i,
+        title = title,
+        subtitle = subtitle,
+        source_note = source_note,
+        footnotes = footnotes
+      )
 
-      if(include_table_list) {
-        table_list_reference_i <- table_list_reference |>
-          dplyr::filter(table_id == sheet_names[i])
-
-        if(nrow(table_list_reference_i) > 0) {
-          sheet_name_i <- xlsx_set_valid_sheet_name(table_list_reference_i$table_name[1])
-          title_i <- table_list_reference_i$title[1]
-
-          if("table_number" %in% names(table_list_reference_i)) {
-            table_number_i <- table_list_reference_i$table_number[1]
-
-            if(!is.na(table_number_i) & table_number_i != '') {
-
-              if(grepl('^\\d', table_number_i)) {
-                table_number_i <- paste0("Table ", table_number_i)
-              }
-
-              title_i <- paste0(table_number_i, ". ", title_i)
-
-            }
-
-          }
-
-          if("subtitle" %in% names(table_list_reference_i)) {
-            subtitle_i <- table_list_reference_i$subtitle[1]
-          }
-
-          if("source_note" %in% names(table_list_reference_i)) {
-            source_note_i <- table_list_reference_i$source_note[1]
-          }
-
-          if("footnotes" %in% names(table_list_reference_i)) {
-            footnotes_i <- table_list_reference_i$footnotes[1]
-          }
-
-        }
-      }
-
-      groups <- attributes(data_i)$groups
+      table_meta <- resolve_table_ref(
+        refs = table_list_reference,
+        include_ref = include_table_list,
+        sheet_name = sheet_names[i],
+        attr = attr_i
+      )
 
       wb <- xlsx_write_data(
         wb = wb,
         data = data_i,
-        sheet_name = sheet_name_i,
-        title = title_i,
-        subtitle = subtitle_i,
-        source_note = source_note_i,
-        footnotes = footnotes_i,
+        sheet_name = table_meta$sheet_name,
+        title = table_meta$title,
+        subtitle = table_meta$subtitle,
+        source_note = table_meta$source_note,
+        footnotes = table_meta$footnotes,
         offset_row = offset_row,
         offset_col = offset_col,
         names_separator = names_separator,
@@ -294,11 +265,17 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL, facade =
     wb,
     data = ref |>
       dplyr::transmute(
-        table = paste0("Table ", table_number, ".", table_name),
+        name = table_name,
+        number = dplyr::if_else(
+          grepl('^table', table_number, ignore.case = TRUE),
+          as.character(table_number),
+          paste("Table", table_number)
+        ),
         title = title
       ) |>
       rename_label(
-        table = "Table",
+        name = "Tab Name",
+        number = "Table",
         title = "Title"
       ),
     sheet_name = sheet_summary,
@@ -307,19 +284,19 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL, facade =
     offset_row = 1
   )
 
-  openxlsx::setColWidths(wb, sheet = sheet_summary, cols = c(2, 3), widths = c(40, 150))
+  openxlsx::setColWidths(wb, sheet = sheet_summary, cols = c(2, 3, 4), widths = c(36, 12, 148))
 
   for (s in 1:nrow(table_list_reference)) {
-
-    hyperlink <- table_list_reference$table_name[s]
-    hyperlink_name <- glue::glue("Table {table_list_reference$table_number[s]}. {table_list_reference$table_name[s]}")
 
     openxlsx::writeFormula(
       wb,
       sheet = sheet_summary,
       startCol = 2,
       startRow =  4 + s,
-      x = openxlsx::makeHyperlinkString(sheet = hyperlink, text = hyperlink_name)
+      x = openxlsx::makeHyperlinkString(
+        sheet = table_list_reference$table_name[s],
+        text = table_list_reference$table_name[s]
+      )
     )
   }
 
@@ -331,6 +308,22 @@ tsg_write_table_list <- function(wb, data, table_list_reference = NULL, facade =
 resolve_table_list <- function(data, table_list_reference) {
 
   if(!is.null(table_list_reference)) {
+
+    if(inherits(table_list_reference, 'character')) {
+
+      if(!fs::is_file(table_list_reference)) {
+        stop('table_list_reference is invalid')
+      }
+
+      if(grepl('\\.json$', table_list_reference)) {
+        table_list_reference <- jsonlite::read_json(table_list_reference, simplifyVector = TRUE)
+      } else if (grepl('\\.csv$', table_list_reference)) {
+        table_list_reference <- utils::read.csv(table_list_reference)
+      } else if (grepl('\\.xlsx$', table_list_reference)) {
+        table_list_reference <- openxlsx::read.xlsx(table_list_reference)
+      }
+
+    }
 
     if(!("table_id" %in% names(table_list_reference))) {
       stop("`table_list_reference` must contain a `table_id` column.")
@@ -371,3 +364,86 @@ resolve_table_list <- function(data, table_list_reference) {
   table_list_reference
 
 }
+
+resolve_table_ref <- function(refs, sheet_name, include_ref, attr) {
+
+  title <- attr$title
+  subtitle <- attr$subtitle
+  source_note <- attr$source_note
+  footnotes <- attr$footnotes
+
+  if(include_ref) {
+
+    ref <- dplyr::filter(refs, table_id == sheet_name)
+
+    if(nrow(ref) > 0) {
+
+      sheet_name <- ref$table_name[1]
+      title <- ref$title[1]
+
+      if("table_number" %in% names(ref)) {
+
+        table_number <- ref$table_number[1]
+
+        if(!is.na(table_number) & table_number != '') {
+
+          if(!grepl('^table', table_number, ignore.case = TRUE)) {
+            table_number <- paste("Table", table_number)
+          }
+
+          title <- paste0(table_number, ". ", title)
+        }
+
+      }
+
+      if("subtitle" %in% names(ref)) {
+        subtitle <- ref$subtitle[1]
+      }
+
+      if("source_note" %in% names(ref)) {
+        source_note <- ref$source_note[1]
+      }
+
+      if("footnotes" %in% names(ref)) {
+        footnotes <- ref$footnotes[1]
+      }
+
+    }
+
+  }
+
+  return(
+    list(
+      sheet_name = sheet_name,
+      title = title,
+      subtitle = subtitle,
+      source_note = source_note,
+      footnotes = footnotes
+    )
+  )
+
+}
+
+resolve_table_meta <- function(attr, sheet_name, title, subtitle, source_note, footnotes) {
+
+  if(!is.null(title) & is.null(attr$title)) {
+    attr$title <- glue::glue("{title}: {sheet_name}")
+  }
+
+  if(!is.null(subtitle) & is.null(attr$subtitle)) {
+    attr$subtitle <- subtitle
+  }
+
+  if(!is.null(source_note) & is.null(attr$source_note)) {
+    attr$source_note <- source_note
+  }
+
+  if(!is.null(subtitle) & is.null(attr$footnotes)) {
+    attr$footnotes <- footnotes
+  }
+
+  attr
+
+}
+
+

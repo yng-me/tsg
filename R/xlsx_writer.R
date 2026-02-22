@@ -160,7 +160,7 @@ xlsx_write_data <- function(
 
         openxlsx::writeData(
           wb = wb,
-          x = dplyr::mutate_if(data_i, haven::is.labelled, haven::as_factor),
+          x = convert_factor(data_i),
           sheet = sheet_name,
           startRow = header_depth_i + offset_row_i + 1,
           startCol = start_col,
@@ -344,8 +344,7 @@ xlsx_write_data <- function(
       for(i in seq_along(row_titles)) {
 
         row_title <- row_titles[i]
-        data_i <- data[[i]] |>
-          dplyr::select(-1)
+        data_i <- dplyr::select(data[[i]], -1)
 
         openxlsx::writeData(
           wb = wb,
@@ -406,7 +405,7 @@ xlsx_write_data <- function(
 
         openxlsx::writeData(
           wb = wb,
-          x = dplyr::mutate_if(dplyr::ungroup(data_i), haven::is.labelled, haven::as_factor),
+          x = convert_factor(dplyr::ungroup(data_i)),
           sheet = sheet_name,
           startRow = header_depth_i + offset_row_i + 1,
           startCol = start_col,
@@ -493,6 +492,8 @@ xlsx_write_data <- function(
           )
         }
 
+        offset_row_dec <- offset_row_i
+
         if(!is.null(source_note)) {
 
           offset_row_i <- offset_row_i + 1
@@ -532,13 +533,15 @@ xlsx_write_data <- function(
 
           offset_row_i <- offset_row_i + attributes(wb)$offset_row
 
+        } else {
+          offset_row_i <- offset_row_i + 3
         }
 
         xlsx_decimal_format(
           wb = wb,
           data = data_i,
           sheet_name = sheet_name,
-          rows = (offset_row_i + 1):(nrow(data_i) + header_depth_i + offset_row_i),
+          rows = (offset_row_dec + 1):(nrow(data_i) + header_depth_i + offset_row_i),
           offset = start_col - 1,
           cols = extract_facade(facade, 'table', 'decimalCols'),
           precision = extract_facade(facade, 'table', 'decimalPrecision')
@@ -584,7 +587,7 @@ xlsx_write_data <- function(
 
     openxlsx::writeData(
       wb = wb,
-      x = dplyr::mutate_if(data, haven::is.labelled, haven::as_factor),
+      x = convert_factor(data),
       sheet = sheet_name,
       startRow = header_depth + offset_row + 1,
       startCol = start_col,
