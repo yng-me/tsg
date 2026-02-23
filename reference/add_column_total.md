@@ -5,7 +5,7 @@ Add a column total
 ## Usage
 
 ``` r
-add_column_total(data, name = "total", label_total = "Total", ...)
+add_column_total(data, label_total = "Total", ...)
 ```
 
 ## Arguments
@@ -14,10 +14,6 @@ add_column_total(data, name = "total", label_total = "Total", ...)
 
   A data frame, tibble, or `tsg` object to which a column row will be
   added.
-
-- name:
-
-  Column name for total. Default value is `"total"`.
 
 - label_total:
 
