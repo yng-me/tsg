@@ -26,6 +26,8 @@ generate_frequency(
   calculate_per_group = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
+  group_grand_total = FALSE,
+  group_grand_total_label = "All",
   label_as_group_name = TRUE,
   label_stub = NULL,
   label_na = "Not reported",
@@ -113,6 +115,16 @@ generate_frequency(
 
   Logical. If `TRUE`, output is a list of frequency tables for each
   group combination.
+
+- group_grand_total:
+
+  **\[experimental\]** Logical. Compute grand total based on the
+  grouping variable.
+
+- group_grand_total_label:
+
+  **\[experimental\]** Character. Apply label to the grand total if
+  `group_grand_total` is set to `TRUE`.
 
 - label_as_group_name:
 
