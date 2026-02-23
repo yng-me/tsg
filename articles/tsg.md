@@ -277,17 +277,16 @@ top-n values plus the remaining values grouped into “Others”.
 person_record |>
   generate_frequency(
     marital_status,
-    #top_n = 3
+    top_n = 3
   )
-#> # A tibble: 6 × 3
+#> # A tibble: 5 × 3
 #>   category                 frequency percent
-#>   <int+lbl>                    <int>   <dbl>
+#>   <dbl+lbl>                    <int>   <dbl>
 #> 1 1 [Single/never married]      1544   52.9 
 #> 2 2 [Married]                    769   26.4 
 #> 3 3 [Common law/live-in]         424   14.5 
-#> 4 4 [Widowed]                    138    4.73
-#> 5 6 [Separated]                   43    1.47
-#> 6 0 [Total]                     2918  100
+#> 4 9 [Others]                     181    6.20
+#> 5 0 [Total]                     2918  100
 ```
 
 If you want to show only the top-n values and exclude the rest, set
@@ -297,18 +296,16 @@ If you want to show only the top-n values and exclude the rest, set
 person_record |>
   generate_frequency(
     marital_status, 
-    #top_n = 3,
-    #top_n_only = TRUE
+    top_n = 3,
+    top_n_only = TRUE
   )
-#> # A tibble: 6 × 3
+#> # A tibble: 4 × 3
 #>   category                 frequency percent
 #>   <int+lbl>                    <int>   <dbl>
-#> 1 1 [Single/never married]      1544   52.9 
-#> 2 2 [Married]                    769   26.4 
-#> 3 3 [Common law/live-in]         424   14.5 
-#> 4 4 [Widowed]                    138    4.73
-#> 5 6 [Separated]                   43    1.47
-#> 6 0 [Total]                     2918  100
+#> 1 1 [Single/never married]      1544    52.9
+#> 2 2 [Married]                    769    26.4
+#> 3 3 [Common law/live-in]         424    14.5
+#> 4 0 [Total]                     2918   100
 ```
 
 ### Handling missing values

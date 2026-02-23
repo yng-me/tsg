@@ -26,6 +26,8 @@ generate_crosstab(
   label_as_group_name = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
+  group_grand_total = FALSE,
+  group_grand_total_label = "All",
   calculate_per_group = TRUE,
   expand_categories = TRUE,
   position_total = "bottom",
@@ -126,6 +128,16 @@ generate_crosstab(
 
   Logical. If `TRUE`, the output will be a list of data frames, one for
   each combination of grouping variable(s).
+
+- group_grand_total:
+
+  **\[experimental\]** Logical. Compute grand total based on the
+  grouping variable.
+
+- group_grand_total_label:
+
+  **\[experimental\]** Character. Apply label to the grand total if
+  `group_grand_total` is set to `TRUE`.
 
 - calculate_per_group:
 
