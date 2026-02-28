@@ -20,6 +20,15 @@ mock_data_labelled <- mock_data_labelled |>
       label = "Type",
       labels = c(A = 1, B = 2, C = 3)
     ),
+    status = haven::labelled(
+      c("01", "02", "03", "02", "01", "01", "02", "01", "03", "01", "01", "03", "01", "03", "02", "01"),
+      label = "Status",
+      labels = c(
+        High = "01",
+        Medium = "02",
+        Low = "03"
+      )
+    ),
     sex = haven::labelled(
       sex,
       label = "Sex",
@@ -128,6 +137,22 @@ test_that("generate_crosstab generates cross-tabulation correctly using differen
 
 })
 
+test_that("generate_crosstab handles character labelled variable", {
+
+  result <- generate_crosstab(mock_data_labelled, x = status, sex)
+  expect_equal(as.character(result$category), c("01", "02", "03", "__Total__"))
+
+  result_convert_factor <- generate_crosstab(mock_data_labelled, x = status, sex, convert_factor = TRUE)
+  expect_equal(as.character(result_convert_factor$category), c("High", "Medium", "Low", "Total"))
+
+  result_label_total <- generate_crosstab(mock_data_labelled, x = status, sex, convert_factor = TRUE, label_total = "Priority")
+  expect_equal(as.character(result_label_total$category), c("High", "Medium", "Low", "Priority"))
+
+  result_2 <- generate_crosstab(mock_data_labelled, x = sex, status)
+  expect_equal(attributes(result_2$frequency_01)$label, 'Frequency__High')
+
+
+})
 
 test_that("generate_crosstab calculates proportions if specified", {
 
@@ -138,6 +163,7 @@ test_that("generate_crosstab calculates proportions if specified", {
   expect_equal(result$proportion_Male[nrow(result)] + result$proportion_Female[nrow(result)], 1)
 
 })
+
 
 
 test_that("generate_croosstab handles grouping correctly", {

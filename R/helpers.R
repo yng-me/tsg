@@ -18,7 +18,11 @@ add_missing_label <- function(value, label_na = "Not reported", recode_na = "aut
 
   if(haven::is.labelled(value)) {
 
-    value_na <- get_na_value(value, recode_na, pattern)
+    if(inherits(value, 'character')) {
+      value_na <- '__NA__'
+    } else if (inherits(value, 'integer') | is.numeric(value)) {
+      value_na <- get_na_value(value, recode_na, pattern)
+    }
 
     labels <- attributes(value)$labels
     labels_with_na <- c(labels, value_na)
@@ -127,16 +131,22 @@ tsg_add_row_total <- function(
 coerce_total <- function(data, col, x, label_total = "Total", value = NULL, default_code = 0L) {
 
   if(!haven::is.labelled(x) & !is.factor(x)) {
-
     data[[col]] <- label_total
     return(data)
   }
 
-  .value <- 0L
-  if(!is.null(value)) {
-    .value <- value - default_code
+
+  if(inherits(x, 'character')) {
+    .value <- paste0("__", label_total, "__")
   } else {
-    if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L - default_code }
+    .value <- 0L
+    if (inherits(x, 'integer') | is.numeric(x)) {
+      if(!is.null(value)) {
+        .value <- value - default_code
+      } else {
+        if(min(as.integer(x), na.rm = TRUE) == 0) { .value <- -1L - default_code }
+      }
+    }
   }
 
   data[[col]] <- .value
