@@ -81,3 +81,26 @@ flatten_nested_list <- function(nested_list, parent_key = NULL) {
 
   return(flat_list)
 }
+
+
+deselect_zero_cols <- function(data) {
+
+  s <- dplyr::summarise_all(dplyr::select(data, dplyr::where(is.numeric)), ~ sum(., na.rm = TRUE))
+
+  zero_cols <- c()
+  for(col in names(s)) {
+
+    if(s[[col]][1] == 0) {
+      zero_cols <- c(zero_cols, col)
+    }
+
+  }
+
+  if(length(zero_cols) > 0) {
+    data <- dplyr::select(data, -dplyr::any_of(unlist(zero_cols)))
+  }
+
+  data
+
+}
+

@@ -22,6 +22,11 @@ df_labelled <- dplyr::tibble(
     label = "Category haven",
     labels = c(A = 1, B = 2, C = 3)
   ),
+  type = haven::labelled(
+    c("X", "Y", "X", "X", "Y", "Y", "X", "X"),
+    label = "Category haven (character)",
+    labels = c(XXX = "X", YYY = "Y")
+  ),
   value = c(10, 20, 10, 30, 20, 10, 30, 20)
 )
 
@@ -98,6 +103,17 @@ test_that("generate_frequency handles factors and labelled variables correctly",
   result_factored <- generate_frequency(df_factored, category)
   expect_equal(as.vector(result_factored$category), c("A", "B", "C", "Total"))
   expect_equal(attributes(result_factored$category)$label, "Category factor")
+
+})
+
+test_that("generate_frequency handles character labelled variables correctly", {
+
+  result_labelled <- generate_frequency(df_labelled, type)
+  expect_equal(as.vector(result_labelled$category), c("X", "Y", "__Total__"))
+  expect_equal(attributes(result_labelled$category)$label, "Category haven (character)")
+
+  result_conver_factor <- generate_frequency(df_labelled, type, convert_factor = TRUE)
+  expect_equal(as.vector(result_conver_factor$category), c("XXX", "YYY", "Total"))
 
 })
 

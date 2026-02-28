@@ -634,8 +634,9 @@ tsg_pivot_table <- function(
     ) |>
     dplyr::select(
       dplyr::any_of(groups),
-      dplyr::where(~ !all(. == 0))
-    )
+      dplyr::everything()
+    ) |>
+    deselect_zero_cols()
 
   total_col <- "total"
 
@@ -759,9 +760,6 @@ add_column_label <- function(
     if(new_label == "NA") new_label <- label_na
 
     value <- new_label
-    if(grepl("^[0-9]+$", new_label)) {
-      value <- as.integer(new_label)
-    }
 
     if(!is.na(value) & !is.null(data_attr$labels)) {
       if(value %in% data_attr$labels) {
