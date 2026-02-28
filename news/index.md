@@ -1,5 +1,10 @@
 # Changelog
 
+## tsg 0.1.3
+
+- Fixed bugs when generating table using character labelled/factored
+  variables.
+
 ## tsg 0.1.2
 
 CRAN release: 2026-02-22
