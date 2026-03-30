@@ -111,16 +111,22 @@ tsg_add_row_total <- function(
     label_total = label_total
   )
 
+  index_pos <- nrow(data)
+
+  if(position == "top") {
+    index_pos <- 1L
+  }
+
   if("cumulative_percent" %in% names(data)) {
-    data$cumulative_percent[[nrow(data)]] <- NA_real_
+    data$cumulative_percent[[index_pos]] <- NA_real_
   }
 
   if("cumulative_proportion" %in% names(data)) {
-    data$cumulative_proportion[[nrow(data)]] <- NA_real_
+    data$cumulative_proportion[[index_pos]] <- NA_real_
   }
 
   if("cumulative" %in% names(data)) {
-    data$cumulative[[nrow(data)]] <- NA_integer_
+    data$cumulative[[index_pos]] <- NA_integer_
   }
 
   data

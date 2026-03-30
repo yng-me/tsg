@@ -204,6 +204,22 @@ test_that("generate_frequency places the total row in the correct position", {
   # Ensure total row is in the correct position
   expect_equal(result_top$category[1], "Total")
   expect_equal(result_bottom$category[nrow(result_bottom)], "Total")
+
+})
+
+
+# Test position of total row (top vs. bottom)
+test_that("generate_frequency returns correct cumulative values with either top or bottom totals", {
+  result_top <- generate_frequency(df, category, add_total = TRUE, add_cumulative = TRUE, add_cumulative_percent = TRUE, position_total = "top")
+  result_bottom <- generate_frequency(df, category, add_total = TRUE, add_cumulative = TRUE, add_cumulative_percent = TRUE, position_total = "bottom")
+
+  # Ensure total row is in the correct position
+  expect_true(is.na(result_top$cumulative[1]))
+  expect_true(is.na(result_bottom$cumulative[nrow(result_bottom)]))
+
+  expect_true(is.na(result_top$cumulative_percent[1]))
+  expect_true(is.na(result_bottom$cumulative_percent[nrow(result_bottom)]))
+
 })
 
 
