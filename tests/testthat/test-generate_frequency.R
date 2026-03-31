@@ -128,10 +128,24 @@ test_that("generate_frequency sorts correctly by frequency", {
 
 # Excluding variable from sorting (sort_except)
 test_that("generate_frequency respects sort_except argument", {
-  result <- generate_frequency(df, category, value, sort_value = TRUE, sort_except = "value")
-  expect_equal(as.vector(result$category$category), c("C", "A", "B", "Total"))
-  expect_equal(as.vector(result$category$frequency), c(4, 3, 1, 8))
-  expect_equal(as.vector(result$value$frequency), c(1, 5, 2, 8))
+
+  result_1 <- generate_frequency(mock_data_labelled, sort_value = TRUE)
+  result_1e <- generate_frequency(mock_data_labelled, sort_value = TRUE, sort_except = "sex")
+  result_2e <- generate_frequency(mock_data_labelled, sort_value = TRUE, sort_except = c("sex", "age_group"))
+
+  expect_equal(as.vector(result_1[[2]]$category), c(2, 1, 0))
+  expect_equal(as.vector(result_1[[4]]$category), c("Young", "Old", "Total"))
+
+  # Order must be consistent
+  expect_equal(as.vector(result_1e[[1]]$category), c(1, 2, 3, 0))
+  expect_equal(as.vector(result_2e[[1]]$category), c(1, 2, 3, 0))
+
+  expect_equal(as.vector(result_1e[[2]]$category), c(1, 2, 0))
+  expect_equal(as.vector(result_1e[[4]]$category), c("Young", "Old", "Total"))
+
+  expect_equal(as.vector(result_2e[[2]]$category), c(1, 2, 0))
+  expect_equal(as.vector(result_2e[[4]]$category), c("Old", "Young", "Total"))
+
 })
 
 

@@ -135,16 +135,15 @@ generate_frequency <- function(
 
     categories <- unique(data[[column_name]])
 
+    sort_value_i <- sort_value
     if(!is.null(sort_except) & sort_value) {
-      sort_value <- !(column_name %in% sort_except)
-    } else if(!is.null(sort_except) & !sort_value) {
-      sort_value <- column_name %in% sort_except
+      sort_value_i <- !(column_name %in% sort_except)
     }
 
     data_i <- data |>
       tsg_get_frequency(column_name, include_na) |>
       tsg_sort_col_value(
-        sort_value = sort_value,
+        sort_value = sort_value_i,
         sort_desc = sort_desc,
         groups = groups
       )
