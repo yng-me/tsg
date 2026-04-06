@@ -247,11 +247,10 @@ add_facade <- function(
 get_tsg_facade <- function(facade = "default", which = c("xlsx", "pdf", "html")) {
 
   if(file.exists(facade)) {
-
     if(grepl("\\.(yaml|yml)$", facade)) {
-      return(yaml::read_yaml(facade_path))
+      return(yaml::read_yaml(facade))
     } else if (grepl("\\.json$", facade)) {
-      return(jsonlite::read_json(facade_path, simplifyVector = TRUE))
+      return(jsonlite::read_json(facade, simplifyVector = TRUE))
     }
   }
 
