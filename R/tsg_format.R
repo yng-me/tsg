@@ -8,8 +8,12 @@ format_percent <- function(
 
   cols <- names(data)
 
-  freq <- cols[grepl('^frequency_', cols)]
-  prop <- cols[grepl('^(percent|proportion)_', cols)]
+  freq_prefix <- paste0("frequency", name_separator)
+  prop_prefixes <- c(paste0("percent", name_separator), paste0("proportion", name_separator))
+  freq_label_prefix <- paste0("Frequency", label_separator)
+
+  freq <- cols[startsWith(cols, freq_prefix)]
+  prop <- cols[startsWith(cols, prop_prefixes[1]) | startsWith(cols, prop_prefixes[2])]
 
   if(length(freq) != length(prop)) {
     stop('Mismatched frequency and percent columns')
@@ -39,11 +43,11 @@ format_percent <- function(
 
     col <- freq[i]
     pct <- prop[i]
-    col_i <- stringr::str_remove(col, '^frequency_')
+    col_i <- substr(col, nchar(freq_prefix) + 1L, nchar(col))
 
     label_i <- attributes(data[[col]])$label
     if(!is.null(label_i)) {
-      label_i <- stringr::str_remove(label_i, '^Frequency__')
+      label_i <- substr(label_i, nchar(freq_label_prefix) + 1L, nchar(label_i))
     } else {
       label_i <- col_i
     }
