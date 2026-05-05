@@ -4,13 +4,15 @@ utils::globalVariables(
     ".",
     ":=",
     ".category",
+    ".total_n",
     "category",
     "frequency",
     "title",
     "subtitle",
     "table_id",
     "table_number",
-    "table_name"
+    "table_name",
+    "total"
   )
 )
 
