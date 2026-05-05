@@ -1,0 +1,196 @@
+# HTML (gt) facade defaults — cross-format keys only.
+# XLSX-only keys (gridLines, tabColour, locked, hidden, width, widthOffset,
+# offsetRow, offsetCol) are intentionally absent.
+
+table.fontName: 'Arial'
+table.fontSize: 12
+table.fontColour: ~
+table.bgFill: ~
+table.fgFill: ~
+table.halign: ~
+table.valign: ~
+table.wrapText: ~
+table.indent: ~
+
+table.decimalPrecision: 2
+table.decimalCols: ~
+table.lastRowBold: false
+
+border_outer.borderColour: "#8f8f8f"
+border_header.border: "bottom"
+border_header.borderColour: "#9f9e9e"
+border_header.borderStyle: "solid"
+border_bottom.height: ~
+
+body.fontName: ~
+body.fontSize: ~
+body.fontColour: ~
+body.numFmt: "###0"
+body.border: ~
+body.borderColour: ~
+body.borderStyle: ~
+body.bgFill: ~
+body.fgFill: ~
+body.halign: ~
+body.valign: ~
+body.textDecoration: ~
+body.wrapText: ~
+body.indent: ~
+body.height: ~
+
+title.fontName: ~
+title.fontSize: 15
+title.fontColour: ~
+title.border: ~
+title.borderColour: ~
+title.borderStyle: ~
+title.bgFill: ~
+title.fgFill: ~
+title.halign: ~
+title.valign: ~
+title.textDecoration: "bold"
+title.wrapText: ~
+title.indent: ~
+title.height: ~
+
+subtitle.fontName: ~
+subtitle.fontSize: 13
+subtitle.fontColour: ~
+subtitle.border: ~
+subtitle.borderColour: ~
+subtitle.borderStyle: ~
+subtitle.bgFill: ~
+subtitle.fgFill: ~
+subtitle.halign: ~
+subtitle.valign: ~
+subtitle.textDecoration: ~
+subtitle.wrapText: ~
+subtitle.indent: ~
+subtitle.height: ~
+
+header.fontName: ~
+header.fontSize: ~
+header.fontColour: ~
+header.numFmt: ~
+header.border: ~
+header.borderColour: ~
+header.borderStyle: ~
+header.bgFill: ~
+header.fgFill: "#f5f5f5"
+header.halign: ~
+header.valign: ~
+header.textDecoration: ~
+header.wrapText: ~
+header.indent: ~
+header.height: ~
+
+spanner.fontName: ~
+spanner.fontSize: ~
+spanner.fontColour: ~
+spanner.numFmt: ~
+spanner.border: ~
+spanner.borderColour: ~
+spanner.borderStyle: ~
+spanner.bgFill: ~
+spanner.fgFill: ~
+spanner.halign: ~
+spanner.valign: ~
+spanner.textDecoration: ~
+spanner.wrapText: ~
+spanner.indent: ~
+spanner.height: ~
+
+col_first.fontName: ~
+col_first.fontSize: ~
+col_first.fontColour: ~
+col_first.numFmt: ~
+col_first.border: ~
+col_first.borderColour: ~
+col_first.borderStyle: ~
+col_first.bgFill: ~
+col_first.fgFill: ~
+col_first.halign: ~
+col_first.valign: ~
+col_first.textDecoration: ~
+col_first.wrapText: ~
+col_first.indent: ~
+
+col_last.fontName: ~
+col_last.fontSize: ~
+col_last.fontColour: ~
+col_last.numFmt: ~
+col_last.border: ~
+col_last.borderColour: ~
+col_last.borderStyle: ~
+col_last.bgFill: ~
+col_last.fgFill: ~
+col_last.halign: ~
+col_last.valign: ~
+col_last.textDecoration: ~
+col_last.wrapText: ~
+col_last.indent: ~
+
+row_group.fontName: ~
+row_group.fontSize: ~
+row_group.fontColour: ~
+row_group.numFmt: ~
+row_group.border: ~
+row_group.borderColour: ~
+row_group.borderStyle: ~
+row_group.bgFill: ~
+row_group.fgFill: ~
+row_group.halign: ~
+row_group.valign: ~
+row_group.textDecoration: ~
+row_group.wrapText: ~
+row_group.indent: ~
+row_group.height: ~
+
+sub_group.fontName: ~
+sub_group.fontSize: ~
+sub_group.fontColour: ~
+sub_group.numFmt: ~
+sub_group.border: ~
+sub_group.borderColour: ~
+sub_group.borderStyle: ~
+sub_group.bgFill: ~
+sub_group.fgFill: ~
+sub_group.halign: ~
+sub_group.valign: ~
+sub_group.textDecoration: "bold"
+sub_group.wrapText: ~
+sub_group.indent: ~
+sub_group.height: ~
+
+source_note.fontName: ~
+source_note.fontSize: 10
+source_note.fontColour: ~
+source_note.border: ~
+source_note.borderColour: ~
+source_note.borderStyle: ~
+source_note.bgFill: ~
+source_note.fgFill: ~
+source_note.halign: ~
+source_note.valign: ~
+source_note.textDecoration: "italic"
+source_note.wrapText: ~
+source_note.indent: ~
+source_note.height: ~
+
+footnotes.fontName: ~
+footnotes.fontSize: 10
+footnotes.fontColour: ~
+footnotes.border: ~
+footnotes.borderColour: ~
+footnotes.borderStyle: ~
+footnotes.bgFill: ~
+footnotes.fgFill: ~
+footnotes.halign: ~
+footnotes.valign: ~
+footnotes.textDecoration: "italic"
+footnotes.wrapText: ~
+footnotes.indent: ~
+footnotes.height: ~
+
+label.titleTableList: "List of Tables"
+label.backHyperlink: "← Back"
