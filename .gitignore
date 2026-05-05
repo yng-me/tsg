@@ -15,4 +15,5 @@ docs
 inst/doc
 
 *.xlsx
-TODO.md.github/copilot-instructions.md
+TODO.md.github
+.github/copilot-instructions.md
