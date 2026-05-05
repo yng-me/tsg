@@ -758,7 +758,7 @@ write_html <- function(
           names_separator = names_separator,
           facade = facade
         )
-        gt::gtsave(gt_tbl, filename = path_i)
+        suppressMessages(gt::gtsave(gt_tbl, filename = path_i))
       }
 
     } else {
@@ -839,7 +839,7 @@ write_html <- function(
       names_separator = names_separator,
       facade = facade
     )
-    gt::gtsave(gt_tbl, filename = path)
+    suppressMessages(gt::gtsave(gt_tbl, filename = path))
   }
 
   invisible(NULL)
@@ -918,12 +918,10 @@ write_pdf <- function(
           names_separator = names_separator,
           facade = facade
         )
-        gt::gtsave(gt_tbl, filename = path_i)
+        suppressMessages(gt::gtsave(gt_tbl, filename = path_i))
       }
 
     } else {
-
-      if (!grepl("\\.pdf$", path, ignore.case = TRUE)) {
         path <- paste0(path, ".pdf")
       }
 
@@ -948,7 +946,7 @@ write_pdf <- function(
           names_separator = names_separator,
           facade = facade
         )
-        gt::gtsave(gt_tbl, filename = path_i)
+        suppressMessages(gt::gtsave(gt_tbl, filename = path_i))
         tmp_paths[i] <- path_i
       }
 
@@ -971,7 +969,7 @@ write_pdf <- function(
       names_separator = names_separator,
       facade = facade
     )
-    gt::gtsave(gt_tbl, filename = path)
+    suppressMessages(gt::gtsave(gt_tbl, filename = path))
   }
 
   invisible(NULL)

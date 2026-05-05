@@ -103,7 +103,7 @@ write_docx <- function(
         )
       }
 
-      print(doc, target = path)
+      invisible(print(doc, target = path))
     }
 
   } else {
@@ -151,8 +151,7 @@ write_docx <- function(
     names_separator = names_separator,
     facade = facade
   )
-  print(doc, target = path)
-  invisible(path)
+  invisible(print(doc, target = path))
 }
 
 
