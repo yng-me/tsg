@@ -60,6 +60,7 @@ A labelled data frame with 2918 rows and 11 variables:
 ## Examples
 
 ``` r
+
 person_record
 #> # A tibble: 2,918 × 11
 #>    person_id   age sex        marital_status    employed seeing  hearing walking

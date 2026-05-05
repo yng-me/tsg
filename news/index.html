@@ -7,7 +7,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tsg</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -17,6 +17,12 @@
     <div id="navbar" class="collapse navbar-collapse ms-3">
       <ul class="navbar-nav me-auto"><li class="nav-item"><a class="nav-link" href="../articles/tsg.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/advanced.html">Grouped Tables and Side-by-Side Comparisons</a></li>
+    <li><a class="dropdown-item" href="../articles/facade.html">Customizing How Your Tables Look</a></li>
+    <li><a class="dropdown-item" href="../articles/output-formats.html">Saving and Sharing Your Tables</a></li>
+  </ul></li>
 <li class="active nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul><ul class="navbar-nav"><li class="nav-item"><form class="form-inline" role="search">
  <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="../search.json"></form></li>
@@ -30,11 +36,57 @@
   <main id="main" class="col-md-9"><div class="page-header">
 
       <h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/yng-me/tsg/blob/v0.1.3/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/yng-me/tsg/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
     <div class="section level2">
-<h2 class="pkg-version" data-toc-text="0.1.3" id="tsg-013">tsg 0.1.3<a class="anchor" aria-label="anchor" href="#tsg-013"></a></h2>
+<h2 class="pkg-version" data-toc-text="0.1.4" id="tsg-014">tsg 0.1.4<a class="anchor" aria-label="anchor" href="#tsg-014"></a></h2>
+<div class="section level3">
+<h3 id="new-features-0-1-4">New features<a class="anchor" aria-label="anchor" href="#new-features-0-1-4"></a></h3>
+<ul><li>
+<code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> gains <code>multiple_columns</code> and <code>multiple_columns_filter</code> arguments. When <code>multiple_columns = TRUE</code> (requires at least 2 columns in <code>...</code>), each column is treated as a binary indicator: rows where the column equals <code>multiple_columns_filter</code> (default <code>1L</code>) are counted per <code>x</code> category and presented as side-by-side frequency/percent columns in a single wide table. All grouping options (<code>group_as_list</code>, <code>calculate_per_group</code>, <code>group_as_hierarchy</code>) are supported.</li>
+<li>
+<code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> gains a <code>multiple_columns_type</code> argument (default <code>"default"</code>). When <code>multiple_columns = TRUE</code> and <code>multiple_columns_type = "stacked"</code>, the columns supplied in <code>...</code> are combined as a two-level hierarchical pivot: each level-1 category gets a subtotal column pair (frequency + percent), and the level-2 categories produce individual column pairs beneath it. Column labels follow the pattern <code>"Frequency__&lt;level-1 label&gt;__&lt;level-2 label&gt;"</code>. The top-level spanner groups all frequency columns first, followed by all percent/proportion columns.</li>
+<li>
+<code><a href="../reference/generate_output.html">generate_output()</a></code> now produces HTML (via the <code>gt</code> package) and PDF outputs, with proper spanner/header handling for cross-tabulated tables and consistent numeric formatting matching the XLSX output.</li>
+<li>
+<code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> and <code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code>: setting both <code>group_as_list = TRUE</code> and <code>group_as_hierarchy = TRUE</code> now returns a <strong>nested named list</strong> with a grand-total entry at each level (no warning). The total entry key is formatted as <code>"{var_label}: {label_group_hierarchy}"</code>. Previously, <code>group_as_list</code> was silently overridden with a warning.</li>
+<li>
+<strong>Facade unification across formats</strong>: The facade system (<code><a href="../reference/add_facade.html">add_facade()</a></code>, <code><a href="../reference/get_tsg_facade.html">get_tsg_facade()</a></code>) now applies consistently across XLSX, HTML, and Word output. <code>get_tsg_facade(which = "html")</code> and <code>get_tsg_facade(which = "docx")</code> load format-specific defaults from new built-in YAML files (<code>inst/extdata/facade/html/default.yaml</code>, <code>inst/extdata/facade/docx/default.yaml</code>). Per-table <code><a href="../reference/add_facade.html">add_facade()</a></code> overrides are merged into all output formats automatically.</li>
+<li>
+<code>resolve_facade()</code> gains a <code>which</code> argument for format-aware fallback when resolving user overrides.</li>
+<li>
+<code>gt_apply_facade()</code> (HTML renderer) now supports the full cross-format key set: <code>body.*</code>, <code>header.*</code>, <code>spanner.*</code>, <code>col_first.*</code>, <code>col_last.*</code>, <code>row_group.*</code>, <code>source_note.*</code>, <code>footnotes.*</code>, <code>border_outer.*</code>, <code>border_header.*</code>, and <code>table.lastRowBold</code>.</li>
+<li>
+<code><a href="../reference/tsg_to_flextable.html">tsg_to_flextable()</a></code> (Word renderer) gains full facade key coverage with flextable-native styling.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-fixes-0-1-4">Bug fixes<a class="anchor" aria-label="anchor" href="#bug-fixes-0-1-4"></a></h3>
+<ul><li>Fixed <code><a href="../reference/get_tsg_facade.html">get_tsg_facade()</a></code> throwing <code>object 'facade_path' not found</code> when called with a named facade that does not exist in the built-in YAML directory (<a href="https://github.com/yng-me/tsg/issues/9" class="external-link">#9</a>).</li>
+<li>Fixed <code>sort_except</code> in <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> being applied only to the first variable when two or more variables are supplied (<a href="https://github.com/yng-me/tsg/issues/8" class="external-link">#8</a>).</li>
+<li>Fixed incorrect cumulative frequency and percent/proportion values when <code>position_total = "top"</code> in <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> — cumulative columns are now set to <code>NA</code> for the total row when it is placed at the top (<a href="https://github.com/yng-me/tsg/issues/6" class="external-link">#6</a>).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="documentation-0-1-4">Documentation<a class="anchor" aria-label="anchor" href="#documentation-0-1-4"></a></h3>
+<ul><li>All four vignettes rewritten for clarity and accessibility: goal-oriented section headers, plain-English introductions, and motivation-before-mechanics structure throughout.
+<ul><li>
+<em>Getting Started with tsg</em> (was: Introduction)</li>
+<li>
+<em>Saving and Sharing Your Tables</em> (was: Generating Outputs in Different Formats)</li>
+<li>
+<em>Customizing How Your Tables Look</em> (was: Customizing Output with Facade)</li>
+<li>
+<em>Grouped Tables and Side-by-Side Comparisons</em> (was: Advanced Features)</li>
+</ul></li>
+</ul></div>
+<div class="section level3">
+<h3 id="internal-changes-0-1-4">Internal changes<a class="anchor" aria-label="anchor" href="#internal-changes-0-1-4"></a></h3>
+<ul><li>Refactored <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> and <code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> to remove self-recursion. Both functions now use extracted <code>freq_compute_group()</code> and <code>crosstab_compute_group()</code> helpers with a nest/map/unnest approach, eliminating duplicated pipeline code and improving maintainability.</li>
+<li>Added internal helpers <code>val_to_group_key()</code> and <code>build_nested_group_list()</code> to support recursive nested-list construction.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.3" id="tsg-013">tsg 0.1.3<a class="anchor" aria-label="anchor" href="#tsg-013"></a></h2><p class="text-muted">CRAN release: 2026-02-28</p>
 <ul><li>Fixed bugs when generating table using character labelled/factored variables.</li>
 </ul></div>
     <div class="section level2">

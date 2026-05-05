@@ -26,8 +26,8 @@ generate_frequency(
   calculate_per_group = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
-  group_grand_total = FALSE,
-  group_grand_total_label = "All",
+  group_as_hierarchy = FALSE,
+  label_group_hierarchy = "All",
   label_as_group_name = TRUE,
   label_stub = NULL,
   label_na = "Not reported",
@@ -109,22 +109,31 @@ generate_frequency(
 - group_separator:
 
   Character. Separator used when concatenating group values in list
-  output (if `group_as_list = TRUE`).
+  output (if `group_as_list = TRUE` with a single group).
 
 - group_as_list:
 
-  Logical. If `TRUE`, output is a list of frequency tables for each
-  group combination.
+  Logical. If `TRUE`, output is a named list of frequency tables keyed
+  by group value. With a single group the list is flat; with 2+ groups
+  the list is nested. When combined with `group_as_hierarchy = TRUE`, a
+  nested list with totals at each level is returned.
 
-- group_grand_total:
+- group_as_hierarchy:
 
-  **\[experimental\]** Logical. Compute grand total based on the
-  grouping variable.
+  Logical. When `TRUE` (without `group_as_list`), inserts grand-total
+  rows into the output. When `TRUE` together with
+  `group_as_list = TRUE`, returns a nested named list with a total entry
+  at each level; the total key is formatted as
+  `"{var_label}: {label_group_hierarchy}"`.
 
-- group_grand_total_label:
+- label_group_hierarchy:
 
-  **\[experimental\]** Character. Apply label to the grand total if
-  `group_grand_total` is set to `TRUE`.
+  Character. Label applied to grand-total entries when
+  `group_as_hierarchy = TRUE`. Can be a single string (applied to all
+  group levels) or a named character vector keyed by group column name
+  for per-variable labels (e.g.
+  `c(sex = "All sexes", employed = "All workers")`). Defaults to
+  `"All"`.
 
 - label_as_group_name:
 
@@ -311,6 +320,61 @@ person_record |>
 #> attr(,"class")
 #> [1] "tsg"  "tsgf" "list"
 
+# Nested list with totals at each level (group_as_list + group_as_hierarchy)
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status, group_as_list = TRUE, group_as_hierarchy = TRUE)
+#> $`Sex: All`
+#> # A tibble: 6 × 4
+#>   sex       category                 frequency percent
+#>   <int+lbl> <int+lbl>                    <int>   <dbl>
+#> 1 0         1 [Single/never married]      1544   52.9 
+#> 2 0         2 [Married]                    769   26.4 
+#> 3 0         3 [Common law/live-in]         424   14.5 
+#> 4 0         4 [Widowed]                    138    4.73
+#> 5 0         6 [Separated]                   43    1.47
+#> 6 0         0 [Total]                     2918  100   
+#> 
+#> $Male
+#> # A tibble: 6 × 4
+#>   sex       category                 frequency percent
+#>   <int+lbl> <int+lbl>                    <int>   <dbl>
+#> 1 1 [Male]  1 [Single/never married]       859   56.7 
+#> 2 1 [Male]  2 [Married]                    387   25.5 
+#> 3 1 [Male]  3 [Common law/live-in]         211   13.9 
+#> 4 1 [Male]  4 [Widowed]                     40    2.64
+#> 5 1 [Male]  6 [Separated]                   19    1.25
+#> 6 1 [Male]  0 [Total]                     1516  100   
+#> 
+#> $Female
+#> # A tibble: 6 × 4
+#>   sex        category                 frequency percent
+#>   <int+lbl>  <int+lbl>                    <int>   <dbl>
+#> 1 2 [Female] 1 [Single/never married]       685   48.9 
+#> 2 2 [Female] 2 [Married]                    382   27.2 
+#> 3 2 [Female] 3 [Common law/live-in]         213   15.2 
+#> 4 2 [Female] 4 [Widowed]                     98    6.99
+#> 5 2 [Female] 6 [Separated]                   24    1.71
+#> 6 2 [Female] 0 [Total]                     1402  100   
+#> 
+#> attr(,"groups")
+#> [1] "sex"
+#> attr(,"group_attrs")
+#> attr(,"group_attrs")$sex
+#> attr(,"group_attrs")$sex$labels
+#>   Male Female 
+#>      1      2 
+#> 
+#> attr(,"group_attrs")$sex$label
+#> [1] "Sex"
+#> 
+#> attr(,"group_attrs")$sex$class
+#> [1] "haven_labelled" "vctrs_vctr"     "integer"       
+#> 
+#> 
+#> attr(,"class")
+#> [1] "tsg"  "tsgf" "list"
+
 # Sorting
 
 # default is TRUE
@@ -349,5 +413,5 @@ person_record |>
 #> 10 9               48    1.64
 #> # ℹ 86 more rows
 
-# Vignettes for more examples.
+# See vignettes for more examples.
 ```

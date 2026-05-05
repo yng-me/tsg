@@ -2,7 +2,10 @@
 <url><loc>https://yng-me.github.io/tsg/404.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/LICENSE-text.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/LICENSE.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/articles/advanced.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/articles/facade.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/index.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/articles/output-formats.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/tsg.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/authors.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/index.html</loc></url>
@@ -22,12 +25,21 @@
 <url><loc>https://yng-me.github.io/tsg/reference/generate_output.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/generate_template.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/get_tsg_facade.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/gt_apply_numeric_format.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/gt_apply_spanners.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/gt_apply_text_decoration.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/index.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/parse_excel_numfmt_decimals.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/person_record.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/remove_label.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/remove_labels.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/rename_label.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/tsg-package.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/tsg_to_flextable.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/tsg_to_gt.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/write_docx.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/write_html.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/write_pdf.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/write_xlsx.html</loc></url>
 </urlset>
 

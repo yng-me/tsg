@@ -17,11 +17,28 @@ generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
 
 - path:
 
-  File path to save the output.
+  File path to save the output. For HTML/PDF with a list and
+  `separate_files = TRUE` (HTML) or any list (PDF), this is treated as a
+  directory path.
 
 - ...:
 
-  Additional arguments passed to specific format functions.
+  Additional arguments passed to specific format functions:
+
+  - `"xlsx"`: passed to
+    [`write_xlsx`](https://yng-me.github.io/tsg/reference/write_xlsx.md)
+
+  - `"html"`: passed to
+    [`write_html`](https://yng-me.github.io/tsg/reference/write_html.md)
+    (requires the gt package)
+
+  - `"pdf"`: passed to
+    [`write_pdf`](https://yng-me.github.io/tsg/reference/write_pdf.md)
+    (requires the gt and webshot2 packages)
+
+  - `"word"`: passed to
+    [`write_docx`](https://yng-me.github.io/tsg/reference/write_docx.md)
+    (requires the officer and flextable packages)
 
 - format:
 
@@ -29,13 +46,13 @@ generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
 
 ## Value
 
-Generates and saves the output file in the specified format at the given
-path.
+Invisibly returns `NULL`. Called for its side-effect of writing output
+file(s).
 
 ## Examples
 
 ``` r
-#' # Generate an xlsx file from a tsg object
+# Generate an xlsx file from a tsg object
 data <- generate_frequency(dplyr::starwars, sex)
 
 dir_to <- tempdir()

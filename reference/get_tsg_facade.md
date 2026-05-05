@@ -5,7 +5,7 @@ Get a facade from the package or a file
 ## Usage
 
 ``` r
-get_tsg_facade(facade = "default", which = c("xlsx", "pdf", "html"))
+get_tsg_facade(facade = "default", which = c("xlsx", "html", "docx", "pdf"))
 ```
 
 ## Arguments
@@ -30,6 +30,7 @@ styles, and background fills for different parts of the table.
 ## Examples
 
 ``` r
+
 # Default facade
 get_tsg_facade()
 #> $table.offsetRow

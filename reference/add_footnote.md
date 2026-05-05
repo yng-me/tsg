@@ -22,45 +22,57 @@ add_footnote(
 
 - footnote:
 
-  The footnote text to be added.
+  The footnote text to be added (a single character string).
 
 - locations:
 
-  Locations where the footnote should be applied. Default is NULL
-  (applies to entire table).
+  Optional character vector of **column names** to anchor the footnote
+  marker. When supplied, a footnote reference symbol is placed in those
+  column headers. Column-level anchoring is supported in HTML and PDF
+  output (via gt); XLSX and Word output include the text without
+  cell-level markers. Default `NULL` renders the footnote as a
+  table-level footer with no marker.
 
 - placement:
 
-  Placement of the footnote. One of "auto" (default), "right", or
-  "left".
+  Horizontal alignment of the footnote in the output footer. One of
+  `"auto"` (default, equivalent to `"left"`), `"right"`, or `"left"`.
+  Respected by all three output formats (HTML/PDF, XLSX, Word).
 
 ## Value
 
-The input data frame with an added footnote attribute.
+The input data frame with an updated `footnotes` attribute (a list with
+elements `$text`, `$placement`, and `$locations`).
 
 ## Examples
 
 ``` r
-add_footnote(
-  dplyr::starwars,
-  footnote = "This is a footnote.",
-  locations = c("A1", "B2"),
-  placement = "right"
-)
-#> # A tibble: 87 × 14
-#>    name     height  mass hair_color skin_color eye_color birth_year sex   gender
-#>    <chr>     <int> <dbl> <chr>      <chr>      <chr>          <dbl> <chr> <chr> 
-#>  1 Luke Sk…    172    77 blond      fair       blue            19   male  mascu…
-#>  2 C-3PO       167    75 NA         gold       yellow         112   none  mascu…
-#>  3 R2-D2        96    32 NA         white, bl… red             33   none  mascu…
-#>  4 Darth V…    202   136 none       white      yellow          41.9 male  mascu…
-#>  5 Leia Or…    150    49 brown      light      brown           19   fema… femin…
-#>  6 Owen La…    178   120 brown, gr… light      blue            52   male  mascu…
-#>  7 Beru Wh…    165    75 brown      light      blue            47   fema… femin…
-#>  8 R5-D4        97    32 NA         white, red red             NA   none  mascu…
-#>  9 Biggs D…    183    84 black      light      brown           24   male  mascu…
-#> 10 Obi-Wan…    182    77 auburn, w… fair       blue-gray       57   male  mascu…
-#> # ℹ 77 more rows
-#> # ℹ 5 more variables: homeworld <chr>, species <chr>, films <list>,
-#> #   vehicles <list>, starships <list>
+tbl <- person_record |> generate_frequency(sex)
+
+# Whole-table footer, left-aligned (default)
+tbl |> add_footnote("Source: National Survey 2023.")
+#> # A tibble: 3 × 3
+#>   category   frequency percent
+#>   <int+lbl>      <int>   <dbl>
+#> 1 1 [Male]        1516    52.0
+#> 2 2 [Female]      1402    48.0
+#> 3 0 [Total]       2918   100  
+
+# Right-aligned footer note
+tbl |> add_footnote("Weighted estimates.", placement = "right")
+#> # A tibble: 3 × 3
+#>   category   frequency percent
+#>   <int+lbl>      <int>   <dbl>
+#> 1 1 [Male]        1516    52.0
+#> 2 2 [Female]      1402    48.0
+#> 3 0 [Total]       2918   100  
+
+# Footnote anchored to a specific column header (HTML/PDF)
+tbl |> add_footnote("Unweighted count.", locations = "frequency")
+#> # A tibble: 3 × 3
+#>   category   frequency percent
+#>   <int+lbl>      <int>   <dbl>
+#> 1 1 [Male]        1516    52.0
+#> 2 2 [Female]      1402    48.0
+#> 3 0 [Total]       2918   100  
 ```

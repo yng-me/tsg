@@ -40,5 +40,11 @@
   : Remove all labels
 - [`rename_label()`](https://yng-me.github.io/tsg/reference/rename_label.md)
   : Rename data labels
+- [`write_docx()`](https://yng-me.github.io/tsg/reference/write_docx.md)
+  : Write a tsg table (or list of tables) to a Word (.docx) file
+- [`write_html()`](https://yng-me.github.io/tsg/reference/write_html.md)
+  : Write a tsg table (or list of tables) to an HTML file
+- [`write_pdf()`](https://yng-me.github.io/tsg/reference/write_pdf.md) :
+  Write a tsg table (or list of tables) to a PDF file
 - [`write_xlsx()`](https://yng-me.github.io/tsg/reference/write_xlsx.md)
   : Write Data to Excel with Titles, Notes, and Styling

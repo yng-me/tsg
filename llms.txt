@@ -1,33 +1,80 @@
 # tsg
 
-The `tsg` package provides a set of functions for generating frequency
-tables, cross-tabulations, and formatted output tables. It is designed
-to work with data frames and supports various customization options.
+The `tsg` package provides functions for generating publication-ready
+frequency tables and cross-tabulations from data frames. Tables can be
+exported to **Excel (XLSX)**, **HTML**, **PDF**, and **Word (DOCX)**
+formats with extensive styling options via a unified facade system.
 
 ## Installation
 
 ``` r
+
 install.packages("tsg")
+```
+
+`tsg` requires the following packages: `gt` (HTML/PDF), `officer` and
+`flextable` (Word). These are installed automatically. For PDF output,
+`webshot2` is also needed:
+
+``` r
+
+install.packages("webshot2")  # optional, for PDF output
 ```
 
 ## Basic usage
 
 ``` r
+
 library(tsg)
 
+# Frequency table
 generate_frequency(person_record, sex)
 
+# Cross-tabulation
 generate_crosstab(person_record, marital_status, sex)
-
-person_record |> 
-  generate_crosstab(marital_status, sex) |> 
-  generate_output(
-    path = "crosstab.xlsx",
-    format = "xlsx"
-  )
 ```
 
-More examples [here](https://yng-me.github.io/tsg/articles/tsg.html).
+## Output formats
+
+``` r
+
+tbl <- person_record |>
+  generate_crosstab(marital_status, sex)
+
+# Excel
+write_xlsx(tbl, "table.xlsx")
+
+# HTML
+write_html(tbl, "table.html")
+
+# PDF
+write_pdf(tbl, "table.pdf")   # requires webshot2
+
+# Word
+write_docx(tbl, "table.docx")
+```
+
+## Styling with facades
+
+The facade system controls table appearance uniformly across all output
+formats:
+
+``` r
+
+person_record |>
+  generate_frequency(sex) |>
+  add_facade(
+    header.bgFill         = "#003366",
+    header.fontColour     = "#FFFFFF",
+    header.textDecoration = "bold",
+    body.fontSize         = 11,
+    table.lastRowBold     = TRUE
+  ) |>
+  write_xlsx("styled.xlsx")
+```
+
+More examples in the
+[vignettes](https://yng-me.github.io/tsg/articles/tsg.html).
 
 # Package index
 
@@ -71,6 +118,12 @@ More examples [here](https://yng-me.github.io/tsg/articles/tsg.html).
   : Remove all labels
 - [`rename_label()`](https://yng-me.github.io/tsg/reference/rename_label.md)
   : Rename data labels
+- [`write_docx()`](https://yng-me.github.io/tsg/reference/write_docx.md)
+  : Write a tsg table (or list of tables) to a Word (.docx) file
+- [`write_html()`](https://yng-me.github.io/tsg/reference/write_html.md)
+  : Write a tsg table (or list of tables) to an HTML file
+- [`write_pdf()`](https://yng-me.github.io/tsg/reference/write_pdf.md) :
+  Write a tsg table (or list of tables) to a PDF file
 - [`write_xlsx()`](https://yng-me.github.io/tsg/reference/write_xlsx.md)
   : Write Data to Excel with Titles, Notes, and Styling
 
@@ -78,5 +131,11 @@ More examples [here](https://yng-me.github.io/tsg/articles/tsg.html).
 
 ### All vignettes
 
-- [Working with the tsg
-  package](https://yng-me.github.io/tsg/articles/tsg.md):
+- [Grouped Tables and Side-by-Side
+  Comparisons](https://yng-me.github.io/tsg/articles/advanced.md):
+- [Customizing How Your Tables
+  Look](https://yng-me.github.io/tsg/articles/facade.md):
+- [Saving and Sharing Your
+  Tables](https://yng-me.github.io/tsg/articles/output-formats.md):
+- [Getting Started with
+  tsg](https://yng-me.github.io/tsg/articles/tsg.md):

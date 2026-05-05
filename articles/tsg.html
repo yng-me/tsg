@@ -5,12 +5,12 @@
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
 <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>Working with the tsg package • tsg</title>
+<title>Getting Started with tsg • tsg</title>
 <script src="../deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
 <link href="../deps/bootstrap-5.3.1/bootstrap.min.css" rel="stylesheet">
 <script src="../deps/bootstrap-5.3.1/bootstrap.bundle.min.js"></script><link href="../deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
 <link href="../deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Working with the tsg package">
+<script src="../deps/headroom-0.11.0/headroom.min.js"></script><script src="../deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="../deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="../deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="../deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="../deps/search-1.0.0/fuse.min.js"></script><script src="../deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="../pkgdown.js"></script><meta property="og:title" content="Getting Started with tsg">
 </head>
 <body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
@@ -20,7 +20,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">tsg</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.3</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.4</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -31,6 +31,14 @@
       <ul class="navbar-nav me-auto">
 <li class="active nav-item"><a class="nav-link" href="../articles/tsg.html">Get started</a></li>
 <li class="nav-item"><a class="nav-link" href="../reference/index.html">Reference</a></li>
+<li class="nav-item dropdown">
+  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
+  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
+<li><a class="dropdown-item" href="../articles/advanced.html">Grouped Tables and Side-by-Side Comparisons</a></li>
+    <li><a class="dropdown-item" href="../articles/facade.html">Customizing How Your Tables Look</a></li>
+    <li><a class="dropdown-item" href="../articles/output-formats.html">Saving and Sharing Your Tables</a></li>
+  </ul>
+</li>
 <li class="nav-item"><a class="nav-link" href="../news/index.html">Changelog</a></li>
       </ul>
 <ul class="navbar-nav">
@@ -51,10 +59,10 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
 
-      <h1>Working with the tsg package</h1>
+      <h1>Getting Started with tsg</h1>
             
       
-      <small class="dont-index">Source: <a href="https://github.com/yng-me/tsg/blob/v0.1.3/vignettes/tsg.Rmd" class="external-link"><code>vignettes/tsg.Rmd</code></a></small>
+      <small class="dont-index">Source: <a href="https://github.com/yng-me/tsg/blob/main/vignettes/tsg.Rmd" class="external-link"><code>vignettes/tsg.Rmd</code></a></small>
       <div class="d-none name"><code>tsg.Rmd</code></div>
     </div>
 
@@ -62,16 +70,28 @@
     
 <div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://yng-me.github.io/tsg/">tsg</a></span><span class="op">)</span></span></code></pre></div>
-<p>Throughout the examples, we will use the <code>person_record</code>
-sample dataset, which is included in the <code>tsg</code> package. This
-dataset contains demographic information about individuals, including
-<code>person_id</code>, <code>sex</code>, <code>age</code>,
-<code>marital_status</code>, <code>employed</code> status, and
-functional difficulties.</p>
+<p><code>tsg</code> helps you turn a dataset into a publication-ready
+summary table — a count of each category, a two-way comparison, or
+anything in between — and save it to Excel in one short pipeline. No
+manual formatting required.</p>
+<p>This vignette walks through the most common tasks:</p>
+<ol style="list-style-type: decimal">
+<li>Counting values in a column</li>
+<li>Comparing two columns against each other</li>
+<li>Breaking results down by a group</li>
+<li>Saving your table to a file</li>
+</ol>
+<hr>
+<div class="section level2">
+<h2 id="the-sample-dataset">The sample dataset<a class="anchor" aria-label="anchor" href="#the-sample-dataset"></a>
+</h2>
+<p>All examples use <code>person_record</code>, a sample household
+survey dataset included with the package. It contains one row per
+respondent and records their sex, age, marital status, employment
+status, and ratings on six functional difficulty questions (seeing,
+hearing, walking, etc.).</p>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/dim.html" class="external-link">dim</a></span><span class="op">(</span><span class="va">person_record</span><span class="op">)</span></span>
-<span><span class="co">#&gt; [1] 2918   11</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">person_record</span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/head.html" class="external-link">head</a></span><span class="op">(</span><span class="va">person_record</span><span class="op">)</span></span>
 <span><span class="co">#&gt;   person_id age sex marital_status employed seeing hearing walking remembering</span></span>
 <span><span class="co">#&gt; 1         1  46   1              2        1      1       1       1           1</span></span>
 <span><span class="co">#&gt; 2         2  44   2              2        1      1       1       1           1</span></span>
@@ -86,20 +106,16 @@ functional difficulties.</p>
 <span><span class="co">#&gt; 4           1             1</span></span>
 <span><span class="co">#&gt; 5           1             1</span></span>
 <span><span class="co">#&gt; 6           1             1</span></span></code></pre></div>
+<hr>
+</div>
 <div class="section level2">
-<h2 id="generate-frequency-table">Generate frequency table<a class="anchor" aria-label="anchor" href="#generate-frequency-table"></a>
+<h2 id="count-values-in-a-column">Count values in a column<a class="anchor" aria-label="anchor" href="#count-values-in-a-column"></a>
 </h2>
-<p>The <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> function creates frequency
-tables for one or more categorical variables in a data frame. It
-supports a variety of enhancements, such as sorting, adding totals and
-percentages, handling missing values, and customizing labels. This
-function is highly versatile and can work with grouped data, outputting
-either a single table or a list of tables.</p>
-<div class="section level3">
-<h3 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
-</h3>
+<p><code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> counts how many respondents fall
+into each category of a column, and adds a percentage column
+automatically.</p>
 <div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
 <span><span class="co">#&gt;   category   frequency percent</span></span>
@@ -107,12 +123,13 @@ either a single table or a list of tables.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>        <span style="text-decoration: underline;">1</span>516    52.0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>      <span style="text-decoration: underline;">1</span>402    48.0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>       <span style="text-decoration: underline;">2</span>918   100</span></span></code></pre></div>
-</div>
+<p>The result is a table with one row per category, plus a
+<strong>Total</strong> row at the bottom.</p>
 <div class="section level3">
-<h3 id="multiple-variables">Multiple variables<a class="anchor" aria-label="anchor" href="#multiple-variables"></a>
+<h3 id="count-several-columns-at-once">Count several columns at once<a class="anchor" aria-label="anchor" href="#count-several-columns-at-once"></a>
 </h3>
-<p>If you pass multiple variables, it will generate frequency tables for
-each variable separately in a list.</p>
+<p>Pass more than one column name and you get back a list of tables —
+one per column.</p>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span>, <span class="va">age</span>, <span class="va">marital_status</span><span class="op">)</span></span>
@@ -155,102 +172,49 @@ each variable separately in a list.</p>
 <span><span class="co">#&gt; [1] "tsg"  "tsgf" "list"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="grouping">Grouping<a class="anchor" aria-label="anchor" href="#grouping"></a>
+<h3 id="show-only-the-top-categories">Show only the top categories<a class="anchor" aria-label="anchor" href="#show-only-the-top-categories"></a>
 </h3>
-<p>You can also specify grouping using the <code>group_by()</code> from
-<code>dplyr</code> and it will calculate the frequency table for each
-group.</p>
+<p>Use <code>top_n</code> to keep only the most frequent categories. By
+default, everything else is rolled up into an “Others” row.</p>
 <div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">marital_status</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 4</span></span></span>
-<span><span class="co">#&gt;    sex        category                 frequency percent</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 1<span style="color: #949494;"> [Male]</span>   1<span style="color: #949494;"> [Single/never married]</span>       859   56.7 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 1<span style="color: #949494;"> [Male]</span>   2<span style="color: #949494;"> [Married]</span>                    387   25.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 1<span style="color: #949494;"> [Male]</span>   3<span style="color: #949494;"> [Common law/live-in]</span>         211   13.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 1<span style="color: #949494;"> [Male]</span>   4<span style="color: #949494;"> [Widowed]</span>                     40    2.64</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 1<span style="color: #949494;"> [Male]</span>   6<span style="color: #949494;"> [Separated]</span>                   19    1.25</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 1<span style="color: #949494;"> [Male]</span>   0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">1</span>516  100   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/never married]</span>       685   48.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>                    382   27.2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         213   15.2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>                     98    6.99</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>                   24    1.71</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">1</span>402  100</span></span></code></pre></div>
-<p>By default, the function will generate a single frequency table for
-the grouped data. If you want to generate a list of frequency tables for
-each group, you can set <code>group_as_list = TRUE</code>.</p>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
+<span>    <span class="va">marital_status</span>,</span>
+<span>    top_n <span class="op">=</span> <span class="fl">3</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
+<span><span class="co">#&gt;   category                 frequency percent</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544   52.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769   26.4 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424   14.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 9<span style="color: #949494;"> [Others]</span>                     181    6.20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918  100</span></span></code></pre></div>
+<p>Set <code>top_n_only = TRUE</code> to drop the “Others” row entirely
+and show only the top results.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">marital_status</span>, group_as_list <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $Male</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
-<span><span class="co">#&gt;   sex       category                 frequency percent</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>  1<span style="color: #949494;"> [Single/never married]</span>       859   56.7 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1<span style="color: #949494;"> [Male]</span>  2<span style="color: #949494;"> [Married]</span>                    387   25.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1<span style="color: #949494;"> [Male]</span>  3<span style="color: #949494;"> [Common law/live-in]</span>         211   13.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1<span style="color: #949494;"> [Male]</span>  4<span style="color: #949494;"> [Widowed]</span>                     40    2.64</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1<span style="color: #949494;"> [Male]</span>  6<span style="color: #949494;"> [Separated]</span>                   19    1.25</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1<span style="color: #949494;"> [Male]</span>  0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">1</span>516  100   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Female</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 4</span></span></span>
-<span><span class="co">#&gt;   sex        category                 frequency percent</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/never married]</span>       685   48.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>                    382   27.2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         213   15.2 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>                     98    6.99</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>                   24    1.71</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">1</span>402  100   </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attr(,"groups")</span></span>
-<span><span class="co">#&gt; [1] "sex"</span></span>
-<span><span class="co">#&gt; attr(,"group_attrs")</span></span>
-<span><span class="co">#&gt; attr(,"group_attrs")$sex</span></span>
-<span><span class="co">#&gt; attr(,"group_attrs")$sex$labels</span></span>
-<span><span class="co">#&gt;   Male Female </span></span>
-<span><span class="co">#&gt;      1      2 </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attr(,"group_attrs")$sex$label</span></span>
-<span><span class="co">#&gt; [1] "Sex"</span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attr(,"group_attrs")$sex$class</span></span>
-<span><span class="co">#&gt; [1] "haven_labelled" "vctrs_vctr"     "integer"       </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attr(,"class")</span></span>
-<span><span class="co">#&gt; [1] "tsg"  "tsgf" "list"</span></span></code></pre></div>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
+<span>    <span class="va">marital_status</span>, </span>
+<span>    top_n      <span class="op">=</span> <span class="fl">3</span>,</span>
+<span>    top_n_only <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
+<span><span class="co">#&gt;   category                 frequency percent</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544    52.9</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769    26.4</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424    14.5</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918   100</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="sorting">Sorting<a class="anchor" aria-label="anchor" href="#sorting"></a>
+<h3 id="control-how-rows-are-sorted">Control how rows are sorted<a class="anchor" aria-label="anchor" href="#control-how-rows-are-sorted"></a>
 </h3>
-<p>By default, the output is sorted by frequency in descending order. If
-<code>sort_value</code> is set to <code>FALSE</code>, the output will be
-sorted by the variable values in ascending order.</p>
+<p>By default, rows are sorted by frequency (most common first). Set
+<code>sort_value = FALSE</code> to sort by the category values instead —
+useful for ordered variables like <code>age</code>.</p>
 <div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">age</span>, sort_value <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 96 × 3</span></span></span>
-<span><span class="co">#&gt;    category frequency percent</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 16              82    2.81</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 15              75    2.57</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 12              74    2.54</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 13              70    2.40</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 20              68    2.33</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 14              66    2.26</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 19              66    2.26</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 11              61    2.09</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 24              61    2.09</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 18              59    2.02</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 86 more rows</span></span></span>
-<span></span>
-<span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">age</span>, sort_value <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 96 × 3</span></span></span>
 <span><span class="co">#&gt;    category frequency percent</span></span>
@@ -266,17 +230,15 @@ sorted by the variable values in ascending order.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 8               56    1.92</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 9               48    1.64</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 86 more rows</span></span></span></code></pre></div>
-<p>If multiple variables are specified, you can indicate which
-variable/s is/are excluded from sorting using the
-<code>sort_except</code> argument.</p>
+<p>When counting multiple columns at once, you can exclude specific
+columns from sorting with <code>sort_except</code>:</p>
 <div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
 <span>    <span class="va">sex</span>, </span>
 <span>    <span class="va">age</span>, </span>
 <span>    <span class="va">marital_status</span>, </span>
-<span>    <span class="co"># vector of variable names (character) to exclude from sorting</span></span>
-<span>    sort_except <span class="op">=</span> <span class="st">"age"</span> </span>
+<span>    sort_except <span class="op">=</span> <span class="st">"age"</span>   <span class="co"># keep age in its natural order</span></span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; $Sex</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
@@ -317,54 +279,14 @@ variable/s is/are excluded from sorting using the
 <span><span class="co">#&gt; [1] "tsg"  "tsgf" "list"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="top-n-values">Top <code>n</code> values<a class="anchor" aria-label="anchor" href="#top-n-values"></a>
+<h3 id="include-or-exclude-missing-values">Include or exclude missing values<a class="anchor" aria-label="anchor" href="#include-or-exclude-missing-values"></a>
 </h3>
-<p>You can specify the top <code>n</code> most frequent values to
-display in the frequency table, if <code>sort_value</code> is
-<code>TRUE</code>. By default, it will show top-n values plus the
-remaining values grouped into “Others”.</p>
+<p>By default, missing values (<code>NA</code>) are counted and shown as
+a separate row. Set <code>include_na = FALSE</code> to leave them
+out.</p>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">marital_status</span>,</span>
-<span>    top_n <span class="op">=</span> <span class="fl">3</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 5 × 3</span></span></span>
-<span><span class="co">#&gt;   category                 frequency percent</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;dbl+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544   52.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769   26.4 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424   14.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 9<span style="color: #949494;"> [Others]</span>                     181    6.20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918  100</span></span></code></pre></div>
-<p>If you want to show only the top-n values and exclude the rest, set
-<code>top_n_only = TRUE</code>.</p>
-<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">marital_status</span>, </span>
-<span>    top_n <span class="op">=</span> <span class="fl">3</span>,</span>
-<span>    top_n_only <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
-<span><span class="co">#&gt;   category                 frequency percent</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544    52.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769    26.4</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424    14.5</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918   100</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="handling-missing-values">Handling missing values<a class="anchor" aria-label="anchor" href="#handling-missing-values"></a>
-</h3>
-<p>You can also specify whether to include or exclude <code>NA</code>s
-(missing values) from the frequency table.</p>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">employed</span>,</span>
-<span>    include_na <span class="op">=</span> <span class="cn">TRUE</span> <span class="co"># default</span></span>
-<span>  <span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">employed</span>, include_na <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>  <span class="co"># default</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 4 × 3</span></span></span>
 <span><span class="co">#&gt;   category         frequency percent</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>            <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -373,12 +295,8 @@ remaining values grouped into “Others”.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 8<span style="color: #949494;"> [Not reported]</span>       810    27.8</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 0<span style="color: #949494;"> [Total]</span>             <span style="text-decoration: underline;">2</span>918   100</span></span>
 <span></span>
-<span><span class="co"># Exclude NA values</span></span>
 <span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">employed</span>,</span>
-<span>    include_na <span class="op">=</span> <span class="cn">FALSE</span></span>
-<span>  <span class="op">)</span></span>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">employed</span>, include_na <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 3</span></span></span>
 <span><span class="co">#&gt;   category  frequency percent</span></span>
 <span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
@@ -387,13 +305,13 @@ remaining values grouped into “Others”.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>      <span style="text-decoration: underline;">2</span>108   100</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="collapse-list">Collapse list<a class="anchor" aria-label="anchor" href="#collapse-list"></a>
+<h3 id="combine-similar-columns-into-one-table">Combine similar columns into one table<a class="anchor" aria-label="anchor" href="#combine-similar-columns-into-one-table"></a>
 </h3>
-<p>If the all variables passed to <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> are
-of the same structure (i.e. have the same number of levels or
-categories), you can collapse them into a single frequency table by
-setting <code>collapse_list = TRUE</code>.</p>
-<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
+<p>If several columns share the same set of categories (like the six
+functional difficulty columns in <code>person_record</code>), you can
+stack them into a single table with
+<code>collapse_list = TRUE</code>.</p>
+<div class="sourceCode" id="cb10"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
 <span>    <span class="va">seeing</span>,</span>
@@ -415,41 +333,31 @@ setting <code>collapse_list = TRUE</code>.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Communicating usi…        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>683          25           5           2</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: frequency_8 &lt;int&gt;, percent_0 &lt;dbl&gt;, percent_1 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;, percent_4 &lt;dbl&gt;, percent_8 &lt;dbl&gt;</span></span></span></code></pre></div>
-<p>Or equivalently using the <code><a href="../reference/collapse_list.html">collapse_list()</a></code> helper
-function.</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">seeing</span>,</span>
-<span>    <span class="va">hearing</span>,</span>
-<span>    <span class="va">walking</span>,</span>
-<span>    <span class="va">remembering</span>,</span>
-<span>    <span class="va">self_caring</span>,</span>
-<span>    <span class="va">communicating</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/collapse_list.html">collapse_list</a></span><span class="op">(</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 13</span></span></span>
-<span><span class="co">#&gt;   category           frequency_0 frequency_1 frequency_2 frequency_3 frequency_4</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;chr&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> Seeing, even if w…        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>623          82           9           1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> Hearing, even if …        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>666          43           5           1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> Walking or climbi…        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>658          48           7           2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> Remembering or co…        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>680          28           7           0</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> Self-caring (such…        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>671          37           5           2</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> Communicating usi…        <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">2</span>683          25           5           2</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 7 more variables: frequency_8 &lt;int&gt;, percent_0 &lt;dbl&gt;, percent_1 &lt;dbl&gt;,</span></span></span>
-<span><span class="co">#&gt; <span style="color: #949494;">#   percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;, percent_4 &lt;dbl&gt;, percent_8 &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="more-options">More options<a class="anchor" aria-label="anchor" href="#more-options"></a>
+<h3 id="other-options">Other options<a class="anchor" aria-label="anchor" href="#other-options"></a>
 </h3>
-<p>You can also add cumulative frequency and percentage to the frequency
-table.</p>
-<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
+<ul>
+<li>
+<strong>Running totals</strong> — add cumulative counts and
+percentages with <code>add_cumulative = TRUE</code> and
+<code>add_cumulative_percent = TRUE</code>.</li>
+<li>
+<strong>Proportions instead of percentages</strong> — use
+<code>as_proportion = TRUE</code> to get values between 0 and 1.</li>
+<li>
+<strong>Total row at the top</strong> — set
+<code>position_total = "top"</code> to move the Total row above the data
+rows.</li>
+<li>
+<strong>Custom total label</strong> — use <code>label_total</code>
+to rename the “Total” row.</li>
+</ul>
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
 <span>    <span class="va">sex</span>, </span>
-<span>    add_cumulative <span class="op">=</span> <span class="cn">TRUE</span>, </span>
+<span>    add_cumulative         <span class="op">=</span> <span class="cn">TRUE</span>, </span>
 <span>    add_cumulative_percent <span class="op">=</span> <span class="cn">TRUE</span> </span>
 <span>  <span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 3 × 5</span></span></span>
@@ -458,55 +366,16 @@ table.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>        <span style="text-decoration: underline;">1</span>516    52.0       <span style="text-decoration: underline;">1</span>516               52.0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span>      <span style="text-decoration: underline;">1</span>402    48.0       <span style="text-decoration: underline;">2</span>918              100  </span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 0<span style="color: #949494;"> [Total]</span>       <span style="text-decoration: underline;">2</span>918   100           <span style="color: #BB0000;">NA</span>               <span style="color: #BB0000;">NA</span></span></span></code></pre></div>
-<p>You can also specify whether to express the value as a
-proportion.</p>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">marital_status</span>,</span>
-<span>    as_proportion <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;   category                 frequency proportion</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544     0.529 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                    769     0.264 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424     0.145 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                    138     0.047<span style="text-decoration: underline;">3</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>                   43     0.014<span style="text-decoration: underline;">7</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918     1</span></span></code></pre></div>
-<p>You can also position the total row at the top of the table.</p>
-<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span></span>
-<span>    <span class="va">marital_status</span>,</span>
-<span>    position_total <span class="op">=</span> <span class="st">"top"</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 3</span></span></span>
-<span><span class="co">#&gt;   category                 frequency percent</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">2</span>918  100   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1<span style="color: #949494;"> [Single/never married]</span>      <span style="text-decoration: underline;">1</span>544   52.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2<span style="color: #949494;"> [Married]</span>                    769   26.4 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         424   14.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 4<span style="color: #949494;"> [Widowed]</span>                    138    4.73</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 6<span style="color: #949494;"> [Separated]</span>                   43    1.47</span></span></code></pre></div>
-<p>NOTE: For labelled data, the value for the row total is automatically
-set the lowest numeric value. The default label for the total row is
-“Total”; if you want to set a custom label for the total row, you can
-use the <code>label_total</code> argument.</p>
+<hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="generate-cross-tabulation">Generate cross-tabulation<a class="anchor" aria-label="anchor" href="#generate-cross-tabulation"></a>
+<h2 id="compare-two-columns-in-a-grid-cross-tabulation">Compare two columns in a grid (cross-tabulation)<a class="anchor" aria-label="anchor" href="#compare-two-columns-in-a-grid-cross-tabulation"></a>
 </h2>
-<p>The <code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> function allows you to create
-cross-tabulations between two variables, which is useful for exploring
-relationships between categorical variables.</p>
-<div class="section level3">
-<h3 id="basic-usage-1">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage-1"></a>
-</h3>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<p><code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> builds a two-way table: the first
+column you name goes in the rows, and the second becomes column groups.
+You get a count and a percentage for each combination.</p>
+<div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
@@ -518,16 +387,43 @@ relationships between categorical variables.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                138          40          98      29.0      71.0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>               43          19          24      44.2      55.8</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                 <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>402      52.0      48.0</span></span></code></pre></div>
-<p>NOTE: If you pass only one variable, it will fall back to
-<code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> and generate a frequency table for
-variable specified.</p>
+<blockquote>
+<p><strong>Tip:</strong> If you name only one column,
+<code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> automatically falls back to a frequency
+table for that column.</p>
+</blockquote>
+<div class="section level3">
+<h3 id="percentages-by-column-instead-of-by-row">Percentages by column instead of by row<a class="anchor" aria-label="anchor" href="#percentages-by-column-instead-of-by-row"></a>
+</h3>
+<p>By default, percentages are calculated across each row (what share of
+each marital-status group is male vs. female?). Set
+<code>percent_by_column = TRUE</code> to flip this — percentages are
+then calculated down each column (what share of males is in each
+marital-status group?).</p>
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span></span>
+<span>    <span class="va">marital_status</span>,</span>
+<span>    <span class="va">sex</span>,</span>
+<span>    percent_by_column <span class="op">=</span> <span class="cn">TRUE</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
+<span><span class="co">#&gt;   category       frequency_total frequency_1 frequency_2 percent_total percent_1</span></span>
+<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/nev…</span>            <span style="text-decoration: underline;">1</span>544         859         685         52.9      56.7 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                769         387         382         26.4      25.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law…</span>             424         211         213         14.5      13.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                138          40          98          4.73      2.64</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>               43          19          24          1.47      1.25</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                 <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>402        100       100   </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: percent_2 &lt;dbl&gt;</span></span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="multiple-variables-1">Multiple variables<a class="anchor" aria-label="anchor" href="#multiple-variables-1"></a>
+<h3 id="cross-tabulate-against-several-columns-at-once">Cross-tabulate against several columns at once<a class="anchor" aria-label="anchor" href="#cross-tabulate-against-several-columns-at-once"></a>
 </h3>
-<p>If you pass mutliple variables, it will generate cross-tabulations
-for each pair of variables separately in a list.</p>
-<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<p>Pass more than one column after the row variable and you get a list
+of cross-tabs — one per column.</p>
+<div class="sourceCode" id="cb14"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span></span>
 <span>    <span class="va">sex</span>,</span>
@@ -597,119 +493,19 @@ for each pair of variables separately in a list.</p>
 <span><span class="co">#&gt; <span style="color: #949494;"># ℹ 5 more variables: percent_1 &lt;dbl&gt;, percent_2 &lt;dbl&gt;, percent_3 &lt;dbl&gt;,</span></span></span>
 <span><span class="co">#&gt; <span style="color: #949494;">#   percent_4 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span></span>
 <span><span class="co">#&gt; </span></span>
+<span><span class="co">#&gt; attr(,"label_separator")</span></span>
+<span><span class="co">#&gt; [1] "__"</span></span>
 <span><span class="co">#&gt; attr(,"class")</span></span>
 <span><span class="co">#&gt; [1] "tsg"  "tsgc" "list"</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="grouping-1">Grouping<a class="anchor" aria-label="anchor" href="#grouping-1"></a>
+<h3 id="other-options-1">Other options<a class="anchor" aria-label="anchor" href="#other-options-1"></a>
 </h3>
-<p>You can also specify grouping with <code>group_by()</code> from
-<code>dplyr</code> and it will calculate the cross-tabulation for each
-group.</p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">employed</span><span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 9</span></span></span>
-<span><span class="co">#&gt;    sex        category      total frequency_1 frequency_2 frequency_NA percent_1</span></span>
-<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 1<span style="color: #949494;"> [Male]</span>   1<span style="color: #949494;"> [Single/ne…</span>   859         127         330          402     14.8 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 1<span style="color: #949494;"> [Male]</span>   2<span style="color: #949494;"> [Married]</span>     387         274         108            5     70.8 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 1<span style="color: #949494;"> [Male]</span>   3<span style="color: #949494;"> [Common la…</span>   211         169          41            1     80.1 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 1<span style="color: #949494;"> [Male]</span>   4<span style="color: #949494;"> [Widowed]</span>      40          18          21            1     45   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 1<span style="color: #949494;"> [Male]</span>   6<span style="color: #949494;"> [Separated]</span>    19          11           8            0     57.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 1<span style="color: #949494;"> [Male]</span>   0<span style="color: #949494;"> [Total]</span>      <span style="text-decoration: underline;">1</span>516         599         508          409     39.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/ne…</span>   685          63         234          388      9.20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>     382         155         218            9     40.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common la…</span>   213          67         142            4     31.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>      98          26          72            0     26.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>    24          12          12            0     50   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>      <span style="text-decoration: underline;">1</span>402         323         678          401     23.0 </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: percent_2 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span></span></code></pre></div>
-<p>If you want to generate a list of cross-tabulations for each group,
-you can set <code>group_as_list = TRUE</code>.</p>
-<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">employed</span>, group_as_list <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span></span>
-<span><span class="co">#&gt; $Male</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 9</span></span></span>
-<span><span class="co">#&gt;   sex       category        total frequency_1 frequency_2 frequency_NA percent_1</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span> <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Male]</span>  1<span style="color: #949494;"> [Single/neve…</span>   859         127         330          402      14.8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 1<span style="color: #949494;"> [Male]</span>  2<span style="color: #949494;"> [Married]</span>       387         274         108            5      70.8</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 1<span style="color: #949494;"> [Male]</span>  3<span style="color: #949494;"> [Common law/…</span>   211         169          41            1      80.1</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 1<span style="color: #949494;"> [Male]</span>  4<span style="color: #949494;"> [Widowed]</span>        40          18          21            1      45  </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 1<span style="color: #949494;"> [Male]</span>  6<span style="color: #949494;"> [Separated]</span>      19          11           8            0      57.9</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 1<span style="color: #949494;"> [Male]</span>  0<span style="color: #949494;"> [Total]</span>        <span style="text-decoration: underline;">1</span>516         599         508          409      39.5</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: percent_2 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; $Female</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 9</span></span></span>
-<span><span class="co">#&gt;   sex        category       total frequency_1 frequency_2 frequency_NA percent_1</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>      <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/nev…</span>   685          63         234          388      9.20</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>      382         155         218            9     40.6 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common law…</span>   213          67         142            4     31.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>       98          26          72            0     26.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>     24          12          12            0     50   </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>       <span style="text-decoration: underline;">1</span>402         323         678          401     23.0 </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: percent_2 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; </span></span>
-<span><span class="co">#&gt; attr(,"groups")</span></span>
-<span><span class="co">#&gt; [1] "sex"</span></span>
-<span><span class="co">#&gt; attr(,"class")</span></span>
-<span><span class="co">#&gt; [1] "tsg"  "tsgc" "list"</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="percent-or-proportion-by-row-or-column">Percent or proportion by row or column<a class="anchor" aria-label="anchor" href="#percent-or-proportion-by-row-or-column"></a>
-</h3>
-<p>You can specify whether to calculate the percentage or proportion by
-row or column using the <code>percent_by_column</code> argument. If it
-is set to <code>TRUE</code>, the percentage will be calculated by
-column; if set to <code>FALSE</code>, it will be calculated by row. The
-default is <code>FALSE</code>.</p>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span></span>
-<span>    <span class="va">marital_status</span>,</span>
-<span>    <span class="va">sex</span>,</span>
-<span>    percent_by_column <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 7</span></span></span>
-<span><span class="co">#&gt;   category       frequency_total frequency_1 frequency_2 percent_total percent_1</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>         <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/nev…</span>            <span style="text-decoration: underline;">1</span>544         859         685         52.9      56.7 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>                769         387         382         26.4      25.5 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law…</span>             424         211         213         14.5      13.9 </span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>                138          40          98          4.73      2.64</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>               43          19          24          1.47      1.25</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>                 <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>402        100       100   </span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 1 more variable: percent_2 &lt;dbl&gt;</span></span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="more-options-1">More options<a class="anchor" aria-label="anchor" href="#more-options-1"></a>
-</h3>
-<p>Just like <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code>, you can also specify
-whether to express the value as a proportion.</p>
-<div class="sourceCode" id="cb22"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span></span>
-<span>    <span class="va">marital_status</span>,</span>
-<span>    <span class="va">sex</span>,</span>
-<span>    as_proportion <span class="op">=</span> <span class="cn">TRUE</span></span>
-<span>  <span class="op">)</span></span>
-<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 6 × 6</span></span></span>
-<span><span class="co">#&gt;   category               total frequency_1 frequency_2 proportion_1 proportion_2</span></span>
-<span><span class="co">#&gt;   <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>              <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">1</span> 1<span style="color: #949494;"> [Single/never marri…</span>  <span style="text-decoration: underline;">1</span>544         859         685        0.556        0.444</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">2</span> 2<span style="color: #949494;"> [Married]</span>              769         387         382        0.503        0.497</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">3</span> 3<span style="color: #949494;"> [Common law/live-in]</span>   424         211         213        0.498        0.502</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 4<span style="color: #949494;"> [Widowed]</span>              138          40          98        0.290        0.710</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 6<span style="color: #949494;"> [Separated]</span>             43          19          24        0.442        0.558</span></span>
-<span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 0<span style="color: #949494;"> [Total]</span>               <span style="text-decoration: underline;">2</span>918        <span style="text-decoration: underline;">1</span>516        <span style="text-decoration: underline;">1</span>402        0.520        0.480</span></span></code></pre></div>
-<p>You can also position the total row at the top of the table.</p>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<p>The same options available for <code><a href="../reference/generate_frequency.html">generate_frequency()</a></code> also
+work in <code><a href="../reference/generate_crosstab.html">generate_crosstab()</a></code> — <code>as_proportion</code>,
+<code>position_total</code>, <code>include_na</code>,
+<code>label_total</code>, and more.</p>
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span></span>
 <span>    <span class="va">marital_status</span>,</span>
@@ -725,104 +521,123 @@ whether to express the value as a proportion.</p>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">4</span> 3<span style="color: #949494;"> [Common law/live-in]</span>     424         211         213      49.8      50.2</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">5</span> 4<span style="color: #949494;"> [Widowed]</span>                138          40          98      29.0      71.0</span></span>
 <span><span class="co">#&gt; <span style="color: #BCBCBC;">6</span> 6<span style="color: #949494;"> [Separated]</span>               43          19          24      44.2      55.8</span></span></code></pre></div>
+<hr>
 </div>
 </div>
 <div class="section level2">
-<h2 id="generate-output">Generate output<a class="anchor" aria-label="anchor" href="#generate-output"></a>
+<h2 id="break-down-results-by-a-group">Break down results by a group<a class="anchor" aria-label="anchor" href="#break-down-results-by-a-group"></a>
 </h2>
-<p>You can export your frequency table or cross-tabulation to Excel
-using the <code><a href="../reference/write_xlsx.html">write_xlsx()</a></code>.</p>
+<p>Pipe a <code><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by()</a></code> call before either function to
+calculate counts separately for each group. The result is a single
+merged table with the group labels embedded in the category column.</p>
+<div class="sourceCode" id="cb16"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">marital_status</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 4</span></span></span>
+<span><span class="co">#&gt;    sex        category                 frequency percent</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>                    <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>   <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 1<span style="color: #949494;"> [Male]</span>   1<span style="color: #949494;"> [Single/never married]</span>       859   56.7 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 1<span style="color: #949494;"> [Male]</span>   2<span style="color: #949494;"> [Married]</span>                    387   25.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 1<span style="color: #949494;"> [Male]</span>   3<span style="color: #949494;"> [Common law/live-in]</span>         211   13.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 1<span style="color: #949494;"> [Male]</span>   4<span style="color: #949494;"> [Widowed]</span>                     40    2.64</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 1<span style="color: #949494;"> [Male]</span>   6<span style="color: #949494;"> [Separated]</span>                   19    1.25</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 1<span style="color: #949494;"> [Male]</span>   0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">1</span>516  100   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/never married]</span>       685   48.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>                    382   27.2 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common law/live-in]</span>         213   15.2 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>                     98    6.99</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>                   24    1.71</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>                     <span style="text-decoration: underline;">1</span>402  100</span></span></code></pre></div>
+<p>The same works for cross-tabulations:</p>
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu">dplyr</span><span class="fu">::</span><span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html" class="external-link">group_by</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">employed</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># A tibble: 12 × 9</span></span></span>
+<span><span class="co">#&gt;    sex        category      total frequency_1 frequency_2 frequency_NA percent_1</span></span>
+<span><span class="co">#&gt;    <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>  <span style="color: #949494; font-style: italic;">&lt;int+lbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;int&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>       <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>        <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span>     <span style="color: #949494; font-style: italic;">&lt;dbl&gt;</span></span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 1</span> 1<span style="color: #949494;"> [Male]</span>   1<span style="color: #949494;"> [Single/ne…</span>   859         127         330          402     14.8 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 2</span> 1<span style="color: #949494;"> [Male]</span>   2<span style="color: #949494;"> [Married]</span>     387         274         108            5     70.8 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 3</span> 1<span style="color: #949494;"> [Male]</span>   3<span style="color: #949494;"> [Common la…</span>   211         169          41            1     80.1 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 4</span> 1<span style="color: #949494;"> [Male]</span>   4<span style="color: #949494;"> [Widowed]</span>      40          18          21            1     45   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 5</span> 1<span style="color: #949494;"> [Male]</span>   6<span style="color: #949494;"> [Separated]</span>    19          11           8            0     57.9 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 6</span> 1<span style="color: #949494;"> [Male]</span>   0<span style="color: #949494;"> [Total]</span>      <span style="text-decoration: underline;">1</span>516         599         508          409     39.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 7</span> 2<span style="color: #949494;"> [Female]</span> 1<span style="color: #949494;"> [Single/ne…</span>   685          63         234          388      9.20</span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 8</span> 2<span style="color: #949494;"> [Female]</span> 2<span style="color: #949494;"> [Married]</span>     382         155         218            9     40.6 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;"> 9</span> 2<span style="color: #949494;"> [Female]</span> 3<span style="color: #949494;"> [Common la…</span>   213          67         142            4     31.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">10</span> 2<span style="color: #949494;"> [Female]</span> 4<span style="color: #949494;"> [Widowed]</span>      98          26          72            0     26.5 </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">11</span> 2<span style="color: #949494;"> [Female]</span> 6<span style="color: #949494;"> [Separated]</span>    24          12          12            0     50   </span></span>
+<span><span class="co">#&gt; <span style="color: #BCBCBC;">12</span> 2<span style="color: #949494;"> [Female]</span> 0<span style="color: #949494;"> [Total]</span>      <span style="text-decoration: underline;">1</span>402         323         678          401     23.0 </span></span>
+<span><span class="co">#&gt; <span style="color: #949494;"># ℹ 2 more variables: percent_2 &lt;dbl&gt;, percent_NA &lt;dbl&gt;</span></span></span></code></pre></div>
+<blockquote>
+<p><strong>Want separate tables per group?</strong> See the <a href="advanced.html">Grouped Tables and Side-by-Side Comparisons</a>
+vignette for <code>group_as_list</code> and
+<code>group_as_hierarchy</code>.</p>
+</blockquote>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="save-your-table-to-a-file">Save your table to a file<a class="anchor" aria-label="anchor" href="#save-your-table-to-a-file"></a>
+</h2>
+<p>Once you have a table, pipe it to <code><a href="../reference/write_xlsx.html">write_xlsx()</a></code> to save
+it as an Excel file.</p>
+<div class="sourceCode" id="cb18"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"table-sex.xlsx"</span><span class="op">)</span></span></code></pre></div>
 <div class="section level3">
-<h3 id="basic-usage-2">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage-2"></a>
+<h3 id="add-a-title-and-notes">Add a title and notes<a class="anchor" aria-label="anchor" href="#add-a-title-and-notes"></a>
 </h3>
-<div class="sourceCode" id="cb24"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"table-01.xlsx"</span><span class="op">)</span></span></code></pre></div>
+<p>Chain <code><a href="../reference/add_table_title.html">add_table_title()</a></code>,
+<code><a href="../reference/add_table_subtitle.html">add_table_subtitle()</a></code>, <code><a href="../reference/add_source_note.html">add_source_note()</a></code>, and
+<code><a href="../reference/add_footnote.html">add_footnote()</a></code> before saving to attach metadata that
+appears as styled rows above and below the table.</p>
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_table_title.html">add_table_title</a></span><span class="op">(</span><span class="st">"Marital Status by Sex"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_table_subtitle.html">add_table_subtitle</a></span><span class="op">(</span><span class="st">"National Sample Survey, 2024"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_source_note.html">add_source_note</a></span><span class="op">(</span><span class="st">"Source: person_record dataset."</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_footnote.html">add_footnote</a></span><span class="op">(</span><span class="st">"Missing values are excluded from the denominator."</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"table-marital-sex.xlsx"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
-<h3 id="add-table-info">Add table info<a class="anchor" aria-label="anchor" href="#add-table-info"></a>
+<h3 id="change-the-look-of-your-table">Change the look of your table<a class="anchor" aria-label="anchor" href="#change-the-look-of-your-table"></a>
 </h3>
-<p>You can add a title and subtitle to your table using the
-<code><a href="../reference/add_table_title.html">add_table_title()</a></code> and <code><a href="../reference/add_table_subtitle.html">add_table_subtitle()</a></code>
-functions.</p>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/add_table_title.html">add_table_title</a></span><span class="op">(</span><span class="st">"Marital Status by Sex"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_table_subtitle.html">add_table_subtitle</a></span><span class="op">(</span><span class="st">"Sample dataset: person_record"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"table-02.xlsx"</span><span class="op">)</span></span></code></pre></div>
-<p>You can also add end notes to your table using the
-<code><a href="../reference/add_source_note.html">add_source_note()</a></code> and <code><a href="../reference/add_footnote.html">add_footnote()</a></code>
-functions.</p>
-<div class="sourceCode" id="cb26"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/add_table_title.html">add_table_title</a></span><span class="op">(</span><span class="st">"Marital Status by Sex"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_table_subtitle.html">add_table_subtitle</a></span><span class="op">(</span><span class="st">"Sample dataset: person_record"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_source_note.html">add_source_note</a></span><span class="op">(</span><span class="st">"Source: person_record dataset"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/add_footnote.html">add_footnote</a></span><span class="op">(</span><span class="st">"This is a footnote for the table"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
-<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"table-03.xlsx"</span><span class="op">)</span></span></code></pre></div>
-<p>Alternatively, you can directly add table title, subtitle,
-source_note, and footnotes by specifying them in the arguments of the
-<code><a href="../reference/write_xlsx.html">write_xlsx()</a></code> function.</p>
-<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
+<p>Pass a built-in style with <code><a href="../reference/get_tsg_facade.html">get_tsg_facade()</a></code> to quickly
+change the visual appearance of your exported table. The package ships
+with two built-in styles: <code>"default"</code> (clean and neutral) and
+<code>"yolo"</code> (bolder colours).</p>
+<div class="sourceCode" id="cb20"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
 <span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span></span>
-<span>    path <span class="op">=</span> <span class="st">"table-03.xlsx"</span>,</span>
-<span>    table_title <span class="op">=</span> <span class="st">"Marital Status by Sex"</span>,</span>
-<span>    table_subtitle <span class="op">=</span> <span class="st">"Sample dataset: person_record"</span>,</span>
-<span>    source_note <span class="op">=</span> <span class="st">"Source: person_record dataset"</span>,</span>
-<span>    footnotes <span class="op">=</span> <span class="st">"This is a footnote for the table"</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
-<h3 id="facade">Facade<a class="anchor" aria-label="anchor" href="#facade"></a>
-</h3>
-<p>You can use the <code><a href="../reference/add_facade.html">add_facade()</a></code> function to apply a facade
-to your table. A facade is a set of styling options that can be applied
-to the table to customize its appearance.</p>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/add_facade.html">add_facade</a></span><span class="op">(</span></span>
-<span>    table.offsetRow <span class="op">=</span> <span class="fl">2</span>, </span>
-<span>    table.offsetCol <span class="op">=</span> <span class="fl">1</span></span>
-<span>  <span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span></span>
-<span>    path <span class="op">=</span> <span class="st">"table-04.xlsx"</span>,</span>
-<span>    <span class="co"># Using built-in facade</span></span>
+<span>    path   <span class="op">=</span> <span class="st">"table-sex-styled.xlsx"</span>,</span>
 <span>    facade <span class="op">=</span> <span class="fu"><a href="../reference/get_tsg_facade.html">get_tsg_facade</a></span><span class="op">(</span><span class="st">"yolo"</span><span class="op">)</span></span>
 <span>  <span class="op">)</span></span></code></pre></div>
-<p>If you want to further customize the appearance of your table, you
-can use the <code>facade</code> argument to specify a YAML facade file.
-The facade file contains styling options for the table, such as font
-size, border style, background color, and text alignment.</p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span></span>
-<span>    path <span class="op">=</span> <span class="st">"table-05.xlsx"</span>,</span>
-<span>    <span class="co"># Using built-in facade</span></span>
-<span>    facade <span class="op">=</span> <span class="fu"><a href="../reference/get_tsg_facade.html">get_tsg_facade</a></span><span class="op">(</span><span class="st">"yolo"</span><span class="op">)</span></span>
-<span>  <span class="op">)</span></span></code></pre></div>
-<p>You can generate a template facade file using the
-<code><a href="../reference/generate_template.html">generate_template()</a></code> function and then customize it to your
-needs.</p>
+<p>For fine-grained control — changing specific fonts, colours, or cell
+sizes — see the <a href="facade.html">Customizing How Your Tables
+Look</a> vignette.</p>
 </div>
 <div class="section level3">
-<h3 id="the-generate_output-function">The <code>generate_output()</code> function<a class="anchor" aria-label="anchor" href="#the-generate_output-function"></a>
+<h3 id="save-to-other-formats">Save to other formats<a class="anchor" aria-label="anchor" href="#save-to-other-formats"></a>
 </h3>
-<p><code><a href="../reference/generate_output.html">generate_output()</a></code> can be used to generate and save the
-output file in the specified format (e.g., Excel, HTML, PDF, Word). It
-supports various formats and can handle different data structures.</p>
-<div class="sourceCode" id="cb30"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="va">person_record</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_frequency.html">generate_frequency</a></span><span class="op">(</span><span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span> </span>
-<span>  <span class="fu"><a href="../reference/generate_output.html">generate_output</a></span><span class="op">(</span>path <span class="op">=</span> <span class="st">"table-06.xlsx"</span><span class="op">)</span></span></code></pre></div>
-<p>NOTE: At the moment, it only supports Excel output. The other formats
-are not yet implemented.</p>
+<p><code>tsg</code> can also save to HTML, PDF, and Word. The API is
+identical — just change the function name.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">tbl</span> <span class="op">&lt;-</span> <span class="va">person_record</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/generate_crosstab.html">generate_crosstab</a></span><span class="op">(</span><span class="va">marital_status</span>, <span class="va">sex</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_table_title.html">add_table_title</a></span><span class="op">(</span><span class="st">"Marital Status by Sex"</span><span class="op">)</span> <span class="op">|&gt;</span></span>
+<span>  <span class="fu"><a href="../reference/add_source_note.html">add_source_note</a></span><span class="op">(</span><span class="st">"Source: person_record dataset"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="fu"><a href="../reference/write_xlsx.html">write_xlsx</a></span><span class="op">(</span><span class="va">tbl</span>, path <span class="op">=</span> <span class="st">"table.xlsx"</span><span class="op">)</span>   <span class="co"># Excel</span></span>
+<span><span class="fu"><a href="../reference/write_html.html">write_html</a></span><span class="op">(</span><span class="va">tbl</span>, path <span class="op">=</span> <span class="st">"table.html"</span><span class="op">)</span>   <span class="co"># HTML  (requires the gt package)</span></span>
+<span><span class="fu"><a href="../reference/write_pdf.html">write_pdf</a></span><span class="op">(</span><span class="va">tbl</span>,  path <span class="op">=</span> <span class="st">"table.pdf"</span><span class="op">)</span>    <span class="co"># PDF   (requires gt + webshot2)</span></span>
+<span><span class="fu"><a href="../reference/write_docx.html">write_docx</a></span><span class="op">(</span><span class="va">tbl</span>, path <span class="op">=</span> <span class="st">"table.docx"</span><span class="op">)</span>  <span class="co"># Word  (requires officer + flextable)</span></span></code></pre></div>
+<p>For a full guide to each format — including multi-sheet workbooks and
+managing metadata for large reports — see the <a href="output-formats.html">Saving and Sharing Your Tables</a>
+vignette.</p>
 </div>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

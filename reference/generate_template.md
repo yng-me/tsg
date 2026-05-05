@@ -29,6 +29,7 @@ Void. A file path where the template has been saved.
 ## Examples
 
 ``` r
+
 template_path_facade <- tempfile(fileext = ".yaml")
 generate_template(template_path_facade, template = "facade")
 

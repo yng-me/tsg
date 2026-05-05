@@ -8,15 +8,15 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/yng-me/tsg/blob/v0.1.3/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/yng-me/tsg/blob/main/DESCRIPTION)
 
 Abdulsamad B (2026). *tsg: Generate Publication-Ready Statistical
-Tables*. R package version 0.1.3, <https://yng-me.github.io/tsg/>.
+Tables*. R package version 0.1.4, <https://yng-me.github.io/tsg/>.
 
     @Manual{,
       title = {tsg: Generate Publication-Ready Statistical Tables},
       author = {Bhas Abdulsamad},
       year = {2026},
-      note = {R package version 0.1.3},
+      note = {R package version 0.1.4},
       url = {https://yng-me.github.io/tsg/},
     }

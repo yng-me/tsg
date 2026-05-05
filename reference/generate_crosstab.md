@@ -21,19 +21,22 @@ generate_crosstab(
   label_total_column = NULL,
   label_total_row = NULL,
   label_na = "Not reported",
+  label_as_group_name = TRUE,
+  label_group_hierarchy = "All",
   include_na = TRUE,
   recode_na = "auto",
-  label_as_group_name = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
-  group_grand_total = FALSE,
-  group_grand_total_label = "All",
+  group_as_hierarchy = FALSE,
   calculate_per_group = TRUE,
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
   collapse_list = FALSE,
   convert_factor = FALSE,
+  multiple_columns = FALSE,
+  multiple_columns_type = c("filtered", "stacked"),
+  multiple_columns_filter = 1L,
   metadata = NULL
 )
 ```
@@ -105,6 +108,20 @@ generate_crosstab(
 
   Character. Label to use for missing (`NA`) values.
 
+- label_as_group_name:
+
+  Logical. If `TRUE`, uses the variable label of the grouping
+  variable(s) as the name in the output list.
+
+- label_group_hierarchy:
+
+  Character. Label applied to grand-total entries when
+  `group_as_hierarchy = TRUE`. Can be a single string (applied to all
+  group levels) or a named character vector keyed by group column name
+  for per-variable labels (e.g.
+  `c(sex = "All sexes", employed = "All workers")`). Defaults to
+  `"All"`.
+
 - include_na:
 
   Logical. If `TRUE`, includes missing values in the cross table.
@@ -114,30 +131,26 @@ generate_crosstab(
   Character or `NULL`. Value used to replace missing values in labelled
   vectors; `"auto"` will determine a code automatically.
 
-- label_as_group_name:
-
-  Logical. If `TRUE`, uses the variable label of the grouping
-  variable(s) as the name in the output list.
-
 - group_separator:
 
-  Character. Separator used when constructing group names in the output
-  list.
+  Character. Separator used when concatenating group values in list
+  output (if `group_as_list = TRUE` with a single group).
 
 - group_as_list:
 
-  Logical. If `TRUE`, the output will be a list of data frames, one for
-  each combination of grouping variable(s).
+  Logical. If `TRUE`, output is a named list of cross-tabulation tables
+  keyed by group value. With a single group the list is flat; with 2+
+  groups the list is nested. When combined with
+  `group_as_hierarchy = TRUE`, a nested list with totals at each level
+  is returned.
 
-- group_grand_total:
+- group_as_hierarchy:
 
-  **\[experimental\]** Logical. Compute grand total based on the
-  grouping variable.
-
-- group_grand_total_label:
-
-  **\[experimental\]** Character. Apply label to the grand total if
-  `group_grand_total` is set to `TRUE`.
+  Logical. When `TRUE` (without `group_as_list`), inserts grand-total
+  rows into the output. When `TRUE` together with
+  `group_as_list = TRUE`, returns a nested named list with a total entry
+  at each level; the total key is formatted as
+  `"{var_label}: {label_group_hierarchy}"`.
 
 - calculate_per_group:
 
@@ -170,6 +183,31 @@ generate_crosstab(
   Logical. If `TRUE`, converts labelled variables to factors in the
   output. See also
   [`convert_factor()`](https://yng-me.github.io/tsg/reference/convert_factor.md).
+
+- multiple_columns:
+
+  **\[experimental\]** Logical or `NULL`. If `TRUE`, each column in
+  `...` is treated as a binary indicator variable. Rows where the column
+  equals `multiple_columns_filter` are counted per `x` category and
+  presented as side-by-side frequency/percent columns in a single wide
+  table. Requires at least 2 columns in `...`; if fewer are supplied a
+  warning is issued and the function falls back to regular
+  cross-tabulation mode.
+
+- multiple_columns_type:
+
+  Character. Controls how `multiple_columns = TRUE` handles the
+  additional columns. `"filtered"` (default) treats each column as a
+  binary indicator and produces a wide table with one column-pair per
+  variable. `"stacked"` stacks results hierarchically: each column in
+  `...` becomes a row group with `x` categories as columns;
+  `multiple_columns_filter` is ignored in this mode.
+
+- multiple_columns_filter:
+
+  Scalar value (default `1L`). The value to filter on when
+  `multiple_columns = TRUE` and `multiple_columns_type = "filtered"`.
+  Ignored when `multiple_columns_type = "stacked"`.
 
 - metadata:
 
@@ -281,6 +319,8 @@ person_record |>
 #> # ℹ 5 more variables: percent_1 <dbl>, percent_2 <dbl>, percent_3 <dbl>,
 #> #   percent_4 <dbl>, percent_NA <dbl>
 #> 
+#> attr(,"label_separator")
+#> [1] "__"
 #> attr(,"class")
 #> [1] "tsg"  "tsgc" "list"
 
@@ -314,6 +354,56 @@ person_record |>
 #> 
 #> attr(,"groups")
 #> [1] "sex"
+#> attr(,"label_separator")
+#> [1] "__"
+#> attr(,"class")
+#> [1] "tsg"  "tsgc" "list"
+
+ # Nested list with totals at each level (group_as_list + group_as_hierarchy)
+ person_record |>
+   dplyr::group_by(sex) |>
+   generate_crosstab(marital_status, employed,
+     group_as_list = TRUE, group_as_hierarchy = TRUE)
+#> $`Sex: All`
+#> # A tibble: 6 × 9
+#>   sex    category total frequency_1 frequency_2 frequency_NA percent_1 percent_2
+#>   <int+> <int+lb> <int>       <int>       <int>        <int>     <dbl>     <dbl>
+#> 1 0      1 [Sing…  1544         190         564          790      12.3      36.5
+#> 2 0      2 [Marr…   769         429         326           14      55.8      42.4
+#> 3 0      3 [Comm…   424         236         183            5      55.7      43.2
+#> 4 0      4 [Wido…   138          44          93            1      31.9      67.4
+#> 5 0      6 [Sepa…    43          23          20            0      53.5      46.5
+#> 6 0      0 [Tota…  2918         922        1186          810      31.6      40.6
+#> # ℹ 1 more variable: percent_NA <dbl>
+#> 
+#> $Male
+#> # A tibble: 6 × 9
+#>   sex       category        total frequency_1 frequency_2 frequency_NA percent_1
+#>   <int+lbl> <int+lbl>       <int>       <int>       <int>        <int>     <dbl>
+#> 1 1 [Male]  1 [Single/neve…   859         127         330          402      14.8
+#> 2 1 [Male]  2 [Married]       387         274         108            5      70.8
+#> 3 1 [Male]  3 [Common law/…   211         169          41            1      80.1
+#> 4 1 [Male]  4 [Widowed]        40          18          21            1      45  
+#> 5 1 [Male]  6 [Separated]      19          11           8            0      57.9
+#> 6 1 [Male]  0 [Total]        1516         599         508          409      39.5
+#> # ℹ 2 more variables: percent_2 <dbl>, percent_NA <dbl>
+#> 
+#> $Female
+#> # A tibble: 6 × 9
+#>   sex        category       total frequency_1 frequency_2 frequency_NA percent_1
+#>   <int+lbl>  <int+lbl>      <int>       <int>       <int>        <int>     <dbl>
+#> 1 2 [Female] 1 [Single/nev…   685          63         234          388      9.20
+#> 2 2 [Female] 2 [Married]      382         155         218            9     40.6 
+#> 3 2 [Female] 3 [Common law…   213          67         142            4     31.5 
+#> 4 2 [Female] 4 [Widowed]       98          26          72            0     26.5 
+#> 5 2 [Female] 6 [Separated]     24          12          12            0     50   
+#> 6 2 [Female] 0 [Total]       1402         323         678          401     23.0 
+#> # ℹ 2 more variables: percent_2 <dbl>, percent_NA <dbl>
+#> 
+#> attr(,"groups")
+#> [1] "sex"
+#> attr(,"label_separator")
+#> [1] "__"
 #> attr(,"class")
 #> [1] "tsg"  "tsgc" "list"
 
