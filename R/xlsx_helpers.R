@@ -99,7 +99,7 @@ get_header <- function(data, names_separator = "__") {
   }
 
   x <- stats::setNames(
-    stringr::str_split(column_labels, pattern = names_separator),
+    strsplit(column_labels, split = names_separator, fixed = TRUE),
     columns
   )
 

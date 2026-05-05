@@ -18,7 +18,17 @@ xlsx_write_data <- function(
 
   facade <- resolve_facade(facade, attributes(data)$facade)
 
-  table_hidden <- FALSE %||% facade$table.hidden
+  # Auto-detect names_separator from the tsg object when it's a stacked crosstab.
+  # The stacked path stores label_separator as an attribute; use it so that
+  # xlsx_header_merge splits labels at the correct separator.
+  data_for_sep <- if (inherits(data, "list")) data[[1]] else data
+  tsg_label_sep <- attr(data_for_sep, "label_separator")
+  if (!is.null(tsg_label_sep) &&
+      isTRUE(attr(data_for_sep, "multiple_columns_type") == "stacked")) {
+    names_separator <- tsg_label_sep
+  }
+
+  table_hidden <- isTRUE(facade$table.hidden)
 
   openxlsx::addWorksheet(
     wb,
@@ -28,6 +38,10 @@ xlsx_write_data <- function(
     visible = !table_hidden,
     ...
   )
+
+  if(isTRUE(facade$table.locked)) {
+    openxlsx::protectWorksheet(wb, sheet_name, protect = TRUE)
+  }
 
   if(include_table_list) {
 
@@ -53,7 +67,7 @@ xlsx_write_data <- function(
 
   title <- title %||% attributes(data)$title
   subtitle <- subtitle %||% attributes(data)$subtitle
-  footnotes <- footnotes %||% attributes(data)$footnotes$text
+  footnotes <- footnotes %||% attributes(data)$footnotes
   source_note <- resolve_source_note(data, source_note)
 
   groups <- attributes(data)$groups
@@ -98,6 +112,16 @@ xlsx_write_data <- function(
       header_width_pad_i <- 0
       if(header_depth_i == 1) { header_width_pad_i <- 6 }
 
+      n_total_rows_per_group <- purrr::map_int(data, \(d) nrow(dplyr::ungroup(d)))
+      n_group_header_rows <- if(!row_group_as_column) length(row_titles) else 0
+      final_table_end_row <- offset_row + header_depth_i + sum(n_total_rows_per_group) + n_group_header_rows
+
+      xlsx_apply_table_style(
+        wb, sheet_name, facade,
+        rows = (offset_row + 1):final_table_end_row,
+        cols = start_col:(ncol(data_first) + start_col - 1)
+      )
+
       xlsx_eval_style(
         wb = wb,
         sheet_name = sheet_name,
@@ -135,6 +159,14 @@ xlsx_write_data <- function(
             cols = start_col:(ncol(data_first) + start_col - 1),
             gridExpand = TRUE,
             stack = TRUE
+          )
+
+          xlsx_eval_style(
+            wb = wb,
+            sheet_name = sheet_name,
+            style = extract_facade(facade, 'row_group'),
+            rows = header_depth_i + offset_row_i,
+            cols = start_col:(ncol(data_first) + start_col - 1)
           )
 
           openxlsx::mergeCells(
@@ -208,6 +240,17 @@ xlsx_write_data <- function(
               cols = start_col + (which_group_cols[j] - 1)
             )
           }
+
+          rg_width <- extract_facade(facade, 'row_group', 'width')
+          if (!is.null(rg_width)) {
+            openxlsx::setColWidths(
+              wb = wb,
+              sheet = sheet_name,
+              cols = start_col + (which_group_cols - 1),
+              widths = rg_width
+            )
+          }
+
         }
 
         offset_row_i <- offset_row_i + nrow(data_i)
@@ -243,6 +286,17 @@ xlsx_write_data <- function(
         style = extract_facade(facade, 'body'),
         rows = (offset_row + 1):(header_depth_i + offset_row_i),
         cols = start_col:(ncol(data_first) + start_col - 1)
+      )
+
+      xlsx_apply_spanner_style(
+        wb, sheet_name, facade, header_depth_i, offset_row,
+        start_col, ncol(data_first) + start_col - 1
+      )
+
+      xlsx_apply_col_styles(
+        wb, sheet_name, facade,
+        start_col, ncol(data_first) + start_col - 1,
+        rows = (offset_row + 1):(header_depth_i + offset_row_i)
       )
 
       # outer borders
@@ -328,15 +382,8 @@ xlsx_write_data <- function(
         footnotes = footnotes,
         offset_row = offset_row_i + header_depth_i + 1,
         offset_col = offset_col,
+        n_cols = ncol(data_first),
         facade = facade
-      )
-
-      xlsx_colwidths(
-        wb = wb,
-        sheet_name = sheet_name,
-        facade = facade,
-        cols = offset_row_i + header_depth_i + 1,
-        offset = offset_col
       )
 
     } else {
@@ -394,6 +441,12 @@ xlsx_write_data <- function(
         header_width_pad_i <- 0
         if(header_depth_i == 1) { header_width_pad_i <- 6 }
 
+        xlsx_apply_table_style(
+          wb, sheet_name, facade,
+          rows = 1:(header_depth_i + nrow(data_i)) + offset_row_i,
+          cols = start_col:(ncol(data_i) + start_col - 1)
+        )
+
         # header style
         xlsx_eval_style(
           wb = wb,
@@ -419,6 +472,17 @@ xlsx_write_data <- function(
           style = extract_facade(facade, 'body'),
           rows = 1:(header_depth_i + nrow(data_i)) + offset_row_i,
           cols = start_col:(ncol(data_i) + start_col - 1)
+        )
+
+        xlsx_apply_spanner_style(
+          wb, sheet_name, facade, header_depth_i, offset_row_i,
+          start_col, ncol(data_i) + start_col - 1
+        )
+
+        xlsx_apply_col_styles(
+          wb, sheet_name, facade,
+          start_col, ncol(data_i) + start_col - 1,
+          rows = 1:(header_depth_i + nrow(data_i)) + offset_row_i
         )
 
         if(extract_facade(facade, 'table', 'lastRowBold')) {
@@ -528,6 +592,7 @@ xlsx_write_data <- function(
             footnotes = footnotes,
             offset_row = header_depth_i + offset_row_i + nrow(data_i),
             offset_col = offset_col,
+            n_cols = ncol(data_i),
             facade = facade
           )
 
@@ -576,6 +641,12 @@ xlsx_write_data <- function(
     header_width_pad <- 0
     if(header_depth == 1) { header_width_pad <- 6 }
 
+    xlsx_apply_table_style(
+      wb, sheet_name, facade,
+      rows = 1:(header_depth + nrow(data)) + offset_row,
+      cols = start_col:(ncol(data) + start_col - 1)
+    )
+
     # header style
     xlsx_eval_style(
       wb = wb,
@@ -601,6 +672,17 @@ xlsx_write_data <- function(
       style = extract_facade(facade, 'body'),
       rows = 1:(header_depth + nrow(data)) + offset_row,
       cols = start_col:(ncol(data) + start_col - 1)
+    )
+
+    xlsx_apply_spanner_style(
+      wb, sheet_name, facade, header_depth, offset_row,
+      start_col, ncol(data) + start_col - 1
+    )
+
+    xlsx_apply_col_styles(
+      wb, sheet_name, facade,
+      start_col, ncol(data) + start_col - 1,
+      rows = 1:(header_depth + nrow(data)) + offset_row
     )
 
     xlsx_decimal_format(
@@ -720,6 +802,7 @@ xlsx_write_data <- function(
       footnotes = footnotes,
       offset_row = header_depth + offset_row + 1 + nrow(data),
       offset_col = offset_col,
+      n_cols = ncol(data),
       facade = facade
     )
 

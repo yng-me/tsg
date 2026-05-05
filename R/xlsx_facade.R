@@ -1,41 +1,8 @@
 xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
 
-  style_fn_args <- list()
-  style_names <- names(style)
-
-  for(i in seq_along(style_names)) {
-
-    style_i <- style[[i]]
-
-    if(is.null(style_i)) next
-
-    if(length(style_i) > 1) {
-
-      if(is.numeric(style_i) | is.logical(style_i)) {
-        style_arg <- glue::glue("c({paste0(as.character(style_i), collapse = ", ")})")
-      } else {
-        style_arg_c <- paste0(paste0("'", style$border, "'"), collapse = ", ")
-        style_arg <- glue::glue("c({style_arg_c})")
-      }
-
-    } else {
-
-      if(is.numeric(style_i) | is.logical(style_i)) {
-        style_arg <- as.character(style_i)
-      } else {
-        style_arg <- glue::glue("'{style_i}'")
-      }
-
-    }
-
-    style_fn_args[[i]] <- glue::glue("{style_names[i]} = {style_arg}")
-
-  }
+  style_fn_args <- purrr::discard(style, is.null)
 
   if(length(style_fn_args) > 0) {
-
-    args <- paste0(unlist(style_fn_args), collapse = ", ")
-    fn <- as.character(glue::glue("openxlsx::createStyle({args})"))
 
     openxlsx::addStyle(
       wb = wb,
@@ -44,7 +11,7 @@ xlsx_eval_style <- function(wb, sheet_name, style, cols, rows) {
       gridExpand = TRUE,
       cols = cols,
       rows = rows,
-      style = eval(parse(text = fn))
+      style = do.call(openxlsx::createStyle, style_fn_args)
     )
   }
 
@@ -133,6 +100,41 @@ xlsx_corner_borders <- function(
   }
 
   return(wb)
+}
+
+
+xlsx_apply_table_style <- function(wb, sheet_name, facade, rows, cols) {
+  table_style <- extract_facade(facade, 'table')
+  table_style <- table_style[!names(table_style) %in% c("locked", "hidden")]
+  xlsx_eval_style(wb, sheet_name, style = table_style, rows = rows, cols = cols)
+  wb
+}
+
+
+xlsx_apply_spanner_style <- function(wb, sheet_name, facade, header_depth, offset_row, start_col, end_col) {
+  if (header_depth > 1) {
+    xlsx_eval_style(
+      wb = wb, sheet_name = sheet_name,
+      style = extract_facade(facade, 'spanner'),
+      rows = (1:(header_depth - 1)) + offset_row,
+      cols = start_col:end_col
+    )
+    spanner_height <- extract_facade(facade, 'spanner', 'height')
+    if (!is.null(spanner_height)) {
+      openxlsx::setRowHeights(wb, sheet_name,
+        rows = (1:(header_depth - 1)) + offset_row,
+        heights = spanner_height
+      )
+    }
+  }
+  wb
+}
+
+
+xlsx_apply_col_styles <- function(wb, sheet_name, facade, start_col, end_col, rows) {
+  xlsx_eval_style(wb, sheet_name, extract_facade(facade, 'col_first'), rows = rows, cols = start_col)
+  xlsx_eval_style(wb, sheet_name, extract_facade(facade, 'col_last'), rows = rows, cols = end_col)
+  wb
 }
 
 
