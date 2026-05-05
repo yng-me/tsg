@@ -8,3 +8,5 @@ playground
 ^docs$
 ^pkgdown$
 ^README\.Rmd$
+TODO.md
+^README\.html$

@@ -128,10 +128,24 @@ test_that("generate_frequency sorts correctly by frequency", {
 
 # Excluding variable from sorting (sort_except)
 test_that("generate_frequency respects sort_except argument", {
-  result <- generate_frequency(df, category, value, sort_value = TRUE, sort_except = "value")
-  expect_equal(as.vector(result$category$category), c("C", "A", "B", "Total"))
-  expect_equal(as.vector(result$category$frequency), c(4, 3, 1, 8))
-  expect_equal(as.vector(result$value$frequency), c(1, 5, 2, 8))
+
+  result_1 <- generate_frequency(mock_data_labelled, sort_value = TRUE)
+  result_1e <- generate_frequency(mock_data_labelled, sort_value = TRUE, sort_except = "sex")
+  result_2e <- generate_frequency(mock_data_labelled, sort_value = TRUE, sort_except = c("sex", "age_group"))
+
+  expect_equal(as.vector(result_1[[2]]$category), c(2, 1, 0))
+  expect_equal(as.vector(result_1[[4]]$category), c("Young", "Old", "Total"))
+
+  # Order must be consistent
+  expect_equal(as.vector(result_1e[[1]]$category), c(1, 2, 3, 0))
+  expect_equal(as.vector(result_2e[[1]]$category), c(1, 2, 3, 0))
+
+  expect_equal(as.vector(result_1e[[2]]$category), c(1, 2, 0))
+  expect_equal(as.vector(result_1e[[4]]$category), c("Young", "Old", "Total"))
+
+  expect_equal(as.vector(result_2e[[2]]$category), c(1, 2, 0))
+  expect_equal(as.vector(result_2e[[4]]$category), c("Old", "Young", "Total"))
+
 })
 
 
@@ -204,6 +218,22 @@ test_that("generate_frequency places the total row in the correct position", {
   # Ensure total row is in the correct position
   expect_equal(result_top$category[1], "Total")
   expect_equal(result_bottom$category[nrow(result_bottom)], "Total")
+
+})
+
+
+# Test position of total row (top vs. bottom)
+test_that("generate_frequency returns correct cumulative values with either top or bottom totals", {
+  result_top <- generate_frequency(df, category, add_total = TRUE, add_cumulative = TRUE, add_cumulative_percent = TRUE, position_total = "top")
+  result_bottom <- generate_frequency(df, category, add_total = TRUE, add_cumulative = TRUE, add_cumulative_percent = TRUE, position_total = "bottom")
+
+  # Ensure total row is in the correct position
+  expect_true(is.na(result_top$cumulative[1]))
+  expect_true(is.na(result_bottom$cumulative[nrow(result_bottom)]))
+
+  expect_true(is.na(result_top$cumulative_percent[1]))
+  expect_true(is.na(result_bottom$cumulative_percent[nrow(result_bottom)]))
+
 })
 
 
@@ -273,7 +303,7 @@ test_that("generate_frequency calculates per group and returns a data frame", {
 
   result_g <- df |>
     dplyr::group_by(value) |>
-    generate_frequency(category, group_as_list = FALSE, group_grand_total = TRUE)
+    generate_frequency(category, group_as_list = FALSE, group_as_hierarchy = TRUE)
 
   expect_true(inherits(result, 'data.frame'))
   expect_equal(nrow(result), 12)
@@ -284,19 +314,17 @@ test_that("generate_frequency calculates per group and returns a data frame", {
 })
 
 
-# Group as list with grand total
-test_that("generate_frequency calculates per group with grand total and returns a list", {
+# group_as_list + group_as_hierarchy returns nested list (no warning)
+test_that("generate_frequency returns nested list when group_as_list and group_as_hierarchy are both TRUE", {
 
   result <- df |>
     dplyr::group_by(value) |>
-    generate_frequency(category, group_as_list = TRUE, group_grand_total = TRUE)
-
+    generate_frequency(category, group_as_list = TRUE, group_as_hierarchy = TRUE)
 
   expect_true(inherits(result, 'list'))
-  expect_equal(length(result), 4)  # Three unique values in 'value' column
-  expect_true(all(sapply(result, function(x) inherits(x, 'data.frame'))))
-
-  expect_true(identical(names(result), c("All", "1", "2", "3")))
+  expect_equal(length(result), 4)  # "value: All", "1", "2", "3"
+  expect_equal(names(result)[[1]], "value: All")
+  expect_true(all(sapply(result, is.data.frame)))
 
   result_warn <- df |>
     dplyr::group_by(category) |>
@@ -306,6 +334,49 @@ test_that("generate_frequency calculates per group with grand total and returns 
 
   expect_warning(result_warn, regexp = NA)
 
+
+})
+
+
+# label_group_hierarchy: named vector support
+test_that("generate_frequency supports named-vector label_group_hierarchy", {
+
+  # Custom string: key should use the custom label
+  r_custom <- df |>
+    dplyr::group_by(value) |>
+    generate_frequency(category, group_as_list = TRUE, group_as_hierarchy = TRUE,
+      label_group_hierarchy = "Grand Total")
+
+  expect_equal(names(r_custom)[[1]], "value: Grand Total")
+
+  # Named vector: per-variable label
+  r_named <- df |>
+    dplyr::group_by(value) |>
+    generate_frequency(category, group_as_list = TRUE, group_as_hierarchy = TRUE,
+      label_group_hierarchy = c(value = "All values"))
+
+  expect_equal(names(r_named)[[1]], "value: All values")
+
+  # Fallback: unnamed element used when variable not in the named vector
+  r_fallback <- df |>
+    dplyr::group_by(value) |>
+    generate_frequency(category, group_as_list = TRUE, group_as_hierarchy = TRUE,
+      label_group_hierarchy = c(other_var = "X", "Fallback"))
+
+  expect_equal(names(r_fallback)[[1]], "value: Fallback")
+
+  # Flat hierarchy with named vector (2-group)
+  r_flat <- df |>
+    dplyr::group_by(type, value) |>
+    generate_frequency(category, group_as_hierarchy = TRUE, calculate_per_group = TRUE,
+      label_group_hierarchy = c(type = "All types", value = "All values"))
+
+  expect_true(inherits(r_flat, "data.frame"))
+  # Both group columns should contain their custom hierarchy label
+  type_vals <- as.character(haven::as_factor(r_flat$type))
+  value_vals <- as.character(haven::as_factor(r_flat$value))
+  expect_true("All types" %in% type_vals)
+  expect_true("All values" %in% value_vals)
 
 })
 
@@ -327,14 +398,16 @@ test_that("generate_frequency works with multiple grouping variables", {
     suppressMessages()
 
   expect_true(inherits(result_2, 'list'))
-  expect_equal(length(result_2), 5)
-  expect_equal(names(result_2), c("X|A", "X|B", "X|C", "Y|A", "Y|C"))
-  expect_true(all(sapply(result_2, function(x) inherits(x, 'data.frame'))))
-  expect_equal(nrow(result_2[["X|A"]]), 2)
-  expect_equal(nrow(result_2[["Y|C"]]), 3)
-  expect_equal(ncol(result_2[["Y|C"]]), 5)
-  expect_equal(result_2[["Y|C"]]$frequency[nrow(result_2[["Y|C"]])], 2)
-  expect_equal(result_2[["Y|C"]]$percent[nrow(result_2[["Y|C"]])], 100)
+  expect_equal(length(result_2), 2)
+  expect_equal(names(result_2), c("X", "Y"))
+  expect_equal(sort(names(result_2$X)), c("A", "B", "C"))
+  expect_equal(sort(names(result_2$Y)), c("A", "C"))
+  expect_true(all(sapply(result_2$X, function(x) inherits(x, 'data.frame'))))
+  expect_equal(nrow(result_2[["X"]][["A"]]), 2)
+  expect_equal(nrow(result_2[["Y"]][["C"]]), 3)
+  expect_equal(ncol(result_2[["Y"]][["C"]]), 5)
+  expect_equal(result_2[["Y"]][["C"]]$frequency[nrow(result_2[["Y"]][["C"]])], 2)
+  expect_equal(result_2[["Y"]][["C"]]$percent[nrow(result_2[["Y"]][["C"]])], 100)
 
   expect_contains(attributes(result_2)$groups, c("type", "category"))
 
@@ -422,10 +495,10 @@ test_that("generate_frequency handles collapse list correctly", {
   )
 
   df <- df_collapse |>
-    tsg::generate_frequency(add_percent = FALSE, collapse_list = TRUE)
+    generate_frequency(add_percent = FALSE, collapse_list = TRUE)
 
   df_1 <- df_collapse |>
-    tsg::generate_frequency(collapse_list = TRUE)
+    generate_frequency(collapse_list = TRUE)
 
   df_2 <- df_collapse |>
     generate_frequency() |>

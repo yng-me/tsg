@@ -20,19 +20,22 @@ generate_crosstab(
   label_total_column = NULL,
   label_total_row = NULL,
   label_na = "Not reported",
+  label_as_group_name = TRUE,
+  label_group_hierarchy = "All",
   include_na = TRUE,
   recode_na = "auto",
-  label_as_group_name = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
-  group_grand_total = FALSE,
-  group_grand_total_label = "All",
+  group_as_hierarchy = FALSE,
   calculate_per_group = TRUE,
   expand_categories = TRUE,
   position_total = "bottom",
   sort_column_names = TRUE,
   collapse_list = FALSE,
   convert_factor = FALSE,
+  multiple_columns = FALSE,
+  multiple_columns_type = c("filtered", "stacked"),
+  multiple_columns_filter = 1L,
   metadata = NULL
 )
 }
@@ -67,19 +70,19 @@ generate_crosstab(
 
 \item{label_na}{Character. Label to use for missing (\code{NA}) values.}
 
+\item{label_as_group_name}{Logical. If \code{TRUE}, uses the variable label of the grouping variable(s) as the name in the output list.}
+
+\item{label_group_hierarchy}{Character. Label applied to grand-total entries when \code{group_as_hierarchy = TRUE}. Can be a single string (applied to all group levels) or a named character vector keyed by group column name for per-variable labels (e.g. \code{c(sex = "All sexes", employed = "All workers")}). Defaults to \code{"All"}.}
+
 \item{include_na}{Logical. If \code{TRUE}, includes missing values in the cross table.}
 
 \item{recode_na}{Character or \code{NULL}. Value used to replace missing values in labelled vectors; \code{"auto"} will determine a code automatically.}
 
-\item{label_as_group_name}{Logical. If \code{TRUE}, uses the variable label of the grouping variable(s) as the name in the output list.}
+\item{group_separator}{Character. Separator used when concatenating group values in list output (if \code{group_as_list = TRUE} with a single group).}
 
-\item{group_separator}{Character. Separator used when constructing group names in the output list.}
+\item{group_as_list}{Logical. If \code{TRUE}, output is a named list of cross-tabulation tables keyed by group value. With a single group the list is flat; with 2+ groups the list is nested. When combined with \code{group_as_hierarchy = TRUE}, a nested list with totals at each level is returned.}
 
-\item{group_as_list}{Logical. If \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s).}
-
-\item{group_grand_total}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Logical. Compute grand total based on the grouping variable.}
-
-\item{group_grand_total_label}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Character. Apply label to the grand total if \code{group_grand_total} is set to \code{TRUE}.}
+\item{group_as_hierarchy}{Logical. When \code{TRUE} (without \code{group_as_list}), inserts grand-total rows into the output. When \code{TRUE} together with \code{group_as_list = TRUE}, returns a nested named list with a total entry at each level; the total key is formatted as \code{"{var_label}: {label_group_hierarchy}"}.}
 
 \item{calculate_per_group}{Logical. If \code{TRUE}, calculates the cross-tabulation separately for each group defined by the grouping variable(s).}
 
@@ -92,6 +95,12 @@ generate_crosstab(
 \item{collapse_list}{Logical (NOT YET IMPLEMENTED). If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also \code{\link[=collapse_list]{collapse_list()}}.}
 
 \item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also \code{\link[=convert_factor]{convert_factor()}}.}
+
+\item{multiple_columns}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Logical or \code{NULL}. If \code{TRUE}, each column in \code{...} is treated as a binary indicator variable. Rows where the column equals \code{multiple_columns_filter} are counted per \code{x} category and presented as side-by-side frequency/percent columns in a single wide table. Requires at least 2 columns in \code{...}; if fewer are supplied a warning is issued and the function falls back to regular cross-tabulation mode.}
+
+\item{multiple_columns_type}{Character. Controls how \code{multiple_columns = TRUE} handles the additional columns. \code{"filtered"} (default) treats each column as a binary indicator and produces a wide table with one column-pair per variable. \code{"stacked"} stacks results hierarchically: each column in \code{...} becomes a row group with \code{x} categories as columns; \code{multiple_columns_filter} is ignored in this mode.}
+
+\item{multiple_columns_filter}{Scalar value (default \code{1L}). The value to filter on when \code{multiple_columns = TRUE} and \code{multiple_columns_type = "filtered"}. Ignored when \code{multiple_columns_type = "stacked"}.}
 
 \item{metadata}{A named list with optional metadata to attach as attributes, e.g. \code{title}, \code{subtitle}, and \code{source_note}.}
 }
@@ -125,6 +134,12 @@ person_record |>
  person_record |>
    dplyr::group_by(sex) |>
    generate_crosstab(marital_status, employed, group_as_list = TRUE)
+
+ # Nested list with totals at each level (group_as_list + group_as_hierarchy)
+ person_record |>
+   dplyr::group_by(sex) |>
+   generate_crosstab(marital_status, employed,
+     group_as_list = TRUE, group_as_hierarchy = TRUE)
 
 # # Percent or proportion by row or column
 person_record |>

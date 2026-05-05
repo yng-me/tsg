@@ -244,14 +244,13 @@ add_facade <- function(
 #' # Other built-in facade
 #' get_tsg_facade("yolo")
 
-get_tsg_facade <- function(facade = "default", which = c("xlsx", "pdf", "html")) {
+get_tsg_facade <- function(facade = "default", which = c("xlsx", "html", "docx", "pdf")) {
 
-  if(file.exists(facade)) {
-
+  if(fs::is_file(facade) && file.exists(facade)) {
     if(grepl("\\.(yaml|yml)$", facade)) {
-      return(yaml::read_yaml(facade_path))
+      return(yaml::read_yaml(facade))
     } else if (grepl("\\.json$", facade)) {
-      return(jsonlite::read_json(facade_path, simplifyVector = TRUE))
+      return(jsonlite::read_json(facade, simplifyVector = TRUE))
     }
   }
 
@@ -337,7 +336,7 @@ extract_facade <- function(facade, key, which = NULL) {
 }
 
 
-resolve_facade <- function(facade, attrs) {
+resolve_facade <- function(facade, attrs, which = "xlsx") {
 
   facade_source <- attributes(facade)$source
 
@@ -347,7 +346,7 @@ resolve_facade <- function(facade, attrs) {
     } else if (facade_source == "built-in") {
       facade <- utils::modifyList(facade, attrs)
     } else {
-      facade <- utils::modifyList(get_tsg_facade(), facade)
+      facade <- utils::modifyList(get_tsg_facade(which = which), facade)
     }
   }
 

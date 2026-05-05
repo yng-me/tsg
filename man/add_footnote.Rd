@@ -14,23 +14,34 @@ add_footnote(
 \arguments{
 \item{data}{A data frame, tibble, or \code{tsg} object to which a footnote attribute will be added.}
 
-\item{footnote}{The footnote text to be added.}
+\item{footnote}{The footnote text to be added (a single character string).}
 
-\item{locations}{Locations where the footnote should be applied. Default is NULL (applies to entire table).}
+\item{locations}{Optional character vector of \strong{column names} to anchor the footnote marker.
+When supplied, a footnote reference symbol is placed in those column headers.
+Column-level anchoring is supported in HTML and PDF output (via \pkg{gt});
+XLSX and Word output include the text without cell-level markers.
+Default \code{NULL} renders the footnote as a table-level footer with no marker.}
 
-\item{placement}{Placement of the footnote. One of "auto" (default), "right", or "left".}
+\item{placement}{Horizontal alignment of the footnote in the output footer.
+One of \code{"auto"} (default, equivalent to \code{"left"}), \code{"right"}, or
+\code{"left"}.  Respected by all three output formats (HTML/PDF, XLSX, Word).}
 }
 \value{
-The input data frame with an added footnote attribute.
+The input data frame with an updated \code{footnotes} attribute
+(a list with elements \code{$text}, \code{$placement}, and \code{$locations}).
 }
 \description{
 Add a footnote attribute to a table
 }
 \examples{
-add_footnote(
-  dplyr::starwars,
-  footnote = "This is a footnote.",
-  locations = c("A1", "B2"),
-  placement = "right"
-)
+tbl <- person_record |> generate_frequency(sex)
+
+# Whole-table footer, left-aligned (default)
+tbl |> add_footnote("Source: National Survey 2023.")
+
+# Right-aligned footer note
+tbl |> add_footnote("Weighted estimates.", placement = "right")
+
+# Footnote anchored to a specific column header (HTML/PDF)
+tbl |> add_footnote("Unweighted count.", locations = "frequency")
 }

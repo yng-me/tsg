@@ -87,41 +87,61 @@ xlsx_write_footnotes <- function(
   sheet_name,
   offset_row = 0,
   offset_col = 0,
+  n_cols = 1,
   facade = get_tsg_facade()
 ) {
 
-  if(length(footnotes) == 0) return(wb)
+  footnotes <- .normalize_footnotes(footnotes)
+  if (is.null(footnotes) || length(footnotes$text) == 0L) return(wb)
 
-  for(i in seq_along(footnotes)) {
+  n <- length(footnotes$text)
 
-    footnote <- footnotes[[i]]
+  for (i in seq_len(n)) {
 
-    if(inherits(footnote, 'list')) {
-      footnote_text <- footnote$text
+    fn_text      <- footnotes$text[[i]]
+    fn_placement <- footnotes$placement[[i]] %||% "auto"
+
+    # For right-aligned footnotes, write starting from the right-most data column
+    start_col <- if (fn_placement == "right") {
+      offset_col + max(1L, n_cols)
     } else {
-      footnote_text <- footnote
+      offset_col + 1L
     }
 
     openxlsx::writeData(
-      wb = wb,
-      x = footnote_text,
-      sheet = sheet_name,
-      startRow =  offset_row + i,
-      startCol = offset_col + 1,
+      wb       = wb,
+      x        = fn_text,
+      sheet    = sheet_name,
+      startRow = offset_row + i,
+      startCol = start_col,
       colNames = FALSE
+    )
+
+    fn_halign <- if (fn_placement == "right") "right" else "left"
+
+    footnote_style <- extract_facade(facade, 'footnotes')
+    footnote_style[["halign"]] <- fn_halign
+
+    xlsx_eval_style(
+      wb         = wb,
+      sheet_name = sheet_name,
+      style      = footnote_style,
+      cols       = start_col,
+      rows       = offset_row + i
     )
 
   }
 
+  # Apply base footnote style to the whole footnote row range (for borders etc.)
   xlsx_eval_style(
-    wb = wb,
+    wb         = wb,
     sheet_name = sheet_name,
-    style = extract_facade(facade, 'footnotes'),
-    cols = offset_col + 1,
-    rows = offset_row:(offset_row + length(footnotes))
+    style      = extract_facade(facade, 'footnotes'),
+    cols       = (offset_col + 1L):(offset_col + max(1L, n_cols)),
+    rows       = (offset_row + 1L):(offset_row + n)
   )
 
-  attr(wb, "offset_row") <- length(footnotes)
+  attr(wb, "offset_row") <- n
 
   return(wb)
 

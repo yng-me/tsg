@@ -1,8 +1,8 @@
 ---
-title: "Working with the tsg package"
+title: "Getting Started with tsg"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{tsg}
+  %\VignetteIndexEntry{Getting Started with tsg}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -18,79 +18,50 @@ knitr::opts_chunk$set(
 library(tsg)
 ```
 
-Throughout the examples, we will use the `person_record` sample dataset, which is included in the `tsg` package. This dataset contains demographic information about individuals, including `person_id`, `sex`, `age`, `marital_status`, `employed` status, and functional difficulties.
+`tsg` helps you turn a dataset into a publication-ready summary table — a count of each category, a two-way comparison, or anything in between — and save it to Excel in one short pipeline. No manual formatting required.
+
+This vignette walks through the most common tasks:
+
+1. Counting values in a column
+2. Comparing two columns against each other
+3. Breaking results down by a group
+4. Saving your table to a file
+
+---
+
+## The sample dataset
+
+All examples use `person_record`, a sample household survey dataset included with the package. It contains one row per respondent and records their sex, age, marital status, employment status, and ratings on six functional difficulty questions (seeing, hearing, walking, etc.).
 
 ```{r}
-dim(person_record)
 head(person_record)
 ```
 
-## Generate frequency table 
+---
 
-The `generate_frequency()` function creates frequency tables for one or more categorical variables in a data frame. It supports a variety of enhancements, such as sorting, adding totals and percentages, handling missing values, and customizing labels. This function is highly versatile and can work with grouped data, outputting either a single table or a list of tables.
+## Count values in a column
 
-### Basic usage
+`generate_frequency()` counts how many respondents fall into each category of a column, and adds a percentage column automatically.
 
 ```{r}
-person_record |> 
+person_record |>
   generate_frequency(sex)
 ```
 
-### Multiple variables
+The result is a table with one row per category, plus a **Total** row at the bottom.
 
-If you pass multiple variables, it will generate frequency tables for each variable separately in a list.
+### Count several columns at once
+
+Pass more than one column name and you get back a list of tables — one per column.
 
 ```{r}
 person_record |>
   generate_frequency(sex, age, marital_status)
 ```
 
-### Grouping
+### Show only the top categories
 
-You can also specify grouping using the `group_by()` from `dplyr` and it will calculate the frequency table for each group.
-
-```{r}
-person_record |>
-  dplyr::group_by(sex) |>
-  generate_frequency(marital_status)
-```
-
-By default, the function will generate a single frequency table for the grouped data. If you want to generate a list of frequency tables for each group, you can set `group_as_list = TRUE`.
-
-```{r}
-person_record |>
-  dplyr::group_by(sex) |>
-  generate_frequency(marital_status, group_as_list = TRUE)
-```
-
-### Sorting
-
-By default, the output is sorted by frequency in descending order. If `sort_value` is set to `FALSE`, the output will be sorted by the variable values in ascending order.
-
-```{r}
-person_record |>
-  generate_frequency(age, sort_value = TRUE)
-
-person_record |>
-  generate_frequency(age, sort_value = FALSE)
-```
-
-If multiple variables are specified, you can indicate which variable/s is/are excluded from sorting using the `sort_except` argument.
-
-```{r}
-person_record |>
-  generate_frequency(
-    sex, 
-    age, 
-    marital_status, 
-    # vector of variable names (character) to exclude from sorting
-    sort_except = "age" 
-  )
-```
-
-### Top `n` values
-
-You can specify the top `n` most frequent values to display in the frequency table, if `sort_value` is `TRUE`. By default, it will show top-n values plus the remaining values grouped into "Others".
+Use `top_n` to keep only the most frequent categories. By default, everything else is rolled up into an "Others" row.
 
 ```{r}
 person_record |>
@@ -100,41 +71,53 @@ person_record |>
   )
 ```
 
-If you want to show only the top-n values and exclude the rest, set `top_n_only = TRUE`.
+Set `top_n_only = TRUE` to drop the "Others" row entirely and show only the top results.
 
 ```{r}
 person_record |>
   generate_frequency(
     marital_status, 
-    top_n = 3,
+    top_n      = 3,
     top_n_only = TRUE
   )
 ```
 
+### Control how rows are sorted
 
-### Handling missing values
+By default, rows are sorted by frequency (most common first). Set `sort_value = FALSE` to sort by the category values instead — useful for ordered variables like `age`.
 
-You can also specify whether to include or exclude `NA`s (missing values) from the frequency table.
+```{r}
+person_record |>
+  generate_frequency(age, sort_value = FALSE)
+```
+
+When counting multiple columns at once, you can exclude specific columns from sorting with `sort_except`:
 
 ```{r}
 person_record |>
   generate_frequency(
-    employed,
-    include_na = TRUE # default
-  )
-
-# Exclude NA values
-person_record |>
-  generate_frequency(
-    employed,
-    include_na = FALSE
+    sex, 
+    age, 
+    marital_status, 
+    sort_except = "age"   # keep age in its natural order
   )
 ```
 
+### Include or exclude missing values
 
-### Collapse list
+By default, missing values (`NA`) are counted and shown as a separate row. Set `include_na = FALSE` to leave them out.
 
-If the all variables passed to `generate_frequency()` are of the same structure (i.e. have the same number of levels or categories), you can collapse them into a single frequency table by setting `collapse_list = TRUE`.
+```{r}
+person_record |>
+  generate_frequency(employed, include_na = TRUE)  # default
+
+person_record |>
+  generate_frequency(employed, include_na = FALSE)
+```
+
+### Combine similar columns into one table
+
+If several columns share the same set of categories (like the six functional difficulty columns in `person_record`), you can stack them into a single table with `collapse_list = TRUE`.
 
 ```{r}
 person_record |>
@@ -149,107 +132,38 @@ person_record |>
   )
 ```
 
-Or equivalently using the `collapse_list()` helper function.
+### Other options
 
-```{r}
-person_record |>
-  generate_frequency(
-    seeing,
-    hearing,
-    walking,
-    remembering,
-    self_caring,
-    communicating
-  ) |> 
-  collapse_list()
-```
-
-### More options
-
-You can also add cumulative frequency and percentage to the frequency table.
+- **Running totals** — add cumulative counts and percentages with `add_cumulative = TRUE` and `add_cumulative_percent = TRUE`.
+- **Proportions instead of percentages** — use `as_proportion = TRUE` to get values between 0 and 1.
+- **Total row at the top** — set `position_total = "top"` to move the Total row above the data rows.
+- **Custom total label** — use `label_total` to rename the "Total" row.
 
 ```{r}
 person_record |>
   generate_frequency(
     sex, 
-    add_cumulative = TRUE, 
+    add_cumulative         = TRUE, 
     add_cumulative_percent = TRUE 
   )
 ```
 
-You can also specify whether to express the value as a proportion.
+---
 
-```{r}
-person_record |>
-  generate_frequency(
-    marital_status,
-    as_proportion = TRUE
-  )
-```
+## Compare two columns in a grid (cross-tabulation)
 
-You can also position the total row at the top of the table.
-
-```{r}
-person_record |>
-  generate_frequency(
-    marital_status,
-    position_total = "top"
-  )
-```
-
-NOTE: For labelled data, the value for the row total is automatically set the lowest numeric value. The default label for the total row is "Total"; if you want to set a custom label for the total row, you can use the `label_total` argument.
-
-## Generate cross-tabulation 
-
-The `generate_crosstab()` function allows you to create cross-tabulations between two variables, which is useful for exploring relationships between categorical variables.
-
-### Basic usage
+`generate_crosstab()` builds a two-way table: the first column you name goes in the rows, and the second becomes column groups. You get a count and a percentage for each combination.
 
 ```{r}
 person_record |>
   generate_crosstab(marital_status, sex)
 ```
 
-NOTE: If you pass only one variable, it will fall back to `generate_frequency()` and generate a frequency table for variable specified.
+> **Tip:** If you name only one column, `generate_crosstab()` automatically falls back to a frequency table for that column.
 
-### Multiple variables
+### Percentages by column instead of by row
 
-If you pass mutliple variables, it will generate cross-tabulations for each pair of variables separately in a list.
-
-```{r}
-person_record |>
-  generate_crosstab(
-    sex,
-    seeing,
-    hearing,
-    walking,
-    remembering,
-    self_caring,
-    communicating
-  )
-```
-
-### Grouping
-
-You can also specify grouping with `group_by()` from `dplyr` and it will calculate the cross-tabulation for each group.
-
-```{r}
-person_record |>
-  dplyr::group_by(sex) |>
-  generate_crosstab(marital_status, employed)
-```
-
-If you want to generate a list of cross-tabulations for each group, you can set `group_as_list = TRUE`.
-
-```{r}
-person_record |>
-  dplyr::group_by(sex) |>
-  generate_crosstab(marital_status, employed, group_as_list = TRUE)
-```
-
-### Percent or proportion by row or column
-
-You can specify whether to calculate the percentage or proportion by row or column using the `percent_by_column` argument. If it is set to `TRUE`, the percentage will be calculated by column; if set to `FALSE`, it will be calculated by row. The default is `FALSE`.
+By default, percentages are calculated across each row (what share of each marital-status group is male vs. female?). Set `percent_by_column = TRUE` to flip this — percentages are then calculated down each column (what share of males is in each marital-status group?).
 
 ```{r}
 person_record |>
@@ -260,21 +174,26 @@ person_record |>
   )
 ```
 
+### Cross-tabulate against several columns at once
 
-### More options
-
-Just like `generate_frequency()`, you can also specify whether to express the value as a proportion.
+Pass more than one column after the row variable and you get a list of cross-tabs — one per column.
 
 ```{r}
 person_record |>
   generate_crosstab(
-    marital_status,
     sex,
-    as_proportion = TRUE
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating
   )
 ```
 
-You can also position the total row at the top of the table.
+### Other options
+
+The same options available for `generate_frequency()` also work in `generate_crosstab()` — `as_proportion`, `position_total`, `include_na`, `label_total`, and more.
 
 ```{r}
 person_record |>
@@ -285,99 +204,84 @@ person_record |>
   )
 ```
 
+---
 
-## Generate output
+## Break down results by a group
 
-You can export your frequency table or cross-tabulation to Excel using the `write_xlsx()`.
+Pipe a `group_by()` call before either function to calculate counts separately for each group. The result is a single merged table with the group labels embedded in the category column.
 
-### Basic usage
-
-```{r, eval=FALSE}
-person_record |> 
-  generate_frequency(sex) |> 
-  write_xlsx(path = "table-01.xlsx")
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status)
 ```
 
-### Add table info
+The same works for cross-tabulations:
 
-You can add a title and subtitle to your table using the `add_table_title()` and `add_table_subtitle()` functions.
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_crosstab(marital_status, employed)
+```
+
+> **Want separate tables per group?** See the [Grouped Tables and Side-by-Side Comparisons](advanced.html) vignette for `group_as_list` and `group_as_hierarchy`.
+
+---
+
+## Save your table to a file
+
+Once you have a table, pipe it to `write_xlsx()` to save it as an Excel file.
 
 ```{r, eval=FALSE}
-person_record |> 
-  generate_crosstab(marital_status, sex) |> 
+person_record |>
+  generate_frequency(sex) |>
+  write_xlsx(path = "table-sex.xlsx")
+```
+
+### Add a title and notes
+
+Chain `add_table_title()`, `add_table_subtitle()`, `add_source_note()`, and `add_footnote()` before saving to attach metadata that appears as styled rows above and below the table.
+
+```{r, eval=FALSE}
+person_record |>
+  generate_crosstab(marital_status, sex) |>
   add_table_title("Marital Status by Sex") |>
-  add_table_subtitle("Sample dataset: person_record") |>
-  write_xlsx(path = "table-02.xlsx")
+  add_table_subtitle("National Sample Survey, 2024") |>
+  add_source_note("Source: person_record dataset.") |>
+  add_footnote("Missing values are excluded from the denominator.") |>
+  write_xlsx(path = "table-marital-sex.xlsx")
 ```
 
-You can also add end notes to your table using the `add_source_note()` and `add_footnote()` functions.
+### Change the look of your table
+
+Pass a built-in style with `get_tsg_facade()` to quickly change the visual appearance of your exported table. The package ships with two built-in styles: `"default"` (clean and neutral) and `"yolo"` (bolder colours).
 
 ```{r, eval=FALSE}
-person_record |> 
-  generate_crosstab(marital_status, sex) |> 
-  add_table_title("Marital Status by Sex") |>
-  add_table_subtitle("Sample dataset: person_record") |>
-  add_source_note("Source: person_record dataset") |>
-  add_footnote("This is a footnote for the table") |>
-  write_xlsx(path = "table-03.xlsx")
-```
-
-Alternatively, you can directly add table title, subtitle, source_note, and footnotes by specifying them in the arguments of the `write_xlsx()` function.
-
-```{r, eval=FALSE}
-person_record |> 
-  generate_crosstab(marital_status, sex) |> 
+person_record |>
+  generate_frequency(sex) |>
   write_xlsx(
-    path = "table-03.xlsx",
-    table_title = "Marital Status by Sex",
-    table_subtitle = "Sample dataset: person_record",
-    source_note = "Source: person_record dataset",
-    footnotes = "This is a footnote for the table"
-  )
-```
-
-### Facade
-
-You can use the `add_facade()` function to apply a facade to your table. A facade is a set of styling options that can be applied to the table to customize its appearance.
-
-```{r, eval=FALSE}
-person_record |> 
-  generate_frequency(sex) |> 
-  add_facade(
-    table.offsetRow = 2, 
-    table.offsetCol = 1
-  ) |> 
-  write_xlsx(
-    path = "table-04.xlsx",
-    # Using built-in facade
+    path   = "table-sex-styled.xlsx",
     facade = get_tsg_facade("yolo")
   )
 ```
 
-If you want to further customize the appearance of your table, you can use the `facade` argument to specify a YAML facade file. The facade file contains styling options for the table, such as font size, border style, background color, and text alignment.
+For fine-grained control — changing specific fonts, colours, or cell sizes — see the [Customizing How Your Tables Look](facade.html) vignette.
+
+### Save to other formats
+
+`tsg` can also save to HTML, PDF, and Word. The API is identical — just change the function name.
 
 ```{r, eval=FALSE}
-person_record |> 
-  generate_frequency(sex) |> 
-  write_xlsx(
-    path = "table-05.xlsx",
-    # Using built-in facade
-    facade = get_tsg_facade("yolo")
-  )
+tbl <- person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_table_title("Marital Status by Sex") |>
+  add_source_note("Source: person_record dataset")
+
+write_xlsx(tbl, path = "table.xlsx")   # Excel
+write_html(tbl, path = "table.html")   # HTML  (requires the gt package)
+write_pdf(tbl,  path = "table.pdf")    # PDF   (requires gt + webshot2)
+write_docx(tbl, path = "table.docx")  # Word  (requires officer + flextable)
 ```
 
-You can generate a template facade file using the `generate_template()` function and then customize it to your needs.
-
-
-### The `generate_output()` function
-
-`generate_output()` can be used to generate and save the output file in the specified format (e.g., Excel, HTML, PDF, Word). It supports various formats and can handle different data structures.
-
-```{r, eval=FALSE}
-person_record |> 
-  generate_frequency(sex) |> 
-  generate_output(path = "table-06.xlsx")
-```
-
-NOTE: At the moment, it only supports Excel output. The other formats are not yet implemented.
+For a full guide to each format — including multi-sheet workbooks and managing metadata for large reports — see the [Saving and Sharing Your Tables](output-formats.html) vignette.
 

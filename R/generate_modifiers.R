@@ -135,7 +135,7 @@ add_column_total <- function(data, name = 'total', label_total = "Total", ...) {
     ...
   )
 
-  attr(data$total, "label") <- label_total
+  attr(data[[name]], "label") <- label_total
 
   data
 
@@ -144,24 +144,35 @@ add_column_total <- function(data, name = 'total', label_total = "Total", ...) {
 #' Add a footnote attribute to a table
 #'
 #' @param data A data frame, tibble, or \code{tsg} object to which a footnote attribute will be added.
-#' @param footnote The footnote text to be added.
-#' @param locations Locations where the footnote should be applied. Default is NULL (applies to entire table).
-#' @param placement Placement of the footnote. One of "auto" (default), "right", or "left".
+#' @param footnote The footnote text to be added (a single character string).
+#' @param locations Optional character vector of **column names** to anchor the footnote marker.
+#'   When supplied, a footnote reference symbol is placed in those column headers.
+#'   Column-level anchoring is supported in HTML and PDF output (via \pkg{gt});
+#'   XLSX and Word output include the text without cell-level markers.
+#'   Default \code{NULL} renders the footnote as a table-level footer with no marker.
+#' @param placement Horizontal alignment of the footnote in the output footer.
+#'   One of \code{"auto"} (default, equivalent to \code{"left"}), \code{"right"}, or
+#'   \code{"left"}.  Respected by all three output formats (HTML/PDF, XLSX, Word).
 #'
-#' @return The input data frame with an added footnote attribute.
+#' @return The input data frame with an updated \code{footnotes} attribute
+#'   (a list with elements \code{$text}, \code{$placement}, and \code{$locations}).
 #' @export
 #'
 #' @examples
-#' add_footnote(
-#'   dplyr::starwars,
-#'   footnote = "This is a footnote.",
-#'   locations = c("A1", "B2"),
-#'   placement = "right"
-#')
+#' tbl <- person_record |> generate_frequency(sex)
+#'
+#' # Whole-table footer, left-aligned (default)
+#' tbl |> add_footnote("Source: National Survey 2023.")
+#'
+#' # Right-aligned footer note
+#' tbl |> add_footnote("Weighted estimates.", placement = "right")
+#'
+#' # Footnote anchored to a specific column header (HTML/PDF)
+#' tbl |> add_footnote("Unweighted count.", locations = "frequency")
 
 add_footnote <- function(data, footnote, locations = NULL, placement = c("auto", "right", "left")) {
 
-  match.arg(placement, c("auto", "right", "left"))
+  placement <- match.arg(placement, c("auto", "right", "left"))
 
   if(!is.character(footnote)) stop("Footnote must be a character string.")
   if(length(footnote) > 1) stop("Footnote must be a single character string.")
@@ -284,5 +295,5 @@ add_table_number <- function(data, table_number) {
 #' df_converted <- convert_factor(df)
 
 convert_factor <- function(data) {
-  dplyr::mutate_if(data, haven::is.labelled, haven::as_factor)
+  dplyr::mutate(data, dplyr::across(dplyr::where(haven::is.labelled), haven::as_factor))
 }

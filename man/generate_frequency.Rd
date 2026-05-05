@@ -21,8 +21,8 @@ generate_frequency(
   calculate_per_group = TRUE,
   group_separator = " - ",
   group_as_list = FALSE,
-  group_grand_total = FALSE,
-  group_grand_total_label = "All",
+  group_as_hierarchy = FALSE,
+  label_group_hierarchy = "All",
   label_as_group_name = TRUE,
   label_stub = NULL,
   label_na = "Not reported",
@@ -64,13 +64,13 @@ generate_frequency(
 
 \item{calculate_per_group}{Logical. If \code{TRUE}, calculates frequencies within groups defined in \code{data} (from \code{group_by()} or existing grouping).}
 
-\item{group_separator}{Character. Separator used when concatenating group values in list output (if \code{group_as_list = TRUE}).}
+\item{group_separator}{Character. Separator used when concatenating group values in list output (if \code{group_as_list = TRUE} with a single group).}
 
-\item{group_as_list}{Logical. If \code{TRUE}, output is a list of frequency tables for each group combination.}
+\item{group_as_list}{Logical. If \code{TRUE}, output is a named list of frequency tables keyed by group value. With a single group the list is flat; with 2+ groups the list is nested. When combined with \code{group_as_hierarchy = TRUE}, a nested list with totals at each level is returned.}
 
-\item{group_grand_total}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Logical. Compute grand total based on the grouping variable.}
+\item{group_as_hierarchy}{Logical. When \code{TRUE} (without \code{group_as_list}), inserts grand-total rows into the output. When \code{TRUE} together with \code{group_as_list = TRUE}, returns a nested named list with a total entry at each level; the total key is formatted as \code{"{var_label}: {label_group_hierarchy}"}.}
 
-\item{group_grand_total_label}{\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#experimental}{\figure{lifecycle-experimental.svg}{options: alt='[Experimental]'}}}{\strong{[Experimental]}} Character. Apply label to the grand total if \code{group_grand_total} is set to \code{TRUE}.}
+\item{label_group_hierarchy}{Character. Label applied to grand-total entries when \code{group_as_hierarchy = TRUE}. Can be a single string (applied to all group levels) or a named character vector keyed by group column name for per-variable labels (e.g. \code{c(sex = "All sexes", employed = "All workers")}). Defaults to \code{"All"}.}
 
 \item{label_as_group_name}{Logical. If \code{TRUE}, uses variable labels as names in the output list; otherwise, uses variable names.}
 
@@ -122,6 +122,11 @@ person_record |>
   dplyr::group_by(sex) |>
   generate_frequency(marital_status, group_as_list = TRUE)
 
+# Nested list with totals at each level (group_as_list + group_as_hierarchy)
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_frequency(marital_status, group_as_list = TRUE, group_as_hierarchy = TRUE)
+
 # Sorting
 
 # default is TRUE
@@ -132,7 +137,7 @@ person_record |>
 person_record |>
   generate_frequency(age, sort_value = FALSE)
 
-# Vignettes for more examples.
+# See vignettes for more examples.
 }
 \seealso{
 \code{\link[=generate_crosstab]{generate_crosstab()}}, \code{\link[=generate_output]{generate_output()}}, \code{\link[=rename_label]{rename_label()}}, \code{\link[=remove_label]{remove_label()}}

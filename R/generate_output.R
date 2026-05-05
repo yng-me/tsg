@@ -1,15 +1,22 @@
 #' Generate output in specified format (e.g., xlsx, html, pdf, word)
 #'
 #' @param data Preferably a \code{tsg} class object for best results. A data frame, tibble, and list are also supported.
-#' @param path File path to save the output.
+#' @param path File path to save the output. For HTML/PDF with a list and \code{separate_files = TRUE}
+#'   (HTML) or any list (PDF), this is treated as a directory path.
 #' @param format Output format. One of \code{"xlsx"}, \code{"html"}, \code{"pdf"}, or \code{"word"}.
-#' @param ... Additional arguments passed to specific format functions.
+#' @param ... Additional arguments passed to specific format functions:
+#'   \itemize{
+#'     \item \code{"xlsx"}: passed to \code{\link{write_xlsx}}
+#'     \item \code{"html"}: passed to \code{\link{write_html}} (requires the \pkg{gt} package)
+#'     \item \code{"pdf"}: passed to \code{\link{write_pdf}} (requires the \pkg{gt} and \pkg{webshot2} packages)
+#'     \item \code{"word"}: passed to \code{\link{write_docx}} (requires the \pkg{officer} and \pkg{flextable} packages)
+#'   }
 #'
-#' @return Generates and saves the output file in the specified format at the given path.
+#' @return Invisibly returns \code{NULL}. Called for its side-effect of writing output file(s).
 #' @export
 #'
 #' @examples
-#' #' # Generate an xlsx file from a tsg object
+#' # Generate an xlsx file from a tsg object
 #' data <- generate_frequency(dplyr::starwars, sex)
 #'
 #' dir_to <- tempdir()
@@ -37,22 +44,22 @@ generate_output <- function(
     list_depth <- purrr::pluck_depth(data)
 
     if(list_depth < 5) {
-      tsg::write_xlsx(data, path, ...)
+      write_xlsx(data, path, ...)
     } else {
       stop("Data structure too deep for xlsx output")
     }
 
   } else if (format == "html") {
 
-    stop("HTML format not yet implemented")
+    write_html(data, path, ...)
 
   } else if (format == "pdf") {
 
-    stop("PDF format not yet implemented")
+    write_pdf(data, path, ...)
 
   } else if (format == "word") {
 
-    stop("Word format not yet implemented")
+    write_docx(data, path, ...)
 
   }
 

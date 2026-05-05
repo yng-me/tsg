@@ -12,6 +12,7 @@ get_na_value <- function(value, recode_na = "auto", pattern = "^8", offset = 1) 
   } else {
     as.integer(paste0(rep(9, nchar(max_value)), collapse = "")) - offset
   }
+
 }
 
 add_missing_label <- function(value, label_na = "Not reported", recode_na = "auto", pattern = "^8") {
@@ -111,16 +112,22 @@ tsg_add_row_total <- function(
     label_total = label_total
   )
 
+  index_pos <- nrow(data)
+
+  if(position == "top") {
+    index_pos <- 1L
+  }
+
   if("cumulative_percent" %in% names(data)) {
-    data$cumulative_percent[[nrow(data)]] <- NA_real_
+    data$cumulative_percent[[index_pos]] <- NA_real_
   }
 
   if("cumulative_proportion" %in% names(data)) {
-    data$cumulative_proportion[[nrow(data)]] <- NA_real_
+    data$cumulative_proportion[[index_pos]] <- NA_real_
   }
 
   if("cumulative" %in% names(data)) {
-    data$cumulative[[nrow(data)]] <- NA_integer_
+    data$cumulative[[index_pos]] <- NA_integer_
   }
 
   data
@@ -197,24 +204,21 @@ get_group_attrs <- function(data, groups) {
 
 get_data_attrs <- function(data) {
 
-  data_attrs <- list()
+  col_names <- names(data)
 
-  for(i in names(data)) {
-
-    attr_i <- attributes(data[[i]])
-    label <- attr_i$label
-
-    if(is.null(label)) label <- i
-
-    data_attrs[[i]] <- list(
-      value = i,
-      label = label,
-      type = typeof(data[[i]]),
-      labels = attr_i$labels
-    )
-  }
-
-  data_attrs
+  stats::setNames(
+    lapply(col_names, function(i) {
+      attr_i <- attributes(data[[i]])
+      label  <- attr_i$label %||% i
+      list(
+        value  = i,
+        label  = label,
+        type   = typeof(data[[i]]),
+        labels = attr_i$labels
+      )
+    }),
+    col_names
+  )
 
 }
 
@@ -409,7 +413,7 @@ tsg_sort_top_n <- function(
       data_others <- dplyr::mutate(
         data_others,
         cumulative = total_frequency,
-        !!as.name(multiplier$cumulative_col) := 100
+        !!as.name(multiplier$cumulative_col) := multiplier$value
       )
 
     } else if (with_cumulative) {
@@ -423,7 +427,7 @@ tsg_sort_top_n <- function(
 
       data_others <- dplyr::mutate(
         data_others,
-        !!as.name(multiplier$cumulative_col) := 100
+        !!as.name(multiplier$cumulative_col) := multiplier$value
       )
 
     }
@@ -450,10 +454,11 @@ tsg_sort_col_value <- function(
   data,
   sort_value,
   sort_desc,
-  groups
+  groups = NULL
 ) {
 
   if(length(groups) > 0) { return(data) }
+
   if(!sort_value) {
 
     data <- suppressWarnings(dplyr::arrange(data, as.integer(.category), .category))
@@ -477,6 +482,7 @@ tsg_get_frequency <- function(data, column_name, include_na) {
   }
 
   data |>
+    dplyr::select(dplyr::any_of(c(dplyr::group_vars(data), column_name))) |>
     dplyr::rename(.category := !!as.name(column_name)) |>
     dplyr::group_by(.category, .add = TRUE) |>
     dplyr::count(name = "frequency") |>
@@ -492,9 +498,244 @@ tsg_get_crosstab <- function(data, x, column_name, include_na) {
   }
 
   data |>
+    dplyr::select(dplyr::any_of(c(dplyr::group_vars(data), rlang::as_label(rlang::enquo(x)), column_name))) |>
     dplyr::group_by({{x}}, !!as.name(column_name), .add = TRUE) |>
     dplyr::count(name = "frequency") |>
     dplyr::ungroup() |>
     dplyr::rename(.category := {{x}}) |>
     dplyr::collect()
+}
+
+
+coerce_groups_total <- function(data, groups, label) {
+  data_g <- dplyr::ungroup(data)
+  for(g in groups) {
+    lbl    <- .resolve_hierarchy_label(label, g)
+    data_g <- coerce_total(
+      data = data_g,
+      col = g,
+      x = data_g[[g]],
+      label_total = lbl,
+      default_code = -1L
+    )
+  }
+  data_g
+}
+
+
+# Assembles pre-computed data frames into hierarchically-ordered output.
+#
+# Given a grand-total data frame, a list of intermediate-level subtotal data frames, and the
+# leaf data frame (all group combinations), returns a single data frame with rows ordered as:
+#   grand total → (level-1 subtotal + all descendants) for each top-level group value → ...
+#
+# @param grand_total_df  Data frame for the overall grand total (all group cols = total label).
+# @param subtotals       List of length n_groups-1. subtotals[[k]] is a data frame of
+#                        subtotals where groups[1..k] have actual values and groups[k+1..n]
+#                        have the total label.
+# @param leaf_data       Data frame with all leaf rows (full group combinations).
+# @param groups          Character vector of group column names in hierarchy order.
+#
+# @return A single data frame in hierarchical order with no extra columns added.
+assemble_group_hierarchy <- function(grand_total_df, subtotals, leaf_data, groups) {
+
+  n_groups <- length(groups)
+
+  if(n_groups == 0) return(leaf_data)
+
+  # coerce_total() converts plain (non-labelled, non-factor) numeric group columns to character.
+  # Ensure leaf_data and subtotals match that type so bind_rows doesn't fail.
+  for(g in groups) {
+    if(is.character(grand_total_df[[g]])) {
+      leaf_data[[g]] <- as.character(leaf_data[[g]])
+      for(k in seq_along(subtotals)) {
+        subtotals[[k]][[g]] <- as.character(subtotals[[k]][[g]])
+      }
+    }
+  }
+
+  if(n_groups == 1) return(dplyr::bind_rows(grand_total_df, leaf_data))
+
+  # Convert a group column to a character vector for comparison (handles haven-labelled, factor, etc.)
+  gval_to_char <- function(x) {
+    if(haven::is.labelled(x)) return(as.character(haven::as_factor(x)))
+    if(is.factor(x)) return(as.character(x))
+    as.character(x)
+  }
+
+  # Attach temporary character-key columns to a data frame (for matching)
+  add_keys <- function(df) {
+    for(g in groups) df[[paste0(".hk_", g)]] <- gval_to_char(df[[g]])
+    df
+  }
+  drop_keys <- function(df) df[, !startsWith(names(df), ".hk_"), drop = FALSE]
+
+  leaf_k       <- add_keys(leaf_data)
+  subtotals_k  <- lapply(subtotals, add_keys)
+  result_parts <- list(grand_total_df)
+
+  # Recursive: builds ordered parts for `depth` (1-indexed), within the context of
+  # `ctx` — a named character vector mapping group names to their current value keys.
+  build_level <- function(depth, ctx) {
+    g    <- groups[depth]
+    hk_g <- paste0(".hk_", g)
+
+    # Filter leaf data to the current context
+    leaf_ctx <- leaf_k
+    for(cg in names(ctx)) {
+      hk_cg      <- paste0(".hk_", cg)
+      leaf_ctx   <- leaf_ctx[leaf_ctx[[hk_cg]] == ctx[[cg]], , drop = FALSE]
+    }
+
+    # Ordered unique values at this depth within the current context
+    unique_vals <- unique(leaf_ctx[[hk_g]])
+
+    for(v in unique_vals) {
+
+      new_ctx  <- c(ctx, setNames(v, g))
+      leaf_v   <- leaf_ctx[leaf_ctx[[hk_g]] == v, , drop = FALSE]
+
+      if(depth < n_groups) {
+        # Find matching subtotal in subtotals_k[[depth]] (level-k subtotals use groups[1..depth])
+        stdf <- subtotals_k[[depth]]
+        for(cg in names(new_ctx)) {
+          hk_cg <- paste0(".hk_", cg)
+          stdf  <- stdf[stdf[[hk_cg]] == new_ctx[[cg]], , drop = FALSE]
+        }
+        result_parts[[length(result_parts) + 1]] <<- drop_keys(stdf)
+        build_level(depth + 1, new_ctx)
+      } else {
+        result_parts[[length(result_parts) + 1]] <<- drop_keys(leaf_v)
+      }
+    }
+  }
+
+  build_level(1L, character(0))
+  dplyr::bind_rows(result_parts)
+}
+
+
+# Convert a raw group column value to its display key string.
+#
+# For haven-labelled columns, resolves the value to its label string.
+# Falls back to as.character() for all other column types.
+#
+# @param v         A single scalar value from the group column.
+# @param col_attrs A list with at least a `labels` element (named integer vector, or NULL).
+#
+# @return A length-1 character string.
+val_to_group_key <- function(v, col_attrs) {
+  lbl_vec <- col_attrs$labels
+  if (!is.null(lbl_vec)) {
+    idx <- match(v, lbl_vec)
+    if (!is.na(idx)) return(names(lbl_vec)[idx])
+  }
+  as.character(v)
+}
+
+
+# Recursively build a nested named list of group tables.
+#
+# @param raw_data    Raw (ungrouped) data frame, already filtered to parent group values.
+# @param groups_rem  Remaining group columns to nest on (character vector, in hierarchy order).
+# @param group_attrs Named list of group column attributes from `get_group_attrs()`.
+# @param add_totals  If TRUE, insert a total entry at each level using `total_label`.
+# @param total_label Label string (or named character vector) for total entries. A single
+#   string is used for all levels; a named vector keyed by group column name selects a
+#   per-variable label, falling back to the first element when the name is absent.
+# @param compute_fn  function(sub_data) -> single formatted table (data.frame).
+#
+# @return A named list; leaves are data frames, branches are nested named lists.
+build_nested_group_list <- function(raw_data, groups_rem, group_attrs, add_totals, total_label, compute_fn) {
+  g          <- groups_rem[[1]]
+  next_groups <- groups_rem[-1]
+  result     <- list()
+
+  if (add_totals) {
+    g_label   <- group_attrs[[g]]$label %||% g
+    lbl       <- .resolve_hierarchy_label(total_label, g)
+    total_key <- paste0(g_label, ": ", lbl)
+    coerced   <- raw_data
+    for (cg in c(g, next_groups)) {
+      cg_lbl  <- .resolve_hierarchy_label(total_label, cg)
+      coerced <- coerce_total(coerced, cg, raw_data[[cg]], cg_lbl, default_code = -1L)
+    }
+    result[[total_key]] <- compute_fn(coerced)
+  }
+
+  uniq_vals <- unique(raw_data[[g]])
+  uniq_vals <- uniq_vals[!is.na(uniq_vals)]
+
+  for (v in uniq_vals) {
+    key      <- val_to_group_key(v, group_attrs[[g]])
+    sub_data <- dplyr::filter(raw_data, !!rlang::sym(g) == v)
+
+    if (length(next_groups) == 0) {
+      result[[key]] <- compute_fn(sub_data)
+    } else {
+      result[[key]] <- build_nested_group_list(
+        sub_data, next_groups, group_attrs,
+        add_totals, total_label, compute_fn
+      )
+    }
+  }
+
+  result
+}
+
+
+# Resolve a hierarchy label for a specific group column.
+#
+# @param label      A single string (applied to all groups) or a named character vector
+#   keyed by group column name.  For a named vector, the label for `group_name` is
+#   returned; when the name is absent the first unnamed element is used as the default,
+#   and if all elements are named the first element is used as final fallback.
+# @param group_name The group column name for which to resolve the label.
+# @return A single character string.
+.resolve_hierarchy_label <- function(label, group_name) {
+  if (is.null(names(label))) {
+    return(label[[1L]])
+  }
+  nm <- names(label)
+  if (group_name %in% nm) {
+    return(unname(label[[group_name]]))
+  }
+  # Use the first unnamed (empty-name "") element as the default, if present
+  unnamed_idx <- which(nm == "")
+  if (length(unnamed_idx) > 0L) {
+    return(unname(label[[unnamed_idx[[1L]]]]))
+  }
+  # Final fallback: first element
+  unname(label[[1L]])
+}
+
+
+# Normalise the footnotes value to a canonical list(text, placement, locations).
+#
+# Accepts either:
+#   - NULL                        → returns NULL
+#   - a plain character vector    → wraps into the canonical list with "auto" placement
+#   - a list with $text, $placement, $locations (from add_footnote() attr)
+#
+# The returned list always has:
+#   $text       character vector of footnote strings
+#   $placement  character vector, same length as $text ("auto"/"left"/"right")
+#   $locations  list, same length as $text (each element is NULL or a character vector
+#               of column names)
+.normalize_footnotes <- function(x) {
+  if (is.null(x)) return(NULL)
+  if (is.character(x)) {
+    n <- length(x)
+    return(list(
+      text      = x,
+      placement = rep("auto", n),
+      locations = vector("list", n)
+    ))
+  }
+  # Already a list — ensure all three slots are present and length-consistent
+  n <- length(x$text)
+  if (n == 0L) return(NULL)
+  x$placement <- x$placement %||% rep("auto", n)
+  x$locations <- x$locations %||% vector("list", n)
+  x
 }
