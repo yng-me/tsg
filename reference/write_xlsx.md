@@ -140,5 +140,5 @@ write_xlsx(
   data,
   file.path(dir_to, "starwars_frequency.xlsx")
  )
-#> Warning: cannot create file '/tmp/RtmpNOLkUN/file2c01754518a0/starwars_frequency.xlsx', reason 'No such file or directory'
+#> Warning: cannot create file '/tmp/RtmpSTSbM0/file2b0424609da8/starwars_frequency.xlsx', reason 'No such file or directory'
 ```
