@@ -1,0 +1,429 @@
+---
+title: "Grouped Tables and Side-by-Side Comparisons"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Grouped Tables and Side-by-Side Comparisons}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(tsg)
+library(dplyr)
+```
+
+This vignette covers three common scenarios that go beyond a single basic table:
+
+1. **Get a separate table for each group** — when you need one table per region, sex, or other category.
+2. **Compare several indicators side by side** — when you have multiple related columns and want them all in one compact table.
+3. **Export many tables at once** — when your report has dozens of tables and you want to manage them efficiently.
+
+We will use the `person_record` sample dataset throughout.
+
+---
+
+## Get a separate table for each group
+
+By default, grouping with `group_by()` produces a single merged table with the group labels in the category column. If you want **one independent table per group instead**, add `group_as_list = TRUE`.
+
+```{r}
+person_record |>
+  group_by(sex) |>
+  generate_frequency(marital_status, group_as_list = TRUE)
+```
+
+With **two grouping variables**, the result is automatically nested — you get a list of lists:
+
+```{r}
+person_record |>
+  filter(age >= 15) |> 
+  group_by(sex, employed) |>
+  generate_frequency(marital_status, group_as_list = TRUE)
+```
+
+The same works with `generate_crosstab()`:
+
+```{r}
+person_record |>
+  filter(age >= 15) |> 
+  group_by(sex) |>
+  generate_crosstab(marital_status, employed, group_as_list = TRUE)
+```
+
+---
+
+## Add a grand total to grouped tables
+
+When you want to include an "All groups combined" summary alongside the per-group breakdowns, use `group_as_hierarchy = TRUE`.
+
+### Flat table with total rows inserted
+
+Without `group_as_list`, `group_as_hierarchy = TRUE` inserts a grand-total row at each group boundary in the flat output:
+
+```{r}
+person_record |>
+  group_by(sex) |>
+  generate_frequency(marital_status, group_as_hierarchy = TRUE)
+```
+
+### Separate tables with a total entry per level
+
+Combine `group_as_list = TRUE` and `group_as_hierarchy = TRUE` to get a nested list where each level includes a special total entry. The total key is labelled with the variable name and the `label_group_hierarchy` setting (default: `"All"`).
+
+```{r}
+person_record |>
+  group_by(sex) |>
+  generate_frequency(
+    marital_status,
+    group_as_list      = TRUE,
+    group_as_hierarchy = TRUE
+  )
+```
+
+This scales to two grouping variables for a fully nested hierarchy:
+
+```{r}
+person_record |>
+  filter(age >= 15) |> 
+  group_by(sex, employed) |>
+  generate_frequency(
+    marital_status,
+    group_as_list      = TRUE,
+    group_as_hierarchy = TRUE
+  )
+```
+
+### Change the total label
+
+Use `label_group_hierarchy` to rename the `"All"` label. Pass a single string to use the same label everywhere, or a **named vector** to set a different label per grouping variable:
+
+```{r}
+person_record |>
+  group_by(sex) |>
+  generate_frequency(
+    marital_status,
+    group_as_hierarchy    = TRUE,
+    label_group_hierarchy = "Grand Total"
+  )
+```
+
+```{r}
+person_record |>
+  filter(age >= 15) |>
+  group_by(sex, employed) |>
+  generate_frequency(
+    marital_status,
+    group_as_list         = TRUE,
+    group_as_hierarchy    = TRUE,
+    label_group_hierarchy = c(sex = "All sexes", employed = "All workers")
+  )
+```
+
+The same arguments work with `generate_crosstab()`:
+
+```{r}
+person_record |>
+  filter(age >= 15) |> 
+  group_by(sex) |>
+  generate_crosstab(
+    marital_status,
+    employed,
+    group_as_list      = TRUE,
+    group_as_hierarchy = TRUE
+  )
+```
+
+---
+
+## Compare several Yes/No indicators side by side
+
+`multiple_columns = TRUE` lets you cross-tabulate a row variable against **multiple indicator columns at once**. Instead of a separate table for each indicator, all results appear in a single wide table — each indicator becomes its own column group.
+
+This is particularly useful for survey modules where several questions share the same response scale. In `person_record`, the functional difficulty columns (`seeing`, `hearing`, `walking`, etc.) use a scale where **1 = No difficulty**, **2 = Some difficulty**, **3 = A lot of difficulty**, and **4 = Cannot do it at all**. The `multiple_columns_filter` argument controls which response value to count (default: `1L`).
+
+### Basic usage
+
+The example below counts respondents who reported **"Some difficulty"** (value `2`) in each domain, broken down by `sex`:
+
+```{r}
+person_record |>
+  generate_crosstab(
+    sex,
+    seeing,
+    hearing,
+    walking,
+    remembering,
+    self_caring,
+    communicating,
+    multiple_columns        = TRUE,
+    multiple_columns_filter = 2L
+  )
+```
+
+### Count a different response level
+
+Change `multiple_columns_filter` to target any response level:
+
+```{r, eval=FALSE}
+person_record |>
+  generate_crosstab(
+    sex,
+    seeing,
+    hearing,
+    multiple_columns        = TRUE,
+    multiple_columns_filter = 3L   # "A lot of difficulty"
+  )
+```
+
+### Combining with grouping
+
+All grouping options work with `multiple_columns`. Use `calculate_per_group = TRUE` to compute percentages independently within each group:
+
+```{r}
+person_record |>
+  group_by(marital_status) |>
+  generate_crosstab(
+    sex,
+    seeing,
+    hearing,
+    walking,
+    multiple_columns        = TRUE,
+    multiple_columns_filter = 2L,
+    calculate_per_group     = TRUE
+  )
+```
+
+Use `group_as_list = TRUE` to get a separate table per group:
+
+```{r}
+person_record |>
+  group_by(marital_status) |>
+  generate_crosstab(
+    sex,
+    seeing,
+    hearing,
+    walking,
+    multiple_columns        = TRUE,
+    multiple_columns_filter = 2L,
+    group_as_list           = TRUE
+  )
+```
+
+---
+
+## Full comparison table with hierarchical columns
+
+Setting `multiple_columns_type = "stacked"` changes the layout fundamentally: instead of filtering for a single response value, **every category of every column variable becomes its own column**. The column headers form a hierarchy — the first `...` variable at the top level, the second at the next level, and so on.
+
+This mode is ideal when you want a complete cross-product view: every combination of `marital_status × sex` as separate columns, all in one table.
+
+> `multiple_columns_filter` is ignored in stacked mode — all categories appear automatically.
+
+### Basic stacked table
+
+```{r}
+person_record |>
+  generate_crosstab(
+    age,
+    marital_status,
+    sex,
+    multiple_columns      = TRUE,
+    multiple_columns_type = "stacked"
+  )
+```
+
+The column structure is:
+- A **subtotal column** for each top-level category (e.g., all respondents in each marital status group)
+- **Leaf columns** for each combination (e.g., single males, single females, married males, …)
+- All **frequency** columns come first, then all **percent** columns — this keeps the Excel column spanners clean
+
+### Custom label separator
+
+Use `label_separator` to control how the hierarchy levels are joined in column labels. This also determines how `write_xlsx()` splits labels into multi-row header spanners in Excel.
+
+```{r}
+person_record |>
+  generate_crosstab(
+    age,
+    marital_status,
+    sex,
+    multiple_columns      = TRUE,
+    multiple_columns_type = "stacked",
+    label_separator       = " | ",
+    add_percent           = FALSE
+  )
+```
+
+### Three or more column variables
+
+Add more column variables to create deeper hierarchies. Each additional variable adds another level of column splitting:
+
+```{r}
+person_record |>
+  generate_crosstab(
+    age,
+    marital_status,
+    sex,
+    seeing,
+    multiple_columns      = TRUE,
+    multiple_columns_type = "stacked",
+    add_percent           = FALSE
+  )
+```
+
+### Combining with grouping
+
+Stacked mode supports all grouping options:
+
+```{r}
+person_record |>
+  filter(age >= 15) |>
+  group_by(employed) |>
+  generate_crosstab(
+    marital_status,
+    sex,
+    seeing,
+    multiple_columns      = TRUE,
+    multiple_columns_type = "stacked",
+    calculate_per_group   = TRUE,
+    add_percent           = FALSE
+  )
+```
+
+---
+
+## Export many tables to one Excel file
+
+When your analysis produces many tables, combine them into a named list and pass the whole list to `write_xlsx()`. Each list element becomes a separate worksheet.
+
+### Basic multi-sheet export
+
+```{r, eval=FALSE}
+tables <- list(
+  "Sex"            = person_record |> generate_frequency(sex),
+  "Marital Status" = person_record |> generate_frequency(marital_status),
+  "Marital × Sex"  = person_record |>
+    generate_crosstab(marital_status, sex) |>
+    add_table_title("Marital Status by Sex") |>
+    add_table_subtitle("Row percentages") |>
+    add_footnote("Missing values are excluded from the denominator.")
+)
+
+write_xlsx(tables, path = "report.xlsx")
+```
+
+### Add an index sheet
+
+Set `include_table_list = TRUE` to prepend an auto-generated index sheet:
+
+```{r, eval=FALSE}
+write_xlsx(tables, path = "multi-sheet-indexed.xlsx", include_table_list = TRUE)
+```
+
+### Save each table to its own file
+
+Set `separate_files = TRUE` and provide a folder path:
+
+```{r, eval=FALSE}
+write_xlsx(tables, path = "output-tables/", separate_files = TRUE)
+```
+
+### End-to-end example
+
+Here is a realistic pipeline that builds several tables, attaches metadata, applies a style, and exports everything to a single indexed workbook:
+
+```{r, eval=FALSE}
+# 1. Build tables
+freq_sex <- person_record |>
+  generate_frequency(sex) |>
+  add_table_title("Distribution by Sex") |>
+  add_source_note("Source: person_record dataset")
+
+crosstab_marital_sex <- person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_table_title("Marital Status by Sex") |>
+  add_table_subtitle("Row percentages") |>
+  add_footnote("Missing values are excluded from the denominator.")
+
+difficulties_wide <- person_record |>
+  generate_crosstab(
+    sex,
+    seeing, hearing, walking, remembering, self_caring, communicating,
+    multiple_columns        = TRUE,
+    multiple_columns_filter = 2L   # count "Some difficulty" responses
+  ) |>
+  add_table_title("Functional Difficulties by Sex (Some difficulty)")
+
+# 2. Combine into a named list
+workbook_tables <- list(
+  "1. Sex"           = freq_sex,
+  "2. Marital x Sex" = crosstab_marital_sex,
+  "3. Difficulties"  = difficulties_wide
+)
+
+# 3. Export with a style and an index sheet
+write_xlsx(
+  workbook_tables,
+  path               = "report.xlsx",
+  facade             = get_tsg_facade("yolo"),
+  include_table_list = TRUE
+)
+```
+
+---
+
+## Controlling where footnotes appear
+
+### Left and right placement
+
+`add_footnote()` accepts a `placement` argument (`"auto"`, `"left"`, or `"right"`) to align the footnote text. Use left alignment for source citations and right alignment for methodological notes — this mirrors APA and AAPOR conventions.
+
+```{r}
+person_record |>
+  generate_frequency(sex) |>
+  add_table_title("Sex distribution") |>
+  add_footnote("Source: National Survey 2023.", placement = "left") |>
+  add_footnote("Weighted estimates.", placement = "right")
+```
+
+### Linking a footnote to a column header (HTML / PDF)
+
+Pass column names via `locations` to place a footnote marker in the column header. This is supported in HTML and PDF output (via `gt`); Excel and Word output include the footnote text without cell-level markers.
+
+```{r}
+person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_footnote(
+    "Counts exclude respondents with unknown marital status.",
+    locations = c("frequency_1", "frequency_2")
+  )
+```
+
+### Chaining multiple footnotes
+
+Each `add_footnote()` call appends to the list. Different footnotes can have different placements and locations:
+
+```{r}
+person_record |>
+  generate_frequency(sex) |>
+  add_footnote("Source: National Survey 2023.") |>
+  add_footnote("Weighted estimates.", placement = "right") |>
+  add_footnote("Counts may not sum to total due to rounding.",
+               locations = "frequency")
+```
+
+---
+
+## Tips
+
+- When building large workbooks, attach `add_table_title()` and `add_table_subtitle()` to each element **before** combining into the list — metadata is preserved per sheet.
+- `group_as_hierarchy = TRUE` with `group_as_list = TRUE` is most useful for hierarchical administrative data (e.g., national → regional → district breakdowns).
+- `multiple_columns = TRUE` is designed for survey modules where several indicator columns share the same response scale.
+- `multiple_columns_type = "stacked"` is best for producing a complete cross-product comparison table.
