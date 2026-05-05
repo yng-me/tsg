@@ -413,7 +413,7 @@ tsg_sort_top_n <- function(
       data_others <- dplyr::mutate(
         data_others,
         cumulative = total_frequency,
-        !!as.name(multiplier$cumulative_col) := 100
+        !!as.name(multiplier$cumulative_col) := multiplier$value
       )
 
     } else if (with_cumulative) {
@@ -427,7 +427,7 @@ tsg_sort_top_n <- function(
 
       data_others <- dplyr::mutate(
         data_others,
-        !!as.name(multiplier$cumulative_col) := 100
+        !!as.name(multiplier$cumulative_col) := multiplier$value
       )
 
     }

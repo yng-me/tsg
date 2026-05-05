@@ -922,6 +922,8 @@ write_pdf <- function(
       }
 
     } else {
+
+      if (!grepl("\\.pdf$", path, ignore.case = TRUE)) {
         path <- paste0(path, ".pdf")
       }
 
