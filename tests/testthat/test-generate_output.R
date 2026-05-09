@@ -117,6 +117,7 @@ test_that("write_html uses title/source_note from data attributes", {
 })
 
 test_that("generate_output format = 'pdf' writes a file", {
+  skip_on_cran()
   skip_if_not_installed("webshot2")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B", "A")), x)
   path <- tempfile(fileext = ".pdf")
@@ -126,6 +127,7 @@ test_that("generate_output format = 'pdf' writes a file", {
 })
 
 test_that("write_pdf list writes separate files in directory", {
+  skip_on_cran()
   skip_if_not_installed("webshot2")
   data_list <- list(
     t1 = generate_frequency(dplyr::tibble(x = c("A", "B")), x),
@@ -139,6 +141,7 @@ test_that("write_pdf list writes separate files in directory", {
 })
 
 test_that("write_pdf adds .pdf extension when missing", {
+  skip_on_cran()
   skip_if_not_installed("webshot2")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
   path_no_ext <- tempfile()
