@@ -2,6 +2,8 @@
 
 ## tsg 0.1.4
 
+CRAN release: 2026-05-05
+
 ### New features
 
 - [`generate_crosstab()`](https://yng-me.github.io/tsg/reference/generate_crosstab.md)
