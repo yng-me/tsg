@@ -8,7 +8,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/yng-me/tsg/blob/main/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/yng-me/tsg/blob/v0.2.0/DESCRIPTION)
 
 Abdulsamad B (2026). *tsg: Generate Publication-Ready Statistical
 Tables*. R package version 0.2.0, <https://yng-me.github.io/tsg/>.
