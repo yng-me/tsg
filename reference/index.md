@@ -7,7 +7,7 @@
 - [`add_facade()`](https://yng-me.github.io/tsg/reference/add_facade.md)
   : Add a facade to a tsg table
 - [`add_facade_alt()`](https://yng-me.github.io/tsg/reference/add_facade_alt.md)
-  : Add a facade to a tsg table (alternative way)
+  **\[deprecated\]** : Add a facade to a tsg table (alternative way)
 - [`add_footnote()`](https://yng-me.github.io/tsg/reference/add_footnote.md)
   : Add a footnote attribute to a table
 - [`add_row_total()`](https://yng-me.github.io/tsg/reference/add_row_total.md)
@@ -18,6 +18,8 @@
   : Add a subtitle attribute to a table
 - [`add_table_title()`](https://yng-me.github.io/tsg/reference/add_table_title.md)
   : Add a title attribute to a table
+- [`as_gt()`](https://yng-me.github.io/tsg/reference/as_gt.md) : Convert
+  a tsg table to a gt table
 - [`collapse_list()`](https://yng-me.github.io/tsg/reference/collapse_list.md)
   : Collapse a list of data frames or tibbles into a single data frame
 - [`convert_factor()`](https://yng-me.github.io/tsg/reference/convert_factor.md)
@@ -28,6 +30,8 @@
   : Generate frequency table
 - [`generate_output()`](https://yng-me.github.io/tsg/reference/generate_output.md)
   : Generate output in specified format (e.g., xlsx, html, pdf, word)
+- [`generate_summary()`](https://yng-me.github.io/tsg/reference/generate_summary.md)
+  : Generate a summary table of numeric variables
 - [`generate_template()`](https://yng-me.github.io/tsg/reference/generate_template.md)
   : Generate a template
 - [`get_tsg_facade()`](https://yng-me.github.io/tsg/reference/get_tsg_facade.md)
@@ -42,6 +46,8 @@
   : Rename data labels
 - [`write_docx()`](https://yng-me.github.io/tsg/reference/write_docx.md)
   : Write a tsg table (or list of tables) to a Word (.docx) file
+- [`write_gsheet()`](https://yng-me.github.io/tsg/reference/write_gsheet.md)
+  : Write data to a Google Sheet
 - [`write_html()`](https://yng-me.github.io/tsg/reference/write_html.md)
   : Write a tsg table (or list of tables) to an HTML file
 - [`write_pdf()`](https://yng-me.github.io/tsg/reference/write_pdf.md) :

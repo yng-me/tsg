@@ -4,9 +4,11 @@
 <url><loc>https://yng-me.github.io/tsg/LICENSE.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/advanced.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/facade.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/articles/google-sheets.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/index.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/output-formats.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/articles/tsg.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/articles/write-xlsx.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/authors.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/index.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/news/index.html</loc></url>
@@ -18,11 +20,13 @@
 <url><loc>https://yng-me.github.io/tsg/reference/add_source_note.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/add_table_subtitle.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/add_table_title.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/as_gt.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/collapse_list.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/convert_factor.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/generate_crosstab.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/generate_frequency.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/generate_output.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/generate_summary.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/generate_template.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/get_tsg_facade.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/gt_apply_numeric_format.html</loc></url>
@@ -36,8 +40,8 @@
 <url><loc>https://yng-me.github.io/tsg/reference/rename_label.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/tsg-package.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/tsg_to_flextable.html</loc></url>
-<url><loc>https://yng-me.github.io/tsg/reference/tsg_to_gt.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/write_docx.html</loc></url>
+<url><loc>https://yng-me.github.io/tsg/reference/write_gsheet.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/write_html.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/write_pdf.html</loc></url>
 <url><loc>https://yng-me.github.io/tsg/reference/write_xlsx.html</loc></url>

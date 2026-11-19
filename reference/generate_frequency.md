@@ -86,7 +86,7 @@ generate_frequency(
 - as_proportion:
 
   Logical. If `TRUE`, displays proportions instead of percentages (range
-  0–1).
+  0 to 1).
 
 - include_na:
 

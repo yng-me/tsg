@@ -13,6 +13,7 @@ write_xlsx(
   path,
   ...,
   sheet_name = NULL,
+  trim_sheet_names = FALSE,
   title = NULL,
   subtitle = NULL,
   source_note = NULL,
@@ -50,13 +51,22 @@ write_xlsx(
 
   Additional arguments passed to
   [`openxlsx::createWorkbook()`](https://rdrr.io/pkg/openxlsx/man/createWorkbook.html)
-  and
-  [`openxlsx::addWorksheet()`](https://rdrr.io/pkg/openxlsx/man/addWorksheet.html).
+  (e.g. `creator`) or
+  [`openxlsx::addWorksheet()`](https://rdrr.io/pkg/openxlsx/man/addWorksheet.html)
+  (e.g. `zoom`), matched by name.
 
 - sheet_name:
 
   Optional name for the Excel sheet. Ignored if `data` is a list and
   `separate_files = FALSE`.
+
+- trim_sheet_names:
+
+  Logical. Excel limits sheet names to 31 characters. If `FALSE`
+  (default), a longer sheet name (from `sheet_name`, a list name or the
+  `table_name` of `table_list_reference`) is an error. If `TRUE`, it is
+  cut to 31 characters, and names that then repeat are numbered
+  (`"... (2)"`). File names (`separate_files = TRUE`) are never cut.
 
 - title:
 
@@ -88,7 +98,9 @@ write_xlsx(
 - row_group_as_column:
 
   Logical. If `TRUE`, row groupings are included as columns instead of
-  grouped titles.
+  grouped titles. Applies to a grouped list written on one sheet
+  (`collapse_list = TRUE`) and to the sheets of a list nested two or
+  more groups deep.
 
 - names_separator:
 
@@ -107,8 +119,13 @@ write_xlsx(
 
 - facade:
 
-  A list of styling options (colors, fonts, sizes, border styles, etc.).
-  Defaults to the global option `tsg.options.facade`.
+  A built-in facade name (e.g. `"booktabs"`; see
+  [`get_tsg_facade()`](https://yng-me.github.io/tsg/reference/get_tsg_facade.md)),
+  the path to a `.yaml` or `.json` facade file, or a facade list. A
+  built-in facade looks the same in every output format. Keys missing
+  from it fall back to this format's default facade; settings added with
+  [`add_facade()`](https://yng-me.github.io/tsg/reference/add_facade.md)
+  take precedence over it.
 
 ## Value
 
@@ -140,5 +157,5 @@ write_xlsx(
   data,
   file.path(dir_to, "starwars_frequency.xlsx")
  )
-#> Warning: cannot create file '/tmp/Rtmp7oTAJg/file2318328333bb/starwars_frequency.xlsx', reason 'No such file or directory'
+#> Warning: cannot create file '/tmp/RtmpnwFs5W/file1afb333c10ca/starwars_frequency.xlsx', reason 'No such file or directory'
 ```

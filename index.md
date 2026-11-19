@@ -1,9 +1,10 @@
 # tsg
 
-The `tsg` package provides functions for generating publication-ready
-frequency tables and cross-tabulations from data frames. Tables can be
-exported to **Excel (XLSX)**, **HTML**, **PDF**, and **Word (DOCX)**
-formats with extensive styling options via a unified facade system.
+The `tsg` (**T**able and **S**ummary **G**enerator) package provides
+functions for generating publication-ready frequency tables and
+cross-tabulations from data frames. Tables can be exported to **Excel
+(XLSX)**, **HTML**, **PDF**, and **Word (DOCX)** formats with extensive
+styling options via a unified facade system.
 
 ## Installation
 
@@ -12,13 +13,22 @@ formats with extensive styling options via a unified facade system.
 install.packages("tsg")
 ```
 
-`tsg` requires the following packages: `gt` (HTML/PDF), `officer` and
-`flextable` (Word). These are installed automatically. For PDF output,
-`webshot2` is also needed:
+Excel output works out of the box. The other formats need packages that
+are not installed with `tsg`;
+[`write_html()`](https://yng-me.github.io/tsg/reference/write_html.md),
+[`write_pdf()`](https://yng-me.github.io/tsg/reference/write_pdf.md),
+[`write_docx()`](https://yng-me.github.io/tsg/reference/write_docx.md)
+and
+[`write_gsheet()`](https://yng-me.github.io/tsg/reference/write_gsheet.md)
+offer to install them the first time you use them, or install them
+yourself:
 
 ``` r
 
-install.packages("webshot2")  # optional, for PDF output
+install.packages("gt")                       # HTML
+install.packages(c("gt", "webshot2"))        # PDF (plus qpdf to combine tables into one file)
+install.packages(c("officer", "flextable"))  # Word
+install.packages("googledrive")              # Google Sheets
 ```
 
 ## Basic usage
@@ -32,6 +42,9 @@ generate_frequency(person_record, sex)
 
 # Cross-tabulation
 generate_crosstab(person_record, marital_status, sex)
+
+# Summary statistics of numeric variables
+generate_summary(person_record, age)
 ```
 
 ## Output formats
@@ -52,6 +65,9 @@ write_pdf(tbl, "table.pdf")   # requires webshot2
 
 # Word
 write_docx(tbl, "table.docx")
+
+# Google Sheets
+write_gsheet(tbl, "Marital status by sex")   # requires googledrive
 ```
 
 ## Styling with facades
@@ -64,13 +80,22 @@ formats:
 person_record |>
   generate_frequency(sex) |>
   add_facade(
-    header.bgFill         = "#003366",
-    header.fontColour     = "#FFFFFF",
+    header.fgFill = "#003366",
+    header.fontColour = "#FFFFFF",
     header.textDecoration = "bold",
-    body.fontSize         = 11,
-    table.lastRowBold     = TRUE
+    body.fontSize = 11,
+    table.lastRowBold = TRUE
   ) |>
   write_xlsx("styled.xlsx")
+```
+
+Built-in facades are `"default"`, `"yolo"`, `"apa"`, `"booktabs"`,
+`"striped"`, `"gridded"`, `"minimal"`, `"financial"`, `"nyt"`, `"jama"`,
+`"dark"`, `"pastel"` and `"census"`:
+
+``` r
+
+write_xlsx(tbl, "booktabs.xlsx", facade = "booktabs")
 ```
 
 More examples in the

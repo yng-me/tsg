@@ -5,7 +5,12 @@ Generate output in specified format (e.g., xlsx, html, pdf, word)
 ## Usage
 
 ``` r
-generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
+generate_output(
+  data,
+  path,
+  ...,
+  format = c("xlsx", "gsheet", "html", "pdf", "word")
+)
 ```
 
 ## Arguments
@@ -19,7 +24,9 @@ generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
 
   File path to save the output. For HTML/PDF with a list and
   `separate_files = TRUE` (HTML) or any list (PDF), this is treated as a
-  directory path.
+  directory path. For `"gsheet"`, a Google Sheet name or an existing
+  sheet; see
+  [`write_gsheet()`](https://yng-me.github.io/tsg/reference/write_gsheet.md).
 
 - ...:
 
@@ -27,6 +34,10 @@ generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
 
   - `"xlsx"`: passed to
     [`write_xlsx`](https://yng-me.github.io/tsg/reference/write_xlsx.md)
+
+  - `"gsheet"`: passed to
+    [`write_gsheet`](https://yng-me.github.io/tsg/reference/write_gsheet.md)
+    (requires the googledrive package)
 
   - `"html"`: passed to
     [`write_html`](https://yng-me.github.io/tsg/reference/write_html.md)
@@ -42,7 +53,8 @@ generate_output(data, path, ..., format = c("xlsx", "html", "pdf", "word"))
 
 - format:
 
-  Output format. One of `"xlsx"`, `"html"`, `"pdf"`, or `"word"`.
+  Output format. One of `"xlsx"`, `"gsheet"` (Google Sheets), `"html"`,
+  `"pdf"`, or `"word"`.
 
 ## Value
 

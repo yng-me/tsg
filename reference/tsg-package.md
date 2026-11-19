@@ -1,9 +1,10 @@
 # tsg: Generate Publication-Ready Statistical Tables
 
-A collection of functions for generating frequency tables and
-cross-tabulations of categorical variables. The resulting tables can be
-exported to various formats (Excel, PDF, HTML, etc.) with extensive
-formatting and layout customization options.
+tsg (Table and Summary Generator) is a collection of functions for
+generating frequency tables and cross-tabulations of categorical
+variables. The resulting tables can be exported to various formats
+(Excel, PDF, HTML, etc.) with extensive formatting and layout
+customization options.
 
 ## See also
 
@@ -19,3 +20,8 @@ Useful links:
 
 **Maintainer**: Bhas Abdulsamad <aeabdulsamad@gmail.com>
 ([ORCID](https://orcid.org/0009-0002-5891-8124)) \[copyright holder\]
+
+Authors:
+
+- Bhas Abdulsamad <aeabdulsamad@gmail.com>
+  ([ORCID](https://orcid.org/0009-0002-5891-8124)) \[copyright holder\]

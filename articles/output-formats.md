@@ -28,8 +28,8 @@ title and notes, then call the appropriate `write_*()` function.
 | **Word** (`.docx`)  | Inserting into a Word report or document |
 
 Excel is the most fully-featured output and requires no additional
-packages beyond `tsg`. The other formats need a few extra packages —
-details in their sections below.
+packages beyond `tsg`. The other formats need a few extra packages; see
+their sections below.
 
 All examples use the `person_record` sample dataset included with the
 package.
@@ -114,11 +114,11 @@ person_record |>
 > person_record |>
 >   generate_crosstab(marital_status, sex) |>
 >   write_xlsx(
->     path        = "table-marital-sex.xlsx",
->     title       = "Marital Status by Sex",
->     subtitle    = "National Sample Survey, 2024",
+>     path = "table-marital-sex.xlsx",
+>     title = "Marital Status by Sex",
+>     subtitle = "National Sample Survey, 2024",
 >     source_note = "Source: person_record dataset.",
->     footnotes   = "Missing values are excluded from the denominator."
+>     footnotes = "Missing values are excluded from the denominator."
 >   )
 > ```
 
@@ -235,9 +235,9 @@ becomes the sheet name.
 ``` r
 
 tables <- list(
-  "Sex"        = person_record |> generate_frequency(sex),
+  "Sex" = person_record |> generate_frequency(sex),
   "Employment" = person_record |> generate_frequency(employed),
-  "Crosstab"   = person_record |> generate_crosstab(employed, sex)
+  "Crosstab" = person_record |> generate_crosstab(employed, sex)
 )
 
 write_xlsx(tables, path = "multi-sheet.xlsx")
@@ -268,11 +268,11 @@ write_xlsx(tables, path = "report.xlsx", include_table_list = TRUE)
 ## Managing metadata for large reports
 
 When you have many tables, it is more practical to keep all titles,
-subtitles, and notes in one place — a reference spreadsheet — rather
-than scattering them across your analysis script. `tsg` supports this
-with the `table_list_reference` argument.
+subtitles, and notes in one place (a reference spreadsheet) rather than
+scattering them across your analysis script. `tsg` supports this with
+the `table_list_reference` argument.
 
-### Step 1 — Create a template
+### Step 1: Create a template
 
 ``` r
 
@@ -291,28 +291,28 @@ The template has one row per table with these columns:
 | `footnotes` | Optional footnote text |
 | `source_note` | Optional source line printed below the table |
 
-### Step 2 — Fill in the reference data
+### Step 2: Fill in the reference data
 
 Edit the template in Excel, or build it in R:
 
 ``` r
 
 table_ref <- tibble::tibble(
-  table_id     = c("table_sex", "table_emp", "table_ct"),
+  table_id = c("table_sex", "table_emp", "table_ct"),
   table_number = 1:3,
-  table_name   = c("Sex", "Employment", "Employment × Sex"),
-  title        = c(
+  table_name = c("Sex", "Employment", "Employment × Sex"),
+  title = c(
     "Distribution by Sex",
     "Employment Status",
     "Employment Status by Sex"
   ),
-  subtitle     = c(NA, NA, "Cross-tabulation"),
-  footnotes    = NA,
-  source_note  = "Source: person_record dataset."
+  subtitle = c(NA, NA, "Cross-tabulation"),
+  footnotes = NA,
+  source_note = "Source: person_record dataset."
 )
 ```
 
-### Step 3 — Export with the reference
+### Step 3: Export with the reference
 
 The `table_id` values in your reference must match the names of your
 list.
@@ -325,13 +325,13 @@ automatically.
 tables <- list(
   table_sex = person_record |> generate_frequency(sex),
   table_emp = person_record |> generate_frequency(employed),
-  table_ct  = person_record |> generate_crosstab(employed, sex)
+  table_ct = person_record |> generate_crosstab(employed, sex)
 )
 
 write_xlsx(
   tables,
-  path                 = "report.xlsx",
-  include_table_list   = TRUE,
+  path = "report.xlsx",
+  include_table_list = TRUE,
   table_list_reference = table_ref
 )
 ```
@@ -340,7 +340,7 @@ write_xlsx(
 
 ## Saving to HTML
 
-> **Required package:** `gt` — install with `install.packages("gt")`
+> **Required package:** `gt`. Install it with `install.packages("gt")`.
 
 ``` r
 
@@ -370,7 +370,7 @@ contents.
 ``` r
 
 tables <- list(
-  "Sex"           = person_record |> generate_frequency(sex),
+  "Sex" = person_record |> generate_frequency(sex),
   "Marital Status"= person_record |> generate_frequency(marital_status),
   "Sex × Marital" = person_record |> generate_crosstab(sex, marital_status)
 )
@@ -390,7 +390,7 @@ write_html(tables, path = "html-output/", separate_files = TRUE)
 
 ## Saving to PDF
 
-> **Required packages:** `gt` and `webshot2` — install with
+> **Required packages:** `gt` and `webshot2`. Install them with
 > `install.packages(c("gt", "webshot2"))`.  
 > `webshot2` also requires a Chromium browser; run
 > `webshot2::install_phantomjs()` or ensure Chrome/Chromium is
@@ -424,8 +424,8 @@ write_pdf(tables, path = "report.pdf", separate_files = FALSE)
 
 ## Saving to Word
 
-> **Required packages:** `officer` and `flextable` — install with
-> `install.packages(c("officer", "flextable"))`
+> **Required packages:** `officer` and `flextable`. Install them with
+> `install.packages(c("officer", "flextable"))`.
 
 ``` r
 
@@ -453,7 +453,7 @@ one table per page:
 ``` r
 
 tables <- list(
-  "Sex"           = person_record |>
+  "Sex" = person_record |>
     generate_frequency(sex) |>
     add_table_title("Distribution by Sex"),
   "Marital Status"= person_record |>
@@ -484,3 +484,4 @@ write_docx(tables, path = "docx-output/", separate_files = TRUE)
 | HTML | [`write_html()`](https://yng-me.github.io/tsg/reference/write_html.md) | `gt` |
 | PDF | [`write_pdf()`](https://yng-me.github.io/tsg/reference/write_pdf.md) | `gt`, `webshot2` (+ `qpdf` for combined) |
 | Word | [`write_docx()`](https://yng-me.github.io/tsg/reference/write_docx.md) | `officer`, `flextable` |
+| Google Sheets | [`write_gsheet()`](https://yng-me.github.io/tsg/reference/write_gsheet.md) | `googledrive` (see the [Google Sheets](https://yng-me.github.io/tsg/articles/google-sheets.md) vignette) |

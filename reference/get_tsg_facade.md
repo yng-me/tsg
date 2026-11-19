@@ -13,13 +13,29 @@ get_tsg_facade(facade = "default", which = c("xlsx", "html", "docx", "pdf"))
 - facade:
 
   A character string specifying the name of the facade to retrieve.
-  Defaults to "default". The facade is a YAML file that defines the
-  styling and layout of the table
+  Defaults to "default". Built-in facades: `"default"`, `"yolo"`,
+  `"apa"` (horizontal rules only, Times New Roman), `"booktabs"` (thick
+  top and bottom rules, thin rule under the header), `"striped"`
+  (coloured header, banded rows) `"gridded"` (thin lines around every
+  cell), `"minimal"` (no borders or fills), `"financial"` (dark blue
+  header, grid, bold last row), `"nyt"` (editorial, banded), `"jama"`
+  (medical journal, horizontal rules), `"dark"` (light text on dark),
+  `"pastel"` (soft blue accents) and `"census"` (grey header, small
+  italic notes). An unknown name is an error. Or the path to a `.yaml`
+  or `.json` facade file.
+
+  Every built-in facade is one file shared by all output formats, so a
+  table looks the same in Excel, HTML, PDF and Word. Only `"default"`
+  differs per format; the other facades are laid over that format's
+  default. Spreadsheet-only settings (row heights, column widths, grid
+  lines, tab colour, sheet offsets, cell locking) are ignored outside
+  Excel.
 
 - which:
 
-  A character string specifying the format of the facade to retrieve.
-  Options are "xlsx", "pdf", or "html". Defaults to "xlsx".
+  The output format whose default facade to use: `"xlsx"` (default),
+  `"html"`, `"pdf"` (same as `"html"`) or `"docx"`. It only changes the
+  result for `"default"`.
 
 ## Value
 
@@ -93,8 +109,14 @@ get_tsg_facade()
 #> $table.widthOffset
 #> [1] 2
 #> 
+#> $border_outer.border
+#> [1] "top"    "bottom" "left"   "right" 
+#> 
 #> $border_outer.borderColour
 #> [1] "#8f8f8f"
+#> 
+#> $border_outer.borderStyle
+#> NULL
 #> 
 #> $border_header.border
 #> [1] "bottom"
@@ -152,6 +174,9 @@ get_tsg_facade()
 #> 
 #> $body.height
 #> [1] 20
+#> 
+#> $body.bandFill
+#> NULL
 #> 
 #> $title.fontName
 #> NULL
@@ -376,7 +401,7 @@ get_tsg_facade()
 #> NULL
 #> 
 #> $col_first.width
-#> [1] 32
+#> NULL
 #> 
 #> $col_last.fontName
 #> NULL
@@ -615,10 +640,8 @@ get_tsg_facade()
 #> $label.backHyperlink
 #> [1] "← Back"
 #> 
-#> attr(,"source")
-#> [1] "built-in"
 
-# Other built-in facade
+# Other built-in facades
 get_tsg_facade("yolo")
 #> $table.offsetRow
 #> [1] 1
@@ -679,6 +702,9 @@ get_tsg_facade("yolo")
 #> 
 #> $table.widthOffset
 #> [1] 2
+#> 
+#> $border_outer.border
+#> [1] "top"    "bottom" "left"   "right" 
 #> 
 #> $border_outer.borderColour
 #> [1] "#8f8f8f"
@@ -849,7 +875,7 @@ get_tsg_facade("yolo")
 #> [1] "#cfcfcf"
 #> 
 #> $header.borderStyle
-#> NULL
+#> [1] "thin"
 #> 
 #> $header.bgFill
 #> NULL
@@ -1059,10 +1085,10 @@ get_tsg_facade("yolo")
 #> [1] 24
 #> 
 #> $source_note.fontName
-#> [1] 10
+#> NULL
 #> 
 #> $source_note.fontSize
-#> NULL
+#> [1] 12
 #> 
 #> $source_note.fontColour
 #> NULL
@@ -1104,10 +1130,10 @@ get_tsg_facade("yolo")
 #> [1] 20
 #> 
 #> $footnotes.fontName
-#> [1] 10
+#> NULL
 #> 
 #> $footnotes.fontSize
-#> NULL
+#> [1] 12
 #> 
 #> $footnotes.fontColour
 #> NULL
@@ -1154,6 +1180,38 @@ get_tsg_facade("yolo")
 #> $label.titleTableList
 #> [1] "List of Tables"
 #> 
-#> attr(,"source")
-#> [1] "built-in"
+get_tsg_facade("booktabs")
+#> $border_outer.border
+#> [1] "top"    "bottom"
+#> 
+#> $border_outer.borderColour
+#> [1] "#000000"
+#> 
+#> $border_outer.borderStyle
+#> [1] "medium"
+#> 
+#> $border_header.border
+#> [1] "bottom"
+#> 
+#> $border_header.borderColour
+#> [1] "#000000"
+#> 
+#> $border_header.borderStyle
+#> [1] "thin"
+#> 
+#> $header.border
+#> NULL
+#> 
+#> $header.fgFill
+#> NULL
+#> 
+#> $header.textDecoration
+#> [1] "bold"
+#> 
+#> $body.border
+#> NULL
+#> 
+#> $body.indent
+#> [1] 0
+#> 
 ```

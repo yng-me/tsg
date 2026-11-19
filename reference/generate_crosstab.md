@@ -76,7 +76,7 @@ generate_crosstab(
 - as_proportion:
 
   Logical. If `TRUE`, displays proportions instead of percentages (range
-  0–1).
+  0 to 1).
 
 - percent_by_column:
 
@@ -173,10 +173,10 @@ generate_crosstab(
 
 - collapse_list:
 
-  Logical (NOT YET IMPLEMENTED). If `TRUE` and `group_as_list = TRUE`,
-  collapses the list of frequency tables into a single data frame with
-  group identifiers. See also
-  [`collapse_list()`](https://yng-me.github.io/tsg/reference/collapse_list.md).
+  Logical. If `TRUE` and several column variables are given in `...`,
+  combines their cross-tabulations side by side into one table, with
+  each variable's columns under a spanner header. Ignored when
+  `group_as_list = TRUE`.
 
 - convert_factor:
 

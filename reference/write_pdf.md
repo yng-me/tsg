@@ -37,7 +37,7 @@ write_pdf(
 - ...:
 
   Additional arguments passed to
-  [`tsg_to_gt()`](https://yng-me.github.io/tsg/reference/tsg_to_gt.md).
+  [`as_gt()`](https://yng-me.github.io/tsg/reference/as_gt.md).
 
 - title:
 
@@ -67,7 +67,13 @@ write_pdf(
 
 - facade:
 
-  Styling options. Defaults to the global tsg facade.
+  A built-in facade name (e.g. `"booktabs"`; see
+  [`get_tsg_facade()`](https://yng-me.github.io/tsg/reference/get_tsg_facade.md)),
+  the path to a `.yaml` or `.json` facade file, or a facade list. A
+  built-in facade looks the same in every output format. Keys missing
+  from it fall back to this format's default facade; settings added with
+  [`add_facade()`](https://yng-me.github.io/tsg/reference/add_facade.md)
+  take precedence over it.
 
 ## Value
 

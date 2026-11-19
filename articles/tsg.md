@@ -5,8 +5,8 @@
 library(tsg)
 ```
 
-`tsg` helps you turn a dataset into a publication-ready summary table —
-a count of each category, a two-way comparison, or anything in between —
+`tsg` helps you turn a dataset into a publication-ready summary table (a
+count of each category, a two-way comparison, or anything in between)
 and save it to Excel in one short pipeline. No manual formatting
 required.
 
@@ -29,20 +29,17 @@ on six functional difficulty questions (seeing, hearing, walking, etc.).
 ``` r
 
 head(person_record)
-#>   person_id age sex marital_status employed seeing hearing walking remembering
-#> 1         1  46   1              2        1      1       1       1           1
-#> 2         2  44   2              2        1      1       1       1           1
-#> 3         3  10   1              1       NA      1       1       1           1
-#> 4         4  65   2              2        1      1       1       1           1
-#> 5         5  65   1              2        1      1       1       1           1
-#> 6         6  28   2              1        2      1       1       1           1
-#>   self_caring communicating
-#> 1           1             1
-#> 2           1             1
-#> 3           1             1
-#> 4           1             1
-#> 5           1             1
-#> 6           1             1
+#> # A tibble: 6 × 11
+#>   person_id   age sex        marital_status     employed seeing  hearing walking
+#>       <int> <int> <int+lbl>  <int+lbl>          <int+lb> <int+l> <int+l> <int+l>
+#> 1         1    46 1 [Male]   2 [Married]         1 [Yes] 1 [No … 1 [No … 1 [No …
+#> 2         2    44 2 [Female] 2 [Married]         1 [Yes] 1 [No … 1 [No … 1 [No …
+#> 3         3    10 1 [Male]   1 [Single/never m… NA       1 [No … 1 [No … 1 [No …
+#> 4         4    65 2 [Female] 2 [Married]         1 [Yes] 1 [No … 1 [No … 1 [No …
+#> 5         5    65 1 [Male]   2 [Married]         1 [Yes] 1 [No … 1 [No … 1 [No …
+#> 6         6    28 2 [Female] 1 [Single/never m…  2 [No]  1 [No … 1 [No … 1 [No …
+#> # ℹ 3 more variables: remembering <int+lbl>, self_caring <int+lbl>,
+#> #   communicating <int+lbl>
 ```
 
 ------------------------------------------------------------------------
@@ -70,7 +67,7 @@ the bottom.
 
 ### Count several columns at once
 
-Pass more than one column name and you get back a list of tables — one
+Pass more than one column name and you get back a list of tables, one
 per column.
 
 ``` r
@@ -146,7 +143,7 @@ the top results.
 person_record |>
   generate_frequency(
     marital_status, 
-    top_n      = 3,
+    top_n = 3,
     top_n_only = TRUE
   )
 #> # A tibble: 4 × 3
@@ -161,8 +158,8 @@ person_record |>
 ### Control how rows are sorted
 
 By default, rows are sorted by frequency (most common first). Set
-`sort_value = FALSE` to sort by the category values instead — useful for
-ordered variables like `age`.
+`sort_value = FALSE` to sort by the category values instead. This is
+useful for ordered variables like `age`.
 
 ``` r
 
@@ -295,20 +292,20 @@ person_record |>
 
 ### Other options
 
-- **Running totals** — add cumulative counts and percentages with
+- **Running totals**: add cumulative counts and percentages with
   `add_cumulative = TRUE` and `add_cumulative_percent = TRUE`.
-- **Proportions instead of percentages** — use `as_proportion = TRUE` to
+- **Proportions instead of percentages**: use `as_proportion = TRUE` to
   get values between 0 and 1.
-- **Total row at the top** — set `position_total = "top"` to move the
+- **Total row at the top**: set `position_total = "top"` to move the
   Total row above the data rows.
-- **Custom total label** — use `label_total` to rename the “Total” row.
+- **Custom total label**: use `label_total` to rename the “Total” row.
 
 ``` r
 
 person_record |>
   generate_frequency(
     sex, 
-    add_cumulative         = TRUE, 
+    add_cumulative = TRUE, 
     add_cumulative_percent = TRUE 
   )
 #> # A tibble: 3 × 5
@@ -351,9 +348,8 @@ person_record |>
 
 By default, percentages are calculated across each row (what share of
 each marital-status group is male vs. female?). Set
-`percent_by_column = TRUE` to flip this — percentages are then
-calculated down each column (what share of males is in each
-marital-status group?).
+`percent_by_column = TRUE` to flip this: percentages are then calculated
+down each column (what share of males is in each marital-status group?).
 
 ``` r
 
@@ -378,7 +374,7 @@ person_record |>
 ### Cross-tabulate against several columns at once
 
 Pass more than one column after the row variable and you get a list of
-cross-tabs — one per column.
+cross-tabs, one per column.
 
 ``` r
 
@@ -462,8 +458,8 @@ person_record |>
 The same options available for
 [`generate_frequency()`](https://yng-me.github.io/tsg/reference/generate_frequency.md)
 also work in
-[`generate_crosstab()`](https://yng-me.github.io/tsg/reference/generate_crosstab.md)
-— `as_proportion`, `position_total`, `include_na`, `label_total`, and
+[`generate_crosstab()`](https://yng-me.github.io/tsg/reference/generate_crosstab.md):
+`as_proportion`, `position_total`, `include_na`, `label_total`, and
 more.
 
 ``` r
@@ -549,6 +545,70 @@ person_record |>
 
 ------------------------------------------------------------------------
 
+## Summarise numeric columns
+
+[`generate_summary()`](https://yng-me.github.io/tsg/reference/generate_summary.md)
+computes descriptive statistics of numeric columns, with one row per
+column and one column per statistic.
+
+``` r
+
+person_record |>
+  generate_summary(age)
+#> # A tibble: 1 × 7
+#>   category     n  mean    sd median   min   max
+#>   <chr>    <int> <dbl> <dbl>  <dbl> <dbl> <dbl>
+#> 1 Age       2918  30.7  21.0     26     0    96
+```
+
+Choose the statistics with `stats`: any of `n`, `n_missing`, `mean`,
+`sd`, `median`, `min`, `max`, `p25` and `p75`. Group with
+[`group_by()`](https://dplyr.tidyverse.org/reference/group_by.html) to
+summarise per group.
+
+``` r
+
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_summary(age, stats = c("n", "mean", "median", "p25", "p75"))
+#> # A tibble: 2 × 7
+#>   sex        category     n  mean median   p25   p75
+#>   <int+lbl>  <chr>    <int> <dbl>  <dbl> <dbl> <dbl>
+#> 1 1 [Male]   Age       1516  30.0     25    14    44
+#> 2 2 [Female] Age       1402  31.5     27    14    48
+```
+
+Categorical columns (character, factor, or with value labels) are not
+summarised; use
+[`generate_frequency()`](https://yng-me.github.io/tsg/reference/generate_frequency.md)
+for them.
+
+------------------------------------------------------------------------
+
+## Work with data in a database
+
+All three functions accept a database table,
+e.g. [`dplyr::tbl()`](https://dplyr.tidyverse.org/reference/tbl.html) on
+a connection. The counting (or the summary statistics) runs in the
+database, and only the result is pulled into R.
+
+``` r
+
+con <- DBI::dbConnect(RSQLite::SQLite(), "survey.sqlite")
+
+dplyr::tbl(con, "person_record") |>
+  dplyr::group_by(region) |>
+  generate_frequency(sex)
+```
+
+A database has no variable or value labels, so categories show their
+stored values and `expand_categories` is ignored. A statistic the
+database cannot compute (SQLite has no
+[`quantile()`](https://rdrr.io/r/stats/quantile.html), used by `p25` and
+`p75`) is an error naming it.
+
+------------------------------------------------------------------------
+
 ## Save your table to a file
 
 Once you have a table, pipe it to
@@ -586,29 +646,31 @@ person_record |>
 
 ### Change the look of your table
 
-Pass a built-in style with
-[`get_tsg_facade()`](https://yng-me.github.io/tsg/reference/get_tsg_facade.md)
-to quickly change the visual appearance of your exported table. The
-package ships with two built-in styles: `"default"` (clean and neutral)
-and `"yolo"` (bolder colours).
+Pass the name of a built-in style as `facade` to change how your
+exported table looks. A style looks the same in Excel, HTML, PDF and
+Word. The package ships with thirteen, among them `"default"` (clean and
+neutral), `"yolo"` (bolder colours), `"apa"` (horizontal rules only,
+Times New Roman), `"booktabs"` (thick top and bottom rules, a thin rule
+under the header), `"striped"` (coloured header, banded rows) and
+`"gridded"` (thin lines around every cell).
 
 ``` r
 
 person_record |>
   generate_frequency(sex) |>
   write_xlsx(
-    path   = "table-sex-styled.xlsx",
-    facade = get_tsg_facade("yolo")
+    path = "table-sex-styled.xlsx",
+    facade = "yolo"
   )
 ```
 
-For fine-grained control — changing specific fonts, colours, or cell
-sizes — see the [Customizing How Your Tables
-Look](https://yng-me.github.io/tsg/articles/facade.md) vignette.
+For the full list of styles and fine-grained control (changing specific
+fonts, colours, borders or cell sizes), see the [Customizing How Your
+Tables Look](https://yng-me.github.io/tsg/articles/facade.md) vignette.
 
 ### Save to other formats
 
-`tsg` can also save to HTML, PDF, and Word. The API is identical — just
+`tsg` can also save to HTML, PDF, and Word. The API is identical; just
 change the function name.
 
 ``` r
@@ -620,11 +682,17 @@ tbl <- person_record |>
 
 write_xlsx(tbl, path = "table.xlsx")   # Excel
 write_html(tbl, path = "table.html")   # HTML  (requires the gt package)
-write_pdf(tbl,  path = "table.pdf")    # PDF   (requires gt + webshot2)
+write_pdf(tbl, path = "table.pdf")    # PDF   (requires gt + webshot2)
 write_docx(tbl, path = "table.docx")  # Word  (requires officer + flextable)
+write_gsheet(tbl, "Marital status by sex")  # Google Sheets (requires googledrive)
 ```
 
-For a full guide to each format — including multi-sheet workbooks and
-managing metadata for large reports — see the [Saving and Sharing Your
+Writing to Google Sheets needs a signed-in Google account; see the
+[Writing tables to Google
+Sheets](https://yng-me.github.io/tsg/articles/google-sheets.md)
+vignette.
+
+For a full guide to each format, including multi-sheet workbooks and
+managing metadata for large reports, see the [Saving and Sharing Your
 Tables](https://yng-me.github.io/tsg/articles/output-formats.md)
 vignette.
