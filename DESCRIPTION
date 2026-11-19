@@ -1,8 +1,8 @@
 Package: tsg
 Type: Package
 Title: Generate Publication-Ready Statistical Tables
-Version: 0.1.4
-Description: A collection of functions for generating frequency tables and cross-tabulations of categorical variables. The resulting tables can be exported to various formats (Excel, PDF, HTML, etc.) with extensive formatting and layout customization options.
+Version: 0.2.0
+Description: tsg (Table and Summary Generator) is a collection of functions for generating frequency tables and cross-tabulations of categorical variables. The resulting tables can be exported to various formats (Excel, PDF, HTML, etc.) with extensive formatting and layout customization options.
 Authors@R: c(
     person(
       "Bhas", 
@@ -30,13 +30,9 @@ Imports:
   dplyr (>= 1.1.0),
   stringr (>= 1.4.0),
   rlang (>= 1.0.2),
-  gt,
   lifecycle,
   stats,
-  utils,
-  officer,
-  flextable,
-  qpdf
+  utils
 Suggests: 
   testthat (>= 3.0.0),
   cli,
@@ -45,12 +41,21 @@ Suggests:
   rmarkdown,
   tibble,
   webshot2,
-  withr
+  withr,
+  DBI,
+  dbplyr,
+  RSQLite,
+  googledrive,
+  gargle,
+  gt,
+  officer,
+  flextable,
+  qpdf
 Config/testthat/edition: 3
-RoxygenNote: 7.3.3
 Roxygen: list(markdown = TRUE)
 Depends: 
     R (>= 4.1.0)
 VignetteBuilder: knitr
 URL: https://yng-me.github.io/tsg/, https://github.com/yng-me/tsg
 BugReports: https://github.com/yng-me/tsg/issues
+Config/roxygen2/version: 8.1.1

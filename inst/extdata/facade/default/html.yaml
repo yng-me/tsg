@@ -1,95 +1,92 @@
-table.offsetRow: 1
-table.offsetCol: 1
-table.gridLines: false
+# HTML (gt) facade defaults — cross-format keys only.
+# Spreadsheet-only keys (gridLines, tabColour, locked, hidden, width, widthOffset,
+# offsetRow, offsetCol, height) are absent: this format ignores them.
+# Border styles use the xlsx names (thin, medium, thick, dashed, ...).
 
-table.tabColour: ~
 table.fontName: 'Arial'
 table.fontSize: 12
 table.fontColour: ~
 table.bgFill: ~
 table.fgFill: ~
 table.halign: ~
-table.valign: "center"
-table.wrapText: FALSE
+table.valign: ~
+table.wrapText: ~
 table.indent: ~
-table.locked: ~
-table.hidden: ~
 
 table.decimalPrecision: 2
 table.decimalCols: ~
 table.lastRowBold: false
-table.width: 14
-table.widthOffset: 2
 
+border_outer.border: ["top", "bottom"]
 border_outer.borderColour: "#8f8f8f"
+border_outer.borderStyle: "thin"
 border_header.border: "bottom"
 border_header.borderColour: "#9f9e9e"
-border_header.borderStyle: "medium"
-border_bottom.height: 42
+border_header.borderStyle: "thin"
+border_bottom.height: ~
 
 body.fontName: ~
 body.fontSize: ~
 body.fontColour: ~
 body.numFmt: "###0"
-body.border: ["left", "right"]
-body.borderColour: "#cfcfcf"
-body.borderStyle: "dashed"
+body.border: "bottom"
+body.borderColour: "#D3D3D3"
+body.borderStyle: "thin"
 body.bgFill: ~
 body.fgFill: ~
 body.halign: ~
-body.valign: "center"
+body.valign: ~
 body.textDecoration: ~
 body.wrapText: ~
-body.indent: 1
-body.height: 20
+body.indent: ~
+body.height: ~
+body.bandFill: ~
 
 title.fontName: ~
-title.fontSize: 14
+title.fontSize: 15
 title.fontColour: ~
-title.numFmt: ~
 title.border: ~
 title.borderColour: ~
 title.borderStyle: ~
 title.bgFill: ~
 title.fgFill: ~
 title.halign: ~
-title.valign: "center"
+title.valign: ~
 title.textDecoration: "bold"
 title.wrapText: ~
 title.indent: ~
-title.height: 24
+title.height: ~
 
 subtitle.fontName: ~
-subtitle.fontSize: 12
+subtitle.fontSize: 13
 subtitle.fontColour: ~
-subtitle.numFmt: ~
 subtitle.border: ~
 subtitle.borderColour: ~
 subtitle.borderStyle: ~
 subtitle.bgFill: ~
 subtitle.fgFill: ~
 subtitle.halign: ~
-subtitle.valign: "center"
+subtitle.valign: ~
 subtitle.textDecoration: ~
 subtitle.wrapText: ~
 subtitle.indent: ~
-subtitle.height: 22
+subtitle.height: ~
 
 header.fontName: ~
 header.fontSize: ~
-header.fontColour: "white"
+header.fontColour: ~
 header.numFmt: ~
-header.border: ["top", "bottom", "left", "right"]
-header.borderColour: "#cfcfcf"
+header.border: ~
+header.borderColour: ~
 header.borderStyle: ~
 header.bgFill: ~
-header.fgFill: "#000000"
-header.halign: "center"
+header.fgFill: "#f5f5f5"
+header.halign: ~
 header.valign: ~
 header.textDecoration: ~
-header.wrapText: true
+header.wrapText: ~
 header.indent: ~
-header.height: 24
+header.height: ~
 
 spanner.fontName: ~
 spanner.fontSize: ~
@@ -116,12 +113,11 @@ col_first.borderColour: ~
 col_first.borderStyle: ~
 col_first.bgFill: ~
 col_first.fgFill: ~
-col_first.halign: "left"
+col_first.halign: ~
 col_first.valign: ~
 col_first.textDecoration: ~
 col_first.wrapText: ~
 col_first.indent: ~
-col_first.width: 24
 
 col_last.fontName: ~
 col_last.fontSize: ~
@@ -137,7 +133,6 @@ col_last.valign: ~
 col_last.textDecoration: ~
 col_last.wrapText: ~
 col_last.indent: ~
-col_last.width: 14
 
 row_group.fontName: ~
 row_group.fontSize: ~
@@ -149,44 +144,57 @@ row_group.borderStyle: ~
 row_group.bgFill: ~
 row_group.fgFill: ~
 row_group.halign: ~
-row_group.valign: "center"
+row_group.valign: ~
 row_group.textDecoration: ~
 row_group.wrapText: ~
 row_group.indent: ~
-row_group.width: ~
-row_group.height: 24
+row_group.height: ~
 
-source_note.fontName: 10
-source_note.fontSize: ~
+sub_group.fontName: ~
+sub_group.fontSize: ~
+sub_group.fontColour: ~
+sub_group.numFmt: ~
+sub_group.border: ~
+sub_group.borderColour: ~
+sub_group.borderStyle: ~
+sub_group.bgFill: ~
+sub_group.fgFill: ~
+sub_group.halign: ~
+sub_group.valign: ~
+sub_group.textDecoration: "bold"
+sub_group.wrapText: ~
+sub_group.indent: ~
+sub_group.height: ~
+
+source_note.fontName: ~
+source_note.fontSize: 10
 source_note.fontColour: ~
-source_note.numFmt: ~
 source_note.border: ~
 source_note.borderColour: ~
 source_note.borderStyle: ~
 source_note.bgFill: ~
 source_note.fgFill: ~
 source_note.halign: ~
-source_note.valign: "center"
+source_note.valign: ~
 source_note.textDecoration: "italic"
 source_note.wrapText: ~
 source_note.indent: ~
-source_note.height: 20
+source_note.height: ~
 
-footnotes.fontName: 10
-footnotes.fontSize: ~
+footnotes.fontName: ~
+footnotes.fontSize: 10
 footnotes.fontColour: ~
-footnotes.numFmt: ~
 footnotes.border: ~
 footnotes.borderColour: ~
 footnotes.borderStyle: ~
 footnotes.bgFill: ~
 footnotes.fgFill: ~
 footnotes.halign: ~
-footnotes.valign: "center"
+footnotes.valign: ~
 footnotes.textDecoration: "italic"
 footnotes.wrapText: ~
 footnotes.indent: ~
-footnotes.height: 20
+footnotes.height: ~
 
-label.backHyperlink: "← Back"
 label.titleTableList: "List of Tables"
+label.backHyperlink: "← Back"

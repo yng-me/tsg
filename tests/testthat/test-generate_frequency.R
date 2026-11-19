@@ -206,7 +206,8 @@ test_that("generate_frequency uses custom labels", {
   result <- generate_frequency(df, category, label_stub = "Custom Label")
 
   # Check if the custom label is used for the output
-  expect_equal(attr(result, "label_xlsx"), "Custom Label")
+  # stored on the category column, whose header the xlsx writer reads
+  expect_equal(attr(result$category, "label_xlsx"), "Custom Label")
 })
 
 
@@ -409,7 +410,7 @@ test_that("generate_frequency works with multiple grouping variables", {
   expect_equal(result_2[["Y"]][["C"]]$frequency[nrow(result_2[["Y"]][["C"]])], 2)
   expect_equal(result_2[["Y"]][["C"]]$percent[nrow(result_2[["Y"]][["C"]])], 100)
 
-  expect_contains(attributes(result_2)$groups, c("type", "category"))
+  expect_contains(attributes(result_2)$groups, c("type", "category_group"))
 
   result_3 <- df |>
     dplyr::group_by(type, category) |>
@@ -426,7 +427,7 @@ test_that("generate_frequency works with multiple grouping variables", {
 
   expect_length(result_3$category[result_3$category == "Total"], 5)
   expect_equal(attributes(result_3)$label_total, "Total")
-  expect_contains(attributes(result_3)$groups, c("type", "category"))
+  expect_contains(attributes(result_3)$groups, c("type", "category_group"))
 
 })
 
@@ -550,3 +551,75 @@ test_that("generate_frequency retains label when grouping is applied", {
 })
 
 
+
+
+# --- Ported from the 0.2.0 branch ---
+
+test_that("group_as_hierarchy works with labelled grouping variables", {
+  result <- person_record |>
+    dplyr::group_by(sex) |>
+    generate_frequency(marital_status, group_as_hierarchy = TRUE)
+
+  expect_true(inherits(result, "tsg"))
+  expect_contains(as.character(haven::as_factor(result$sex)), "All")
+})
+
+test_that("missing code does not reuse a labelled code absent from the data", {
+  data <- tibble::tibble(
+    q = haven::labelled(c(1L, 2L, 2L, NA), c(Yes = 1L, No = 2L, `Don't know` = 8L, Refused = 9L), label = "Q")
+  )
+  result <- generate_frequency(data, q)
+  labels <- attr(result$category, "labels")
+
+  expect_false(anyDuplicated(labels) > 0)
+  expect_contains(names(labels), c("Don't know", "Not reported"))
+})
+
+test_that("the Others row uses proportions when as_proportion = TRUE", {
+  result <- generate_frequency(person_record, age, top_n = 3, add_cumulative_percent = TRUE, as_proportion = TRUE)
+  expect_true(all(result$cumulative_proportion <= 1, na.rm = TRUE))
+})
+
+test_that("a group named category is renamed, header and groups attribute included", {
+  d <- dplyr::tibble(category = c("a", "a", "b"), x = c("u", "v", "u"))
+  grouped <- dplyr::group_by(d, category)
+
+  expect_message(out <- generate_frequency(grouped, x), "category_group")
+  expect_equal(names(out)[1:2], c("category_group", "category"))
+  expect_equal(attr(out, "groups"), "category_group")
+  expect_equal(get_header(out)$category_group, "category_group")
+
+  out <- suppressMessages(generate_frequency(grouped, x, group_as_list = TRUE, group_as_hierarchy = TRUE))
+  # main's hierarchy total key is "<group label>: <label_group_hierarchy>"
+  expect_named(out, c("category_group: All", "a", "b"))
+  expect_equal(attr(out, "groups"), "category_group")
+})
+
+test_that("nested group lists work when a column is named like an internal variable", {
+  # build_nested_group_list() filtered on a loop variable `v`, which a column `v` masked
+  d <- dplyr::tibble(g1 = c("a", "a", "b"), g2 = c("x", "y", "x"), v = c("u", "v", "u"))
+  x <- generate_frequency(dplyr::group_by(d, g1, g2), v, group_as_list = TRUE)
+
+  expect_named(x, c("a", "b"))
+  expect_setequal(names(x$a), c("x", "y"))
+  # u = 1, v = 0 (expand_categories), Total = 1
+  expect_equal(x$a$x$frequency, c(1L, 0L, 1L), ignore_attr = TRUE)
+
+  h <- generate_frequency(dplyr::group_by(d, g1, g2), v, group_as_list = TRUE, group_as_hierarchy = TRUE)
+  expect_equal(h$a$x$frequency, c(1L, 0L, 1L), ignore_attr = TRUE)
+})
+
+test_that("the Total row never reuses a code the labels use", {
+  # 0 = "None" is labelled but no row has it; the Total row must not become "None"
+  d <- dplyr::tibble(q = haven::labelled(c(1L, 1L, 2L), c(None = 0L, Some = 1L, Many = 2L)))
+  out <- expect_no_warning(generate_frequency(d, q))
+  labels <- as.character(haven::as_factor(out$category))
+  expect_equal(labels, c("Some", "Many", "Total"))
+  expect_false(anyDuplicated(attr(out$category, "labels")) > 0)
+
+  # a 0 in the data and an unused -1 label: the code must skip both
+  d2 <- dplyr::tibble(q = haven::labelled(c(0L, 1L), c(Zero = 0L, One = 1L, Refused = -1L)))
+  out2 <- generate_frequency(d2, q)
+  expect_contains(as.character(haven::as_factor(out2$category)), "Total")
+  expect_false(anyDuplicated(attr(out2$category, "labels")) > 0)
+})

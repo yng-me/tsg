@@ -9,6 +9,7 @@ write_xlsx(
   path,
   ...,
   sheet_name = NULL,
+  trim_sheet_names = FALSE,
   title = NULL,
   subtitle = NULL,
   source_note = NULL,
@@ -32,9 +33,11 @@ write_xlsx(
 \item{path}{A file path (if \code{separate_files = FALSE}) or directory path (if \code{separate_files = TRUE})
 where the Excel file(s) will be saved. File extension \code{.xlsx} is automatically added if missing.}
 
-\item{...}{Additional arguments passed to \code{openxlsx::createWorkbook()} and \code{openxlsx::addWorksheet()}.}
+\item{...}{Additional arguments passed to \code{openxlsx::createWorkbook()} (e.g. \code{creator}) or \code{openxlsx::addWorksheet()} (e.g. \code{zoom}), matched by name.}
 
 \item{sheet_name}{Optional name for the Excel sheet. Ignored if \code{data} is a list and \code{separate_files = FALSE}.}
+
+\item{trim_sheet_names}{Logical. Excel limits sheet names to 31 characters. If \code{FALSE} (default), a longer sheet name (from \code{sheet_name}, a list name or the \code{table_name} of \code{table_list_reference}) is an error. If \code{TRUE}, it is cut to 31 characters, and names that then repeat are numbered (\code{"... (2)"}). File names (\code{separate_files = TRUE}) are never cut.}
 
 \item{title}{Optional title displayed above the data in each sheet or file.}
 
@@ -48,7 +51,7 @@ where the Excel file(s) will be saved. File extension \code{.xlsx} is automatica
 
 \item{collapse_list}{Logical. If \code{TRUE}, a list of data frames will be merged into one sheet (if applicable).}
 
-\item{row_group_as_column}{Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles.}
+\item{row_group_as_column}{Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles. Applies to a grouped list written on one sheet (\code{collapse_list = TRUE}) and to the sheets of a list nested two or more groups deep.}
 
 \item{names_separator}{Character used to separate column names when dealing with nested or grouped headers.}
 
@@ -56,7 +59,7 @@ where the Excel file(s) will be saved. File extension \code{.xlsx} is automatica
 
 \item{table_list_reference}{A data frame containing the table list reference. If \code{NULL}, it will be generated from \code{data}.}
 
-\item{facade}{A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.}
+\item{facade}{A built-in facade name (e.g. \code{"booktabs"}; see \code{\link[=get_tsg_facade]{get_tsg_facade()}}), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with \code{\link[=add_facade]{add_facade()}} take precedence over it.}
 }
 \value{
 Invisibly returns \code{NULL}. The function is called for its side-effect of writing Excel file(s).

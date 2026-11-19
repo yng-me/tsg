@@ -2,178 +2,6 @@
 test_data <- data.frame(A = 1:3, B = 4:6)
 
 
-# Test 1: Test convert_to_nested_list()
-test_that("convert_to_nested_list creates correct nested list structure", {
-
-  key_value_pairs <- list(
-    "gridLines" = FALSE,
-    "style.body.border" = c("left", "right"),
-    "style.body.borderColour" = "#cfcfcf",
-    "height.title" = 24
-  )
-
-  # Expected output for the convert_to_nested_list function
-  expected_nested <- list(
-    gridLines = FALSE,
-    style = list(
-      body = list(
-        border = c("left", "right"),
-        borderColour = "#cfcfcf"
-      )
-    ),
-    height = list(
-      title = 24
-    )
-  )
-
-  result <- convert_to_nested_list(key_value_pairs)
-
-  # Check if the result matches the expected nested structure
-  expect_equal(result, expected_nested)
-})
-
-
-# Test 2: Test flatten_nested_list()
-test_that("flatten_nested_list creates correct flat key-value pairs", {
-
-  nested_list <- list(
-    gridLines = FALSE,
-    style = list(
-      body = list(
-        border = c("left", "right"),
-        borderColour = "#cfcfcf"
-      )
-    ),
-    height = list(
-      title = 24
-    )
-  )
-
-  # Expected output for the flatten_nested_list function
-  expected_flat <- list(
-    gridLines = FALSE,
-    "style.body.border" = c("left", "right"),
-    "style.body.borderColour" = "#cfcfcf",
-    "height.title" = 24
-  )
-
-  result <- flatten_nested_list(nested_list)
-
-  # Check if the result matches the expected flattened structure
-  expect_equal(result, expected_flat)
-})
-
-
-# Test 3: Test for edge case - empty input (both functions)
-test_that("convert_to_nested_list handles empty input", {
-  empty_input <- list()
-  result <- convert_to_nested_list(empty_input)
-  expect_equal(result, list())  # Should return an empty list
-})
-
-test_that("flatten_nested_list handles empty input", {
-  empty_input <- list()
-  result <- flatten_nested_list(empty_input)
-  expect_equal(result, list())  # Should return an empty list
-})
-
-
-# Test 4: Handling nested lists with multiple levels
-test_that("convert_to_nested_list handles deep nesting", {
-
-  key_value_pairs <- list(
-    "style.title.fontSize" = 13,
-    "style.subtitle.fontSize" = 12,
-    "style.header.wrapText" = TRUE
-  )
-
-  expected_nested <- list(
-    style = list(
-      title = list(fontSize = 13),
-      subtitle = list(fontSize = 12),
-      header = list(wrapText = TRUE)
-    )
-  )
-
-  result <- convert_to_nested_list(key_value_pairs)
-  expect_equal(result, expected_nested)
-})
-
-test_that("flatten_nested_list handles deep nesting", {
-
-  nested_list <- list(
-    style = list(
-      title = list(fontSize = 13),
-      subtitle = list(fontSize = 12),
-      header = list(wrapText = TRUE)
-    )
-  )
-
-  expected_flat <- list(
-    "style.title.fontSize" = 13,
-    "style.subtitle.fontSize" = 12,
-    "style.header.wrapText" = TRUE
-  )
-
-  result <- flatten_nested_list(nested_list)
-  expect_equal(result, expected_flat)
-})
-
-
-# Test 5: Handling mixed data types
-test_that("convert_to_nested_list handles mixed data types", {
-
-  key_value_pairs <- list(
-    "decimal.precision" = 2,
-    "height.title" = 24,
-    "style.body.valign" = "center",
-    "style.body.border" = c("left", "right"),
-    "style.body.numFmt" = "#,##0"
-  )
-
-  expected_nested <- list(
-    decimal = list(precision = 2),
-    height = list(title = 24),
-    style = list(
-      body = list(
-        valign = "center",
-        border = c("left", "right"),
-        numFmt = "#,##0"
-      )
-    )
-  )
-
-  result <- convert_to_nested_list(key_value_pairs)
-  expect_equal(result, expected_nested)
-})
-
-test_that("flatten_nested_list handles mixed data types", {
-
-  nested_list <- list(
-    decimal = list(precision = 2),
-    height = list(title = 24),
-    style = list(
-      body = list(
-        valign = "center",
-        border = c("left", "right"),
-        numFmt = "#,##0"
-      )
-    )
-  )
-
-  expected_flat <- list(
-    "decimal.precision" = 2,
-    "height.title" = 24,
-    "style.body.valign" = "center",
-    "style.body.border" = c("left", "right"),
-    "style.body.numFmt" = "#,##0"
-  )
-
-  result <- flatten_nested_list(nested_list)
-  expect_equal(result, expected_flat)
-})
-
-
 test_that("add_facade adds a new facade attribute to a data frame", {
   # Adding a facade
   result <- add_facade(test_data, table.gridLines = TRUE, table.fontSize = 12)
@@ -306,3 +134,49 @@ test_that("add_facade adds facade to non-data frame object", {
   expect_equal(facade$table.fontSize, 14)
 })
 
+
+
+test_that("add_facade stores evaluated values", {
+  n <- 2
+  result <- add_facade(data.frame(a = 1), table.offsetRow = n, table.offsetCol = -1)
+  expect_equal(attr(result, "facade")$table.offsetRow, 2)
+  expect_equal(attr(result, "facade")$table.offsetCol, -1)
+})
+
+test_that("remove_labels clears value labels in every table of a list", {
+  result <- remove_labels(generate_frequency(person_record, sex, marital_status))
+  expect_null(attr(result[[1]]$category, "labels"))
+  expect_null(attr(result[[2]]$category, "labels"))
+})
+
+test_that("add_facade rejects unknown or unnamed settings", {
+  expect_error(add_facade(data.frame(a = 1), header.fontsize = 12), "header.fontsize")
+  expect_error(add_facade(data.frame(a = 1), 12), "named")
+})
+
+test_that("add_facade accepts every key of the default facade", {
+  result <- add_facade(data.frame(a = 1), sub_group.height = 30, label.backHyperlink = "Back")
+  expect_equal(attr(result, "facade")$sub_group.height, 30)
+})
+
+test_that("add_column_total labels a custom-named total column", {
+  result <- add_column_total(data.frame(a = 1:2, b = 3:4), name = "all", label_total = "All")
+  expect_equal(result$all, c(4, 6), ignore_attr = TRUE)
+  expect_equal(attr(result$all, "label"), "All")
+})
+
+test_that("collapse_list pluck drops proportion columns too", {
+  data <- person_record |>
+    dplyr::group_by(sex) |>
+    generate_frequency(seeing, hearing, as_proportion = TRUE)
+  result <- collapse_list(data, pluck = "frequency", as_proportion = TRUE)
+  expect_false(any(grepl("^proportion", names(result))))
+})
+
+test_that("get_tsg_facade() errors on an unknown name and lists the built-ins", {
+  expect_error(get_tsg_facade("booktab"), "Unknown facade `booktab`.*booktabs")
+  # one file per built-in serves every format; only the default differs per format
+  expect_equal(get_tsg_facade("striped", which = "html"), get_tsg_facade("striped"))
+  expect_false(identical(get_tsg_facade(which = "html"), get_tsg_facade()))
+  expect_equal(get_tsg_facade(which = "pdf"), get_tsg_facade(which = "html"))
+})

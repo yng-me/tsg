@@ -14,88 +14,22 @@ is_valid_input_data <- function(x) {
   ) stop(error_message)
 }
 
-collect_data <- function(data, ...) {
-
-  is_valid_input_data(data)
-
-  if("ArrowObject" %in% class(data) | "arrow_dplyr_query" %in% class(data)) {
-    dplyr::collect(data)
-  } else {
-    data
-  }
+# Arrow input is collected up front: Arrow cannot group by haven-labelled columns, and
+# collecting restores their labels. Database tables (tbl_lazy) stay lazy.
+collect_data <- function(data) {
+  if(inherits(data, c("ArrowObject", "arrow_dplyr_query"))) dplyr::collect(data) else data
 }
 
+# Column names of any input; names() of a lazy table returns its internals.
+col_names <- function(data) as.character(dplyr::tbl_vars(data))
 
-convert_to_nested_list <- function(key_value_pairs) {
+# A column of in-memory input; NULL for a lazy table, whose columns carry no attributes.
+local_col <- function(data, col) if (is.data.frame(data)) data[[col]]
 
-  # Helper function to split a key (e.g., style.body.border) and create a nested list
-  create_nested_list <- function(key_parts, value) {
-    # Base case: if there is only one key part, return the value
-    if (length(key_parts) == 1) {
-      return(stats::setNames(list(value), key_parts))
-    }
-
-    # Recursive case: pass the remaining parts to the next level of the list
-    list_name <- key_parts[1]
-    remaining_parts <- key_parts[-1]
-
-    # Recursively create the nested structure
-    nested_list <- create_nested_list(remaining_parts, value)
-
-    return(stats::setNames(list(nested_list), list_name))
-  }
-
-  # Initialize an empty list to hold the final result
-  result <- list()
-
-  # Loop through each key-value pair
-  for (key in names(key_value_pairs)) {
-    value <- key_value_pairs[[key]]
-    key_parts <- strsplit(key, "\\.")[[1]]  # Split the key by dot "."
-    nested_value <- create_nested_list(key_parts, value)
-
-    # Merge the nested value into the result list
-    result <- utils::modifyList(result, nested_value)
-  }
-
-  return(result)
-}
-
-
-flatten_nested_list <- function(nested_list, parent_key = NULL) {
-  flat_list <- list()
-
-  for (name in names(nested_list)) {
-    value <- nested_list[[name]]
-
-    # Build the new key
-    new_key <- if (is.null(parent_key)) name else paste(parent_key, name, sep = ".")
-
-    # If the value is a list, recurse deeper
-    if (is.list(value) && !is.null(names(value))) {
-      flat_list <- c(flat_list, flatten_nested_list(value, new_key))
-    } else {
-      flat_list[[new_key]] <- value
-    }
-  }
-
-  return(flat_list)
-}
-
-
-deselect_zero_cols <- function(data) {
-
-  num_cols <- vapply(data, is.numeric, logical(1L))
-  if (!any(num_cols)) return(data)
-
-  sums <- colSums(data[, num_cols, drop = FALSE], na.rm = TRUE)
-  zero_cols <- names(sums)[sums == 0]
-
-  if (length(zero_cols) > 0) {
-    data <- dplyr::select(data, -dplyr::any_of(zero_cols))
-  }
-
-  data
-
+# Drop count columns that are all zero (categories nobody falls in). Group columns
+# are kept even when numeric and zero (e.g. a group age = 0).
+deselect_zero_cols <- function(data, keep = NULL) {
+  is_zero <- vapply(data, function(x) is.numeric(x) && sum(x, na.rm = TRUE) == 0, logical(1))
+  data[!is_zero | names(data) %in% keep]
 }
 

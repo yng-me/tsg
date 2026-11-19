@@ -1,0 +1,21 @@
+# Gridded facade, as in statistical yearbooks: thin black lines around every cell
+# and a grey header. Unset keys come from default.yaml.
+
+border_outer.border: ["top", "bottom", "left", "right"]
+border_outer.borderColour: "#000000"
+border_outer.borderStyle: "thin"
+
+border_header.border: "bottom"
+border_header.borderColour: "#000000"
+border_header.borderStyle: "thin"
+
+header.border: ["top", "bottom", "left", "right"]
+header.borderColour: "#000000"
+header.borderStyle: "thin"
+header.fgFill: "#D9D9D9"
+header.textDecoration: "bold"
+header.halign: "center"
+
+body.border: ["top", "bottom", "left", "right"]
+body.borderColour: "#000000"
+body.borderStyle: "thin"

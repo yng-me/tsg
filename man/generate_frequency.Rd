@@ -54,7 +54,7 @@ generate_frequency(
 
 \item{add_cumulative_percent}{Logical. If \code{TRUE}, adds cumulative percentages (or proportions if \code{as_proportion = TRUE}).}
 
-\item{as_proportion}{Logical. If \code{TRUE}, displays proportions instead of percentages (range 0–1).}
+\item{as_proportion}{Logical. If \code{TRUE}, displays proportions instead of percentages (range 0 to 1).}
 
 \item{include_na}{Logical. If \code{TRUE}, includes missing values in the frequency table.}
 

@@ -22,7 +22,7 @@
 #'   per table inside a subdirectory.
 #' @param names_separator Column name separator for detecting cross-tab spanners. Default
 #'   \code{"__"}.
-#' @param facade Styling options. Defaults to the global tsg facade.
+#' @param facade A built-in facade name (e.g. \code{"booktabs"}; see [get_tsg_facade()]), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with [add_facade()] take precedence over it.
 #'
 #' @return Invisibly returns \code{NULL}.
 #' @export
@@ -40,9 +40,13 @@ write_docx <- function(
   facade = get_tsg_facade(which = "docx")
 ) {
 
+  rlang::check_installed(c("officer", "flextable"), reason = "to write Word documents.")
+
   facade <- facade %||% get_tsg_facade(which = "docx")
 
   if (inherits(data, "list")) {
+
+    data <- flatten_tables(data)
 
     if (separate_files) {
 
@@ -50,8 +54,8 @@ write_docx <- function(
       fs::dir_create(path_dir)
 
       for (i in seq_along(data)) {
-        nm     <- names(data)[i] %||% as.character(i)
-        path_i <- file.path(path_dir, paste0(nm, ".docx"))
+        nm <- names(data)[i] %||% as.character(i)
+        path_i <- file.path(path_dir, paste0(xlsx_set_valid_sheet_name(nm, trim = FALSE), ".docx"))
         data_i <- data[[i]]
         attrs_i <- attributes(data_i)
 
@@ -77,14 +81,14 @@ write_docx <- function(
       doc <- officer::read_docx()
 
       for (i in seq_along(data)) {
-        nm     <- names(data)[i] %||% as.character(i)
+        nm <- names(data)[i] %||% as.character(i)
         data_i <- data[[i]]
         attrs_i <- attributes(data_i)
 
         title_i <- if (!is.null(title)) glue::glue("{title}: {nm}") else attrs_i$title
-        resolved_title    <- title_i
+        resolved_title <- title_i
         resolved_subtitle <- subtitle %||% attrs_i$subtitle
-        resolved_source   <- source_note %||% attrs_i$source_note
+        resolved_source <- source_note %||% attrs_i$source_note
         resolved_footnotes <- footnotes %||% attrs_i$footnotes
 
         if (i > 1L) {
@@ -171,19 +175,19 @@ write_docx <- function(
 
   # Helper: build officer fpar from facade section and text
   .make_fpar <- function(text, section_prefix) {
-    fn_name    <- facade[[paste0(section_prefix, ".fontName")]]
-    fn_size    <- facade[[paste0(section_prefix, ".fontSize")]]
-    fn_colour  <- facade[[paste0(section_prefix, ".fontColour")]]
-    fn_dec     <- tolower(as.character(facade[[paste0(section_prefix, ".textDecoration")]] %||% ""))
-    fn_halign  <- facade[[paste0(section_prefix, ".halign")]]
+    fn_name <- facade[[paste0(section_prefix, ".fontName")]]
+    fn_size <- facade[[paste0(section_prefix, ".fontSize")]]
+    fn_colour <- facade[[paste0(section_prefix, ".fontColour")]]
+    fn_dec <- tolower(as.character(facade[[paste0(section_prefix, ".textDecoration")]] %||% ""))
+    fn_halign <- facade[[paste0(section_prefix, ".halign")]]
 
     fp_t <- officer::fp_text_lite(
       font.family = fn_name %||% (facade$table.fontName %||% "Arial"),
-      font.size   = as.numeric(fn_size %||% (facade$table.fontSize %||% 11)),
-      color       = fn_colour %||% "black",
-      bold        = "bold" %in% fn_dec,
-      italic      = "italic" %in% fn_dec,
-      underline   = "underline" %in% fn_dec
+      font.size = as.numeric(fn_size %||% (facade$table.fontSize %||% 11)),
+      color = fn_colour %||% "black",
+      bold = "bold" %in% fn_dec,
+      italic = "italic" %in% fn_dec,
+      underline = "underline" %in% fn_dec
     )
     fp_p <- officer::fp_par(
       text.align = fn_halign %||% "left"
@@ -211,25 +215,25 @@ write_docx <- function(
 
   # Footnotes — respect per-footnote placement; apply footnotes.* facade styling
   if (!is.null(footnotes)) {
-    fn_name   <- facade$footnotes.fontName %||% (facade$table.fontName %||% "Arial")
-    fn_size   <- as.numeric(facade$footnotes.fontSize %||% facade$table.fontSize %||% 10)
+    fn_name <- facade$footnotes.fontName %||% (facade$table.fontName %||% "Arial")
+    fn_size <- as.numeric(facade$footnotes.fontSize %||% facade$table.fontSize %||% 10)
     fn_colour <- facade$footnotes.fontColour %||% "black"
-    fn_dec    <- tolower(as.character(facade$footnotes.textDecoration %||% ""))
+    fn_dec <- tolower(as.character(facade$footnotes.textDecoration %||% ""))
 
     for (i in seq_along(footnotes$text)) {
-      fn_text      <- footnotes$text[[i]]
+      fn_text <- footnotes$text[[i]]
       fn_placement <- footnotes$placement[[i]] %||% "auto"
-      text_align   <- if (fn_placement == "right") "right" else "left"
+      text_align <- if (fn_placement == "right") "right" else "left"
 
       fp_t_fn <- officer::fp_text_lite(
         font.family = fn_name,
-        font.size   = fn_size,
-        color       = fn_colour,
-        bold        = "bold" %in% fn_dec,
-        italic      = "italic" %in% fn_dec,
-        underline   = "underline" %in% fn_dec
+        font.size = fn_size,
+        color = fn_colour,
+        bold = "bold" %in% fn_dec,
+        italic = "italic" %in% fn_dec,
+        underline = "underline" %in% fn_dec
       )
-      fp_p_fn  <- officer::fp_par(text.align = text_align)
+      fp_p_fn <- officer::fp_par(text.align = text_align)
       fpar_obj <- officer::fpar(fn_text, fp_t = fp_t_fn, fp_p = fp_p_fn)
       doc <- officer::body_add_fpar(doc, fpar_obj, pos = "after")
     }
@@ -258,13 +262,14 @@ tsg_to_flextable <- function(data, names_separator = "__", facade = get_tsg_faca
   facade <- facade %||% get_tsg_facade(which = "docx")
   facade <- resolve_facade(facade, attributes(data)$facade, which = "docx")
 
-  attrs    <- attributes(data)
-  sep      <- attrs$label_separator %||% names_separator
+  attrs <- attributes(data)
+  sep <- attrs$label_separator %||% names_separator
   col_names <- names(data)
 
-  # Extract display labels (same logic as tsg_to_gt)
+  # Extract display labels (same logic as as_gt)
   col_labels <- vapply(col_names, function(cn) {
-    attr(data[[cn]], "label_xlsx") %||% attr(data[[cn]], "label") %||% cn
+    # exact: a bare "label" would partial-match the value labels of a labelled column
+    attr(data[[cn]], "label_xlsx", exact = TRUE) %||% attr(data[[cn]], "label", exact = TRUE) %||% cn
   }, character(1))
 
   # Convert labelled columns to factor
@@ -273,7 +278,7 @@ tsg_to_flextable <- function(data, names_separator = "__", facade = get_tsg_faca
   # --- Detect spanners ----------------------------------------------------------
   has_spanner <- any(grepl(sep, col_labels, fixed = TRUE))
   spanner_groups <- list()
-  leaf_labels    <- col_labels
+  leaf_labels <- col_labels
 
   if (has_spanner) {
     for (i in seq_along(col_names)) {
@@ -281,7 +286,7 @@ tsg_to_flextable <- function(data, names_separator = "__", facade = get_tsg_faca
       if (grepl(sep, lbl, fixed = TRUE)) {
         parts <- strsplit(lbl, sep, fixed = TRUE)[[1]]
         leaf_labels[i] <- parts[length(parts)]
-        spanner_label  <- paste(parts[-length(parts)], collapse = sep)
+        spanner_label <- paste(parts[-length(parts)], collapse = sep)
         spanner_groups[[spanner_label]] <- c(spanner_groups[[spanner_label]], col_names[i])
       }
     }
@@ -313,16 +318,9 @@ tsg_to_flextable <- function(data, names_separator = "__", facade = get_tsg_faca
   # --- Numeric formatting -------------------------------------------------------
   precision <- as.integer(facade$table.decimalPrecision %||% 2L)
 
-  int_names <- col_names[vapply(col_names, function(cn) {
-    x <- data_for_ft[[cn]]
-    is.integer(x) || (is.double(x) && !all(is.na(x)) &&
-      isTRUE(all.equal(sum(x, na.rm = TRUE), sum(as.integer(x), na.rm = TRUE))))
-  }, logical(1))]
-
-  dbl_names <- setdiff(
-    col_names[vapply(col_names, function(cn) is.double(data_for_ft[[cn]]), logical(1))],
-    int_names
-  )
+  formats <- number_format_cols(data_for_ft, facade$table.decimalCols)
+  int_names <- formats$integer
+  dbl_names <- formats$decimal
 
   if (length(int_names) > 0) {
     ft <- flextable::colformat_int(ft, j = int_names, big.mark = ",")
@@ -400,6 +398,10 @@ tsg_to_flextable <- function(data, names_separator = "__", facade = get_tsg_faca
   if (!is.null(body_fill)) {
     ft <- flextable::bg(ft, bg = body_fill, part = "body")
   }
+  # Banded rows: every other body row (the 2nd, 4th, ...), as in xlsx
+  if (!is.null(facade$body.bandFill) && nrow(data_for_ft) >= 2L) {
+    ft <- flextable::bg(ft, i = seq(2L, nrow(data_for_ft), by = 2L), bg = facade$body.bandFill, part = "body")
+  }
 
   # Body text colour
   if (!is.null(facade$body.fontColour)) {
@@ -476,18 +478,27 @@ tsg_to_flextable <- function(data, names_separator = "__", facade = get_tsg_faca
     ft <- flextable::bold(ft, i = n_body, part = "body")
   }
 
-  # Borders — facade-driven
-  outer_colour  <- facade$border_outer.borderColour %||% "#999999"
-  inner_colour  <- facade$body.borderColour %||% "#cccccc"
-  header_colour <- facade$border_header.borderColour %||% outer_colour
-  ft <- flextable::border_outer(ft, part = "all",
-    border = officer::fp_border(color = outer_colour, width = 0.5))
-  ft <- flextable::border_inner_h(ft,
-    border = officer::fp_border(color = inner_colour, width = 0.25))
-  ft <- flextable::border_inner_v(ft,
-    border = officer::fp_border(color = inner_colour, width = 0.25))
-  ft <- flextable::hline_bottom(ft, part = "header",
-    border = officer::fp_border(color = header_colour, width = 0.75))
+  # Borders: only what the facade asks for, as in the xlsx writer (later parts win).
+  ft <- flextable::border_remove(ft)
+  fp <- function(b) officer::fp_border(color = b$color, style = b$style, width = b$width * 0.75)
+  draw <- function(ft, borders, part, i = NULL) {
+    if (length(borders) == 0) return(ft)
+    sides <- stats::setNames(lapply(borders, fp), paste0("border.", names(borders)))
+    do.call(flextable::border, c(list(ft, i = i, part = part), sides))
+  }
+  n_header <- flextable::nrow_part(ft, "header")
+  ft <- draw(ft, facade_borders(facade, "body"), "body")
+  ft <- draw(ft, facade_borders(facade, "header"), "header")
+  if (n_header > 1L) {
+    ft <- draw(ft, facade_borders(facade, "spanner"), "header", i = seq_len(n_header - 1L))
+  }
+  ft <- draw(ft, facade_borders(facade, "border_header"), "header", i = n_header)
+
+  outer <- facade_borders(facade, "border_outer")
+  if (!is.null(outer$top))    ft <- flextable::hline_top(ft, border = fp(outer$top), part = "header")
+  if (!is.null(outer$bottom)) ft <- flextable::hline_bottom(ft, border = fp(outer$bottom), part = "body")
+  if (!is.null(outer$left))   ft <- flextable::vline_left(ft, border = fp(outer$left), part = "all")
+  if (!is.null(outer$right))  ft <- flextable::vline_right(ft, border = fp(outer$right), part = "all")
 
   ft <- flextable::autofit(ft)
   ft

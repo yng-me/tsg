@@ -7,9 +7,11 @@
 get_tsg_facade(facade = "default", which = c("xlsx", "html", "docx", "pdf"))
 }
 \arguments{
-\item{facade}{A character string specifying the name of the facade to retrieve. Defaults to "default". The facade is a YAML file that defines the styling and layout of the table}
+\item{facade}{A character string specifying the name of the facade to retrieve. Defaults to "default". Built-in facades: \code{"default"}, \code{"yolo"}, \code{"apa"} (horizontal rules only, Times New Roman), \code{"booktabs"} (thick top and bottom rules, thin rule under the header), \code{"striped"} (coloured header, banded rows) \code{"gridded"} (thin lines around every cell), \code{"minimal"} (no borders or fills), \code{"financial"} (dark blue header, grid, bold last row), \code{"nyt"} (editorial, banded), \code{"jama"} (medical journal, horizontal rules), \code{"dark"} (light text on dark), \code{"pastel"} (soft blue accents) and \code{"census"} (grey header, small italic notes). An unknown name is an error. Or the path to a \code{.yaml} or \code{.json} facade file.
 
-\item{which}{A character string specifying the format of the facade to retrieve. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".}
+Every built-in facade is one file shared by all output formats, so a table looks the same in Excel, HTML, PDF and Word. Only \code{"default"} differs per format; the other facades are laid over that format's default. Spreadsheet-only settings (row heights, column widths, grid lines, tab colour, sheet offsets, cell locking) are ignored outside Excel.}
+
+\item{which}{The output format whose default facade to use: \code{"xlsx"} (default), \code{"html"}, \code{"pdf"} (same as \code{"html"}) or \code{"docx"}. It only changes the result for \code{"default"}.}
 }
 \value{
 A list containing the facade settings for the specified format. The facade includes styling attributes such as font size, color, border styles, and background fills for different parts of the table.
@@ -22,6 +24,7 @@ Get a facade from the package or a file
 # Default facade
 get_tsg_facade()
 
-# Other built-in facade
+# Other built-in facades
 get_tsg_facade("yolo")
+get_tsg_facade("booktabs")
 }

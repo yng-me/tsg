@@ -14,7 +14,7 @@ xlsx_header_merge <- function(
 
     header <- get_header_split(data, i = i, names_separator = names_separator)
     header_text <- header[1]
-    header_offset <- header[2:length(header)]
+    header_offset <- header[-1] # not header[2:length(header)]: 2:1 for a one-column table
 
     header_cols_value <- 1
     header_cols_label <- list()
@@ -79,11 +79,21 @@ xlsx_header_merge <- function(
 
 }
 
-xlsx_set_valid_sheet_name <- function(sheet) {
+# `trim = FALSE` keeps names whole: for file names, or to find names over Excel's limit.
+xlsx_set_valid_sheet_name <- function(sheet, trim = TRUE) {
   pattern <- '[^0-9a-zA-Z\\(\\)@#$%^&!\\-\\_\\=\\"\\~\\`\\,\\.\\{\\}\\;\\<\\> ]'
   sheet_name <- stringr::str_replace_all(stringr::str_trim(sheet), "\\/", " or ")
-  sheet_name <- stringr::str_sub(sheet_name, 1, 31)
-  stringr::str_remove_all(sheet_name, pattern)
+  sheet_name <- stringr::str_remove_all(sheet_name, pattern)
+  if(!trim) return(sheet_name)
+  sheet_name <- stringr::str_trim(stringr::str_sub(sheet_name, 1, 31))
+
+  # Excel compares sheet names case-insensitively; long labels can share their first
+  # 31 characters, so number the repeats ("... (2)") within the 31-character limit.
+  nth <- stats::ave(seq_along(sheet_name), tolower(sheet_name), FUN = seq_along)
+  repeated <- nth > 1
+  sheet_name[repeated] <- paste0(stringr::str_sub(sheet_name[repeated], 1, 26), " (", nth[repeated], ")")
+
+  sheet_name
 }
 
 get_header <- function(data, names_separator = "__") {
@@ -93,7 +103,7 @@ get_header <- function(data, names_separator = "__") {
   for(i in seq_along(columns)) {
     column <- columns[i]
     label <- attributes(data[[column]])$label_xlsx
-    label <- label %||% attributes(data[[column]])$label
+    label <- label %||% attr(data[[column]], "label", exact = TRUE)
     label <- label %||% column
     column_labels <- c(column_labels, label)
   }
@@ -117,8 +127,3 @@ get_header_depth <- function(data, ...) {
   purrr::map_vec(header, \(x) length(x))
 }
 
-get_facade_prop <- function(object, key, fallback = NULL) {
-  value <- object[[key]]
-  if(is.null(value)) { value <- fallback }
-  return(value)
-}

@@ -1,0 +1,19 @@
+# Booktabs facade: a thick top rule, a thin rule under the header, a thick bottom
+# rule, and no other lines or fills. Unset keys come from default.yaml.
+
+border_outer.border: ["top", "bottom"]
+border_outer.borderColour: "#000000"
+border_outer.borderStyle: "medium"
+
+border_header.border: "bottom"
+border_header.borderColour: "#000000"
+border_header.borderStyle: "thin"
+
+header.border: ~
+header.fgFill: ~
+header.textDecoration: "bold"
+
+body.border: ~
+
+# no side borders to keep text off: the first column lines up with the title and notes
+body.indent: 0

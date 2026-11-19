@@ -1,0 +1,25 @@
+# APA facade: horizontal rules only (above and below the header, below the body),
+# no vertical lines, no fills, Times New Roman. Unset keys come from default.yaml.
+
+table.fontName: "Times New Roman"
+table.fontSize: 12
+
+border_outer.border: ["top", "bottom"]
+border_outer.borderColour: "#000000"
+border_outer.borderStyle: "thin"
+
+border_header.border: "bottom"
+border_header.borderColour: "#000000"
+border_header.borderStyle: "thin"
+
+header.border: ~
+header.fgFill: ~
+header.halign: "center"
+
+body.border: ~
+
+title.fontSize: 12
+subtitle.textDecoration: "italic"
+
+# no side borders to keep text off: the first column lines up with the title and notes
+body.indent: 0

@@ -1,0 +1,23 @@
+# Minimal facade: no outer border, no fills, light grey rules between rows.
+# Unset keys come from default.yaml.
+
+border_outer.border: ~
+border_header.border: "bottom"
+border_header.borderColour: "#D0D0D0"
+border_header.borderStyle: "thin"
+
+header.border: ~
+header.fgFill: ~
+header.fontColour: "#555555"
+header.textDecoration: "bold"
+
+body.border: "bottom"
+body.borderColour: "#EBEBEB"
+body.borderStyle: "thin"
+body.height: 24
+
+table.gridLines: false
+table.fontName: 'Helvetica'
+
+# no side borders to keep text off: the first column lines up with the title and notes
+body.indent: 0

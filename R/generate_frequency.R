@@ -16,7 +16,7 @@
 #' @param include_na Logical. If \code{TRUE}, includes missing values in the frequency table.
 #' @param recode_na Character or \code{NULL}. Value used to replace missing values in labelled vectors; \code{"auto"} will determine a code automatically.
 #' @param calculate_per_group Logical. If \code{TRUE}, calculates frequencies within groups defined in \code{data} (from \code{group_by()} or existing grouping).
-#' @param as_proportion Logical. If \code{TRUE}, displays proportions instead of percentages (range 0–1).
+#' @param as_proportion Logical. If \code{TRUE}, displays proportions instead of percentages (range 0 to 1).
 #' @param position_total Character. Where to place the total row: \code{"top"} or \code{"bottom"}.
 #' @param group_separator Character. Separator used when concatenating group values in list output (if \code{group_as_list = TRUE} with a single group).
 #' @param group_as_list Logical. If \code{TRUE}, output is a named list of frequency tables keyed by group value. With a single group the list is flat; with 2+ groups the list is nested. When combined with \code{group_as_hierarchy = TRUE}, a nested list with totals at each level is returned.
@@ -110,8 +110,7 @@ generate_frequency <- function(
 ) {
 
   is_valid_input_data(data)
-
-  # Collect Arrow/lazy frames once to avoid N separate round-trips in the column loop
+  data <- rename_category_group(data)
   data <- collect_data(data)
 
   n_args <- rlang::dots_n(...)
@@ -124,7 +123,7 @@ generate_frequency <- function(
   }
   group_attrs <- get_group_attrs(data, groups)
 
-  column_names <- names(data)
+  column_names <- col_names(data)
   label_stubs <- get_label_stubs(column_names, label_stub)
 
   if(length(groups) > 0) {
@@ -133,14 +132,14 @@ generate_frequency <- function(
 
   for(column_name in column_names) {
 
-    label <- attributes(data[[column_name]])$label
+    label <- attr(local_col(data, column_name), "label", exact = TRUE)
     if(is.null(label)) { label <- column_name }
     if(length(label) != 1) { label <- column_name }
 
     list_name <- label
     if(!label_as_group_name) { list_name <- column_name }
 
-    categories <- unique(data[[column_name]])
+    categories <- unique(local_col(data, column_name))
 
     sort_value_i <- sort_value
     if(!is.null(sort_except) & sort_value) {
@@ -185,7 +184,7 @@ generate_frequency <- function(
         if (is.data.frame(x)) {
           if (include_na & anyNA(x$.category)) {
             x$.category <- add_missing_label(
-              value    = x$.category,
+              value = x$.category,
               label_na = label_na,
               recode_na = recode_na
             )
@@ -201,24 +200,24 @@ generate_frequency <- function(
       if(group_as_hierarchy) {
 
         data_i <- build_nested_group_list(
-          raw_data    = dplyr::ungroup(data),
-          groups_rem  = groups,
+          raw_data = precount_lazy(dplyr::ungroup(data), c(groups, column_name)),
+          groups_rem = groups,
           group_attrs = group_attrs,
-          add_totals  = TRUE,
+          add_totals = TRUE,
           total_label = label_group_hierarchy,
-          compute_fn  = freq_compute_fn
+          compute_fn = freq_compute_fn
         )
 
       } else if(length(groups) > 1) {
 
         # Properly nested list for 2+ groups (no totals)
         data_i <- build_nested_group_list(
-          raw_data    = dplyr::ungroup(data),
-          groups_rem  = groups,
+          raw_data = precount_lazy(dplyr::ungroup(data), c(groups, column_name)),
+          groups_rem = groups,
           group_attrs = group_attrs,
-          add_totals  = FALSE,
+          add_totals = FALSE,
           total_label = "",
-          compute_fn  = freq_compute_fn
+          compute_fn = freq_compute_fn
         )
 
       } else {
@@ -324,34 +323,7 @@ generate_frequency <- function(
             coerce_groups_total(data, groups, label_group_hierarchy)
           )
 
-          # Intermediate subtotals for 2+ groups
-          subtotals <- list()
-          if(length(groups) >= 2) {
-            for(k in seq_len(length(groups) - 1)) {
-              parent_groups <- groups[seq_len(k)]
-              child_groups  <- groups[(k + 1):length(groups)]
-              combos <- dplyr::distinct(
-                dplyr::select(dplyr::ungroup(data), dplyr::all_of(parent_groups))
-              )
-              parts <- vector("list", nrow(combos))
-              for(i in seq_len(nrow(combos))) {
-                data_k <- dplyr::ungroup(data)
-                for(pg in parent_groups) {
-                  pv     <- combos[[pg]][i]
-                  data_k <- dplyr::filter(data_k, !!rlang::sym(pg) == pv)
-                }
-                for(cg in child_groups) {
-                  data_k <- coerce_total(
-                    data_k, cg, data_k[[cg]],
-                    .resolve_hierarchy_label(label_group_hierarchy, cg),
-                    default_code = -1L
-                  )
-                }
-                parts[[i]] <- freq_compute_grouped(data_k)
-              }
-              subtotals[[k]] <- dplyr::bind_rows(parts)
-            }
-          }
+          subtotals <- hierarchy_subtotals(data, groups, label_group_hierarchy, freq_compute_grouped)
 
           data_i <- assemble_group_hierarchy(grand_total_df, subtotals, data_i, groups)
         }
@@ -366,7 +338,7 @@ generate_frequency <- function(
             add_cumulative_percent = add_cumulative_percent
           ) |>
           tsg_add_row_total(
-            x = .category,
+            x = ".category",
             add_total = add_total,
             position = position_total[1],
             label_total = label_total,
@@ -404,17 +376,11 @@ generate_frequency <- function(
 
     }
 
-    if(length(label_stubs) > 0) {
-      attr(data_i, "label_xlsx") <- label_stubs[[which(column_names == column_name)]]
-    }
-
     if((group_as_list | group_as_hierarchy) & inherits(data_i, "list")) {
 
       df[[list_name]] <- data_i
 
     } else {
-
-      data_i <- resolve_group_col(data_i, "category" %in% groups)
 
       if(length(groups) > 0) {
         attr(data_i, "label_total") <- label_total
@@ -423,6 +389,10 @@ generate_frequency <- function(
 
       df[[list_name]] <- dplyr::rename(data_i, category = .category)
 
+    }
+
+    if(length(label_stubs) > 0) {
+      df[[list_name]] <- set_label_stub(df[[list_name]], label_stubs[[which(column_names == column_name)]])
     }
 
   }
@@ -467,7 +437,7 @@ freq_compute_group <- function(
       add_cumulative_percent = add_cumulative_percent
     ) |>
     tsg_add_row_total(
-      x = .category,
+      x = ".category",
       add_total = add_total,
       position = position_total[1],
       label_total = label_total,
@@ -484,4 +454,15 @@ freq_compute_group <- function(
       position_total = position_total[1],
       as_proportion = as_proportion
     )
+}
+
+
+# The stub replaces the category column's header in exported output.
+set_label_stub <- function(data, stub) {
+  if(inherits(data, "list") & !is.data.frame(data)) {
+    data[] <- lapply(data, set_label_stub, stub = stub) # [] keeps the list's attributes
+    return(data)
+  }
+  attr(data$category, "label_xlsx") <- stub
+  data
 }

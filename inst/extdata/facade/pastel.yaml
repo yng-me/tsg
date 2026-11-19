@@ -1,0 +1,25 @@
+# Pastel facade: one soft accent colour on the header and the group titles.
+# Unset keys come from default.yaml.
+
+border_outer.border: ["bottom"]
+border_outer.borderColour: "#9DB4D8"
+border_outer.borderStyle: "thin"
+border_header.border: ~
+
+header.border: ~
+header.fgFill: "#DCE6F5"
+header.fontColour: "#2B3A55"
+header.textDecoration: "bold"
+
+body.border: "bottom"
+body.borderColour: "#E8EEF8"
+body.borderStyle: "thin"
+body.height: 24
+
+row_group.fgFill: "#EEF3FA"
+row_group.textDecoration: "bold"
+sub_group.fgFill: "#F6F9FD"
+
+table.gridLines: false
+table.fontName: 'Verdana'
+table.fontSize: 11

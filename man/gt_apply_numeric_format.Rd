@@ -7,12 +7,8 @@
 gt_apply_numeric_format(gt_tbl, data, facade)
 }
 \description{
-Mirrors \code{xlsx_decimal_format()} for gt output. Integer-like columns
-(R \code{integer} type or double columns whose values are all whole numbers)
-are formatted with comma separators and no decimal places.
-Double columns with fractional values are formatted with
-\code{table.decimalPrecision} decimal places (default 2).
-\code{table.decimalCols}, \code{body.numFmt}, \code{col_first.numFmt}, and
-\code{col_last.numFmt} override the auto-detection.
+Mirrors \code{xlsx_decimal_format()} for gt output: the columns are chosen by
+\code{number_format_cols()}, decimals use \code{table.decimalPrecision} (default 2),
+and \code{body.numFmt}, \code{col_first.numFmt} and \code{col_last.numFmt} override it.
 }
 \keyword{internal}

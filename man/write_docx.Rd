@@ -40,7 +40,7 @@ per table inside a subdirectory.}
 \item{names_separator}{Column name separator for detecting cross-tab spanners. Default
 \code{"__"}.}
 
-\item{facade}{Styling options. Defaults to the global tsg facade.}
+\item{facade}{A built-in facade name (e.g. \code{"booktabs"}; see \code{\link[=get_tsg_facade]{get_tsg_facade()}}), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with \code{\link[=add_facade]{add_facade()}} take precedence over it.}
 }
 \value{
 Invisibly returns \code{NULL}.

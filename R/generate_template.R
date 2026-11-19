@@ -37,7 +37,7 @@ generate_template <- function(
   }
 
   if (template == "facade") {
-    template_from <- system.file("extdata", "facade", "xlsx", "default.yaml", package = "tsg")
+    template_from <- system.file("extdata", "facade", "default", "xlsx.yaml", package = "tsg")
 
     fs::file_copy(template_from, path, overwrite = TRUE)
 

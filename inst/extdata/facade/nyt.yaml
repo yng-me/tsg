@@ -1,0 +1,26 @@
+# Editorial facade: bold header over a thick rule, no vertical lines, light banding.
+# Unset keys come from default.yaml.
+
+border_outer.border: ["bottom"]
+border_outer.borderColour: "#121212"
+border_outer.borderStyle: "thin"
+border_header.border: "bottom"
+border_header.borderColour: "#121212"
+border_header.borderStyle: "thick"
+
+header.border: ~
+header.fgFill: ~
+header.textDecoration: "bold"
+header.fontSize: 11
+
+body.border: ~
+body.bandFill: "#F7F7F7"
+
+title.fontName: 'Georgia'
+title.fontSize: 15
+table.gridLines: false
+table.fontName: 'Arial'
+table.fontSize: 11
+
+# no side borders to keep text off: the first column lines up with the title and notes
+body.indent: 0

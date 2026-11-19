@@ -7,7 +7,7 @@
 #' @param add_total_row Logical. If \code{TRUE}, adds a total row.
 #' @param add_total_column Logical. If \code{TRUE}, adds a total column.
 #' @param add_percent Logical. If \code{TRUE}, adds percent or proportion values to the table.
-#' @param as_proportion Logical. If \code{TRUE}, displays proportions instead of percentages (range 0–1).
+#' @param as_proportion Logical. If \code{TRUE}, displays proportions instead of percentages (range 0 to 1).
 #' @param percent_by_column Logical. If \code{TRUE}, percentages are calculated by column; otherwise, by row.
 #' @param name_separator Character. Separator used when constructing variable names in the output.
 #' @param label_separator Character. Separator used when constructing labels in the output.
@@ -30,7 +30,7 @@
 #' @param multiple_columns `r lifecycle::badge("experimental")` Logical or `NULL`. If `TRUE`, each column in `...` is treated as a binary indicator variable. Rows where the column equals `multiple_columns_filter` are counted per `x` category and presented as side-by-side frequency/percent columns in a single wide table. Requires at least 2 columns in `...`; if fewer are supplied a warning is issued and the function falls back to regular cross-tabulation mode.
 #' @param multiple_columns_type Character. Controls how `multiple_columns = TRUE` handles the additional columns. `"filtered"` (default) treats each column as a binary indicator and produces a wide table with one column-pair per variable. `"stacked"` stacks results hierarchically: each column in `...` becomes a row group with `x` categories as columns; `multiple_columns_filter` is ignored in this mode.
 #' @param multiple_columns_filter Scalar value (default `1L`). The value to filter on when `multiple_columns = TRUE` and `multiple_columns_type = "filtered"`. Ignored when `multiple_columns_type = "stacked"`.
-#' @param collapse_list Logical (NOT YET IMPLEMENTED). If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also [collapse_list()].
+#' @param collapse_list Logical. If \code{TRUE} and several column variables are given in \code{...}, combines their cross-tabulations side by side into one table, with each variable's columns under a spanner header. Ignored when \code{group_as_list = TRUE}.
 #' @param convert_factor Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also [convert_factor()].
 #'
 #' @return A data frame or a list of data frames containing the cross-tabulation results. If \code{group_as_list} is \code{TRUE}, the output will be a list of data frames, one for each combination of grouping variable(s). Otherwise, a single data frame is returned. Each data frame includes counts and, if specified, percentages or proportions for each combination of \code{x} and the additional variables provided in \code{...}.
@@ -113,35 +113,40 @@ generate_crosstab <- function(
   metadata = NULL
 ) {
 
+  is_valid_input_data(data)
+  data <- rename_category_group(data)
   n_args <- rlang::dots_n(...)
-  cols_grouping <- names(dplyr::select(dplyr::ungroup(data), {{x}}))
+  cols_grouping <- col_names(dplyr::select(dplyr::ungroup(data), {{x}}))
 
   data <- dplyr::select(data, dplyr::group_cols(), {{x}}, ...)
   groups <- dplyr::group_vars(data)
 
-  # Collect Arrow/lazy frames once to avoid N separate round-trips in the column loop
   data <- collect_data(data)
+  # multiple_columns works in R: a lazy table is counted once in the database by every
+  # selected column, and the counting below sums those counts (precount_col).
+  if(isTRUE(multiple_columns) & !is.data.frame(data)) {
+    data <- precount_lazy(data, col_names(dplyr::ungroup(data))) |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(groups)))
+  }
 
   group_attrs <- get_group_attrs(data, groups)
 
   data_attrs <- get_data_attrs(data)
   x_attr <- data_attrs[[rlang::as_label(rlang::enquo(x))]]
 
-  column_names <- names(dplyr::select(dplyr::ungroup(data), ...))
+  column_names <- col_names(dplyr::select(dplyr::ungroup(data), ...))
   n_cols <- length(column_names)
 
   x_col <- rlang::as_label(rlang::enquo(x))
 
   if(length(cols_grouping) > 1) {
 
-    separated_cols <- names(dplyr::select(dplyr::ungroup(data), {{x}}))
+    separated_cols <- col_names(dplyr::select(dplyr::ungroup(data), {{x}}))
     united_names <- paste0(separated_cols, collapse = "__")
 
-    data <- tidyr::unite(data, category, {{x}}, remove = FALSE, sep = "__")
-    data <- dplyr::rename(data, !!as.name(united_names) := category)
+    data <- unite_cols(data, united_names, separated_cols)
 
     x_col <- united_names
-    add_total_row <- FALSE
     do_separate_cols <- TRUE
 
   } else {
@@ -157,6 +162,7 @@ generate_crosstab <- function(
       data,
       {{x}},
       add_total = add_total,
+      add_percent = add_percent,
       as_proportion = as_proportion,
       include_na = include_na,
       recode_na = recode_na,
@@ -256,13 +262,13 @@ generate_crosstab <- function(
   }
 
   df_list <- list()
-  categories <- unique(data[[x_col]])
+  categories <- unique(local_col(data, x_col))
 
   for(column_name in column_names) {
 
     list_name <- column_name
     if(label_as_group_name) {
-      list_name <- attributes(data[[column_name]])$label
+      list_name <- attr(local_col(data, column_name), "label", exact = TRUE)
       if(is.null(list_name)) { list_name <- column_name }
     }
 
@@ -330,7 +336,7 @@ generate_crosstab <- function(
             x <- dplyr::mutate(x, dplyr::across(dplyr::where(haven::is.labelled), haven::as_factor))
           }
           if (!add_total | !add_total_row) {
-            x <- dplyr::filter(x, as.character(category) != (label_total_row %||% label_total))
+            x <- dplyr::filter(x, !is_total_label(category, label_total_row %||% label_total))
           }
           if (!add_total | !add_total_column) {
             x <- dplyr::select(x, -dplyr::any_of('total'))
@@ -343,12 +349,12 @@ generate_crosstab <- function(
       if(group_as_hierarchy) {
 
         data_i <- build_nested_group_list(
-          raw_data    = dplyr::ungroup(data),
-          groups_rem  = groups,
+          raw_data = precount_lazy(dplyr::ungroup(data), c(groups, x_col, column_name)),
+          groups_rem = groups,
           group_attrs = group_attrs,
-          add_totals  = TRUE,
+          add_totals = TRUE,
           total_label = label_group_hierarchy,
-          compute_fn  = crosstab_nested_fn
+          compute_fn = crosstab_nested_fn
         )
         data_i <- apply_post_proc(data_i)
 
@@ -356,12 +362,12 @@ generate_crosstab <- function(
 
         # Properly nested list for 2+ groups (no totals)
         data_i <- build_nested_group_list(
-          raw_data    = dplyr::ungroup(data),
-          groups_rem  = groups,
+          raw_data = precount_lazy(dplyr::ungroup(data), c(groups, x_col, column_name)),
+          groups_rem = groups,
           group_attrs = group_attrs,
-          add_totals  = FALSE,
+          add_totals = FALSE,
           total_label = "",
-          compute_fn  = crosstab_nested_fn
+          compute_fn = crosstab_nested_fn
         )
         data_i <- apply_post_proc(data_i)
 
@@ -427,7 +433,7 @@ generate_crosstab <- function(
           if(!add_total | !add_total_row) {
             data_j <- dplyr::filter(
               data_j,
-              as.character(category) != (label_total_row %||% label_total)
+              !is_total_label(category, label_total_row %||% label_total)
             )
           }
 
@@ -535,34 +541,7 @@ generate_crosstab <- function(
             coerce_groups_total(data, groups, label_group_hierarchy)
           )
 
-          # Intermediate subtotals for 2+ groups
-          subtotals <- list()
-          if(length(groups) >= 2) {
-            for(k in seq_len(length(groups) - 1)) {
-              parent_groups <- groups[seq_len(k)]
-              child_groups  <- groups[(k + 1):length(groups)]
-              combos <- dplyr::distinct(
-                dplyr::select(dplyr::ungroup(data), dplyr::all_of(parent_groups))
-              )
-              parts <- vector("list", nrow(combos))
-              for(i in seq_len(nrow(combos))) {
-                data_k <- dplyr::ungroup(data)
-                for(pg in parent_groups) {
-                  pv     <- combos[[pg]][i]
-                  data_k <- dplyr::filter(data_k, !!rlang::sym(pg) == pv)
-                }
-                for(cg in child_groups) {
-                  data_k <- coerce_total(
-                    data_k, cg, data_k[[cg]],
-                    .resolve_hierarchy_label(label_group_hierarchy, cg),
-                    default_code = -1L
-                  )
-                }
-                parts[[i]] <- crosstab_compute_grouped(data_k)
-              }
-              subtotals[[k]] <- dplyr::bind_rows(parts)
-            }
-          }
+          subtotals <- hierarchy_subtotals(data, groups, label_group_hierarchy, crosstab_compute_grouped)
 
           data_i <- assemble_group_hierarchy(grand_total_df, subtotals, data_i, groups)
         }
@@ -667,7 +646,7 @@ generate_crosstab <- function(
       if(!add_total | !add_total_row) {
         data_i <- dplyr::filter(
           data_i,
-          as.character(category) != (label_total_row %||% label_total)
+          !is_total_label(category, label_total_row %||% label_total)
         )
       }
 
@@ -683,9 +662,7 @@ generate_crosstab <- function(
 
   if(length(df_list) == 1) {
     df_list <- df_list[[1]]
-  } #else if (length(df_list) > 1 & collapse_list) {
-  #   df_list <- collapse_list(data = df_list)
-  # }
+  }
 
   if((group_as_list | group_as_hierarchy) && length(groups) > 0) {
     attr(df_list, "groups") <- groups
@@ -705,9 +682,18 @@ generate_crosstab <- function(
       cols = separated_cols,
       data_attrs = data_attrs,
       label_total = label_total,
-      add_total = add_total | add_total_row,
-      convert_factor = convert_factor
+      add_total = add_total & add_total_row,
+      convert_factor = convert_factor,
+      label_na = label_na,
+      recode_na = recode_na
     )
+  }
+
+  if(collapse_list & !group_as_list & !is.data.frame(df_list)) {
+    keys <- c(groups, if(do_separate_cols) separated_cols else "category")
+    df_list <- collapse_crosstab(df_list, keys = keys, label_separator)
+    attr(df_list, "label_separator") <- label_separator
+    df_list <- new_tsg(df_list, "tsgc", metadata = metadata)
   }
 
   return(df_list)
@@ -765,16 +751,39 @@ crosstab_compute_multiple_cols <- function(
 
   multiplier <- get_multiplier(as_proportion)
 
+  restore_mc_labels <- function(df) {
+    attr(df$category, "label") <- x_attr$label
+    if ("total" %in% names(df)) {
+      attr(df$total, "label") <- label_total_column %||% label_total
+    }
+    for (cn in column_names) {
+      col_label <- data_attrs[[cn]]$label %||% cn
+      freq_col_name <- paste0("frequency", name_separator, cn)
+      if (freq_col_name %in% names(df)) {
+        attr(df[[freq_col_name]], "label") <- paste0("Frequency", label_separator, col_label)
+      }
+      if (add_percent) {
+        pct_col_name <- paste0(multiplier$col, name_separator, cn)
+        if (pct_col_name %in% names(df)) {
+          attr(df[[pct_col_name]], "label") <- paste0(
+            stringr::str_to_title(multiplier$col), label_separator, col_label
+          )
+        }
+      }
+    }
+    df
+  }
+
   mc_one_table <- function(df) {
 
     # Single group_by + summarise pass: total N and per-column filtered counts
-    result <- df |>
+    result <- with_row_weight(df) |>
       dplyr::group_by(!!rlang::sym(x_col)) |>
       dplyr::summarise(
-        .total_n = dplyr::n(),
+        .total_n = sum(.data[[precount_col]]),
         dplyr::across(
           dplyr::all_of(column_names),
-          ~ sum(. == multiple_columns_filter, na.rm = TRUE)
+          ~ sum((.x == multiple_columns_filter) * .data[[precount_col]], na.rm = TRUE)
         ),
         .groups = "drop"
       )
@@ -788,7 +797,7 @@ crosstab_compute_multiple_cols <- function(
     if(add_percent) {
       for(cn in column_names) {
         freq_col_name <- paste0("frequency", name_separator, cn)
-        pct_col_name  <- paste0(multiplier$col, name_separator, cn)
+        pct_col_name <- paste0(multiplier$col, name_separator, cn)
         result <- dplyr::mutate(
           result,
           !!pct_col_name := (!!rlang::sym(freq_col_name) / .total_n) * multiplier$value
@@ -800,7 +809,7 @@ crosstab_compute_multiple_cols <- function(
 
     if(add_total && add_total_row) {
       total_label_val <- label_total_row %||% label_total
-      result <- coerce_category(result, category)
+      result <- coerce_category(result, "category")
       total_row <- dplyr::summarise(
         result,
         total = sum(total, na.rm = TRUE),
@@ -830,7 +839,7 @@ crosstab_compute_multiple_cols <- function(
     }
 
     if(!add_total || !add_total_row) {
-      result <- dplyr::filter(result, as.character(category) != (label_total_row %||% label_total))
+      result <- dplyr::filter(result, !is_total_label(category, label_total_row %||% label_total))
     }
 
     if(include_na && anyNA(result$category)) {
@@ -844,28 +853,7 @@ crosstab_compute_multiple_cols <- function(
     }
 
     # Set column labels after all structural ops to prevent dplyr from stripping them
-    attr(result$category, "label") <- x_attr$label
-    if("total" %in% names(result)) {
-      attr(result$total, "label") <- label_total_column %||% label_total
-    }
-
-    for(cn in column_names) {
-      col_label <- data_attrs[[cn]]$label %||% cn
-      freq_col_name <- paste0("frequency", name_separator, cn)
-      if(freq_col_name %in% names(result)) {
-        attr(result[[freq_col_name]], "label") <- paste0("Frequency", label_separator, col_label)
-      }
-      if(add_percent) {
-        pct_col_name <- paste0(multiplier$col, name_separator, cn)
-        if(pct_col_name %in% names(result)) {
-          attr(result[[pct_col_name]], "label") <- paste0(
-            stringr::str_to_title(multiplier$col), label_separator, col_label
-          )
-        }
-      }
-    }
-
-    result
+    restore_mc_labels(result)
   }
 
   finalize_mc <- function(result, is_list = FALSE) {
@@ -873,171 +861,15 @@ crosstab_compute_multiple_cols <- function(
     attr(result, "name_separator") <- name_separator
     attr(result, "multiple_columns") <- TRUE
     attr(result, "multiple_columns_filter") <- multiple_columns_filter
-    if(is_list && length(groups) > 0) {
-      attr(result, "groups") <- groups
-    }
-    for(meta in names(metadata)) {
-      attr(result, meta) <- metadata[[meta]]
-    }
-    class(result) <- c("tsg", "tsgc", class(result))
-    result
+    new_tsg(result, "tsgc", groups = if(is_list) groups, metadata = metadata)
   }
 
-  if(group_as_list && length(groups) > 0) {
-
-    mc_nested_fn <- function(sub_data) {
-      result_j  <- mc_one_table(dplyr::ungroup(sub_data))
-      group_row <- dplyr::select(dplyr::ungroup(sub_data), dplyr::all_of(groups))[1, , drop = FALSE]
-      group_df  <- group_row[rep(1, nrow(result_j)), , drop = FALSE]
-      rownames(group_df) <- NULL
-      dplyr::bind_cols(group_df, result_j) |>
-        set_group_attrs(groups, group_attrs, resolve = FALSE)
-    }
-
-    if(group_as_hierarchy) {
-
-      result_list <- build_nested_group_list(
-        raw_data    = dplyr::ungroup(data),
-        groups_rem  = groups,
-        group_attrs = group_attrs,
-        add_totals  = TRUE,
-        total_label = label_group_hierarchy,
-        compute_fn  = mc_nested_fn
-      )
-
-      return(finalize_mc(result_list, is_list = TRUE))
-
-    } else if(length(groups) > 1) {
-
-      # Properly nested list for 2+ groups (no totals)
-      result_list <- build_nested_group_list(
-        raw_data    = dplyr::ungroup(data),
-        groups_rem  = groups,
-        group_attrs = group_attrs,
-        add_totals  = FALSE,
-        total_label = "",
-        compute_fn  = mc_nested_fn
-      )
-
-      return(finalize_mc(result_list, is_list = TRUE))
-
-    } else {
-
-      glue_arg <- paste0("{haven::as_factor(", groups, ")}")
-
-      df_groups <- dplyr::ungroup(data) |>
-        dplyr::select(dplyr::any_of(groups)) |>
-        dplyr::distinct(.keep_all = TRUE) |>
-        dplyr::mutate(list_group = glue::glue(glue_arg))
-
-      result_list <- list()
-
-      for(j in seq_along(df_groups$list_group)) {
-        list_group_j <- df_groups$list_group[j]
-        data_subset <- dplyr::ungroup(data) |>
-          dplyr::filter(glue::glue(glue_arg) == list_group_j)
-        result_j <- mc_one_table(data_subset)
-        group_df_j <- df_groups[rep(j, nrow(result_j)), groups, drop = FALSE]
-        rownames(group_df_j) <- NULL
-        data_j_mc <- dplyr::bind_cols(group_df_j, result_j) |>
-          set_group_attrs(groups, group_attrs, resolve = FALSE)
-        result_list[[list_group_j]] <- data_j_mc
-      }
-
-      return(finalize_mc(result_list, is_list = TRUE))
-
-    }
-
-  } else if(calculate_per_group && length(groups) > 0) {
-
-    mc_compute_grouped <- function(data_subset) {
-      data_subset |>
-        dplyr::group_by(dplyr::across(dplyr::all_of(groups))) |>
-        tidyr::nest(data = -dplyr::all_of(groups)) |>
-        dplyr::mutate(data = purrr::map(data, mc_one_table)) |>
-        tidyr::unnest(cols = c(data), keep_empty = TRUE) |>
-        dplyr::ungroup() |>
-        dplyr::select(dplyr::any_of(groups), dplyr::everything())
-    }
-
-    restore_mc_labels <- function(df) {
-      attr(df$category, "label") <- x_attr$label
-      if ("total" %in% names(df)) {
-        attr(df$total, "label") <- label_total_column %||% label_total
-      }
-      for (cn in column_names) {
-        col_label <- data_attrs[[cn]]$label %||% cn
-        freq_col_name <- paste0("frequency", name_separator, cn)
-        if (freq_col_name %in% names(df)) {
-          attr(df[[freq_col_name]], "label") <- paste0("Frequency", label_separator, col_label)
-        }
-        if (add_percent) {
-          pct_col_name <- paste0(multiplier$col, name_separator, cn)
-          if (pct_col_name %in% names(df)) {
-            attr(df[[pct_col_name]], "label") <- paste0(
-              stringr::str_to_title(multiplier$col), label_separator, col_label
-            )
-          }
-        }
-      }
-      df
-    }
-
-    result_df <- mc_compute_grouped(data)
-
-    if(group_as_hierarchy) {
-      grand_total_df <- mc_compute_grouped(
-        coerce_groups_total(data, groups, label_group_hierarchy)
-      )
-
-      subtotals <- list()
-      if(length(groups) >= 2) {
-        for(k in seq_len(length(groups) - 1)) {
-          parent_groups <- groups[seq_len(k)]
-          child_groups  <- groups[(k + 1):length(groups)]
-          combos <- dplyr::distinct(
-            dplyr::select(dplyr::ungroup(data), dplyr::all_of(parent_groups))
-          )
-          parts <- vector("list", nrow(combos))
-          for(i in seq_len(nrow(combos))) {
-            data_k <- dplyr::ungroup(data)
-            for(pg in parent_groups) {
-              pv     <- combos[[pg]][i]
-              data_k <- dplyr::filter(data_k, !!rlang::sym(pg) == pv)
-            }
-            for(cg in child_groups) {
-              data_k <- coerce_total(
-                data_k, cg, data_k[[cg]],
-                .resolve_hierarchy_label(label_group_hierarchy, cg),
-                default_code = -1L
-              )
-            }
-            parts[[i]] <- mc_compute_grouped(data_k)
-          }
-          subtotals[[k]] <- dplyr::bind_rows(parts)
-        }
-      }
-
-      result_df <- assemble_group_hierarchy(grand_total_df, subtotals, result_df, groups)
-
-      # Restore column labels stripped by bind_rows inside assemble_group_hierarchy
-      result_df <- restore_mc_labels(result_df)
-    } else {
-      # Restore column labels stripped by tidyr::unnest inside mc_compute_grouped
-      result_df <- restore_mc_labels(result_df)
-    }
-
-    return(finalize_mc(result_df, is_list = FALSE))
-
-  } else {
-
-    result_df <- mc_one_table(dplyr::ungroup(data))
-    return(finalize_mc(result_df, is_list = FALSE))
-
-  }
-
+  multiple_columns_by_group(
+    data, mc_one_table, finalize_mc, groups, group_attrs,
+    group_as_list, group_as_hierarchy, calculate_per_group, label_group_hierarchy,
+    relabel = restore_mc_labels
+  )
 }
-
 
 
 crosstab_stacked_multiple_cols <- function(
@@ -1061,7 +893,7 @@ crosstab_stacked_multiple_cols <- function(
     if (!is.null(lbs)) {
       present <- unique(col_vec)
       if (!include_na) present <- present[!is.na(present)]
-      in_order   <- lbs[lbs %in% present]
+      in_order <- lbs[lbs %in% present]
       unlabelled <- present[!(present %in% lbs) & !is.na(present)]
       cats <- c(
         lapply(seq_along(in_order), function(i)
@@ -1113,10 +945,10 @@ crosstab_stacked_multiple_cols <- function(
     idx_str <- paste(indices, collapse = name_separator)
     lbl_str <- paste(labels, collapse = label_separator)
     list(
-      freq_name  = paste0("frequency", name_separator, idx_str),
+      freq_name = paste0("frequency", name_separator, idx_str),
       freq_label = paste0("Frequency", label_separator, lbl_str),
-      pct_name   = paste0(multiplier$col, name_separator, idx_str),
-      pct_label  = paste0(multiplier$label, label_separator, lbl_str)
+      pct_name = paste0(multiplier$col, name_separator, idx_str),
+      pct_label = paste0(multiplier$label, label_separator, lbl_str)
     )
   }
 
@@ -1126,21 +958,21 @@ crosstab_stacked_multiple_cols <- function(
   stacked_one_table <- function(df) {
 
     # N-way count then pivot wide on all column variables simultaneously
-    result <- df |>
-      dplyr::select(!!rlang::sym(x_col), dplyr::all_of(column_names)) |>
+    result <- with_row_weight(df) |>
+      dplyr::select(!!rlang::sym(x_col), dplyr::all_of(c(column_names, precount_col))) |>
       dplyr::group_by(!!rlang::sym(x_col), !!!rlang::syms(column_names)) |>
-      dplyr::summarise(frequency = dplyr::n(), .groups = "drop") |>
+      dplyr::summarise(frequency = sum(.data[[precount_col]]), .groups = "drop") |>
       dplyr::rename(.category = !!rlang::sym(x_col)) |>
       tidyr::pivot_wider(
-        names_from  = dplyr::all_of(column_names),
+        names_from = dplyr::all_of(column_names),
         values_from = frequency,
         values_fill = 0L,
-        names_sep   = ISEP,
-        names_sort  = FALSE  # manual sort by index below
+        names_sep = ISEP,
+        names_sort = FALSE  # manual sort by index below
       )
 
     # Drop all-zero columns
-    result   <- deselect_zero_cols(result)
+    result <- deselect_zero_cols(result)
     raw_cols <- setdiff(names(result), ".category")
 
     # NA handling for x (category) column
@@ -1160,10 +992,10 @@ crosstab_stacked_multiple_cols <- function(
       list(raw = rcn, parts = parts, indices = indices)
     })
 
-    sort_key   <- vapply(raw_parsed, function(p)
+    sort_key <- vapply(raw_parsed, function(p)
       paste(sprintf("%09d", p$indices), collapse = "."), character(1))
     sorted_idx <- order(sort_key)
-    raw_cols   <- raw_cols[sorted_idx]
+    raw_cols <- raw_cols[sorted_idx]
     raw_parsed <- raw_parsed[sorted_idx]
 
     # Build subtotal info: one subtotal per unique first-level value (only for >= 2 col vars).
@@ -1175,7 +1007,7 @@ crosstab_stacked_multiple_cols <- function(
     if (length(column_names) >= 2) {
       # depth padding: leaf labels have (1 + length(column_names)) parts;
       # subtotal has 2 parts -> needs (length(column_names) - 1) extra parts
-      n_pad     <- length(column_names) - 1L
+      n_pad <- length(column_names) - 1L
       pad_suffix <- paste(rep(paste0(label_separator, label_total), n_pad), collapse = "")
 
       seen_first <- character(0)
@@ -1186,14 +1018,14 @@ crosstab_stacked_multiple_cols <- function(
           fv_idx <- val_to_idx[[1]][[fv]] %||% fv
           fv_lbl <- val_to_lbl[[1]][[fv]] %||% fv
           sub_info[[fv]] <- list(
-            first_val       = fv,
-            temp_freq_name  = paste0("__sf__", fv),
-            temp_pct_name   = paste0("__sp__", fv),
+            first_val = fv,
+            temp_freq_name = paste0("__sf__", fv),
+            temp_pct_name = paste0("__sp__", fv),
             final_freq_name = paste0("frequency", name_separator, fv_idx),
-            final_freq_lbl  = paste0("Frequency", label_separator, fv_lbl, pad_suffix),
-            final_pct_name  = paste0(multiplier$col, name_separator, fv_idx),
-            final_pct_lbl   = paste0(multiplier$label, label_separator, fv_lbl, pad_suffix),
-            matching_raws   = character(0)
+            final_freq_lbl = paste0("Frequency", label_separator, fv_lbl, pad_suffix),
+            final_pct_name = paste0(multiplier$col, name_separator, fv_idx),
+            final_pct_lbl = paste0(multiplier$label, label_separator, fv_lbl, pad_suffix),
+            matching_raws = character(0)
           )
         }
         sub_info[[fv]]$matching_raws <- c(sub_info[[fv]]$matching_raws, p$raw)
@@ -1248,8 +1080,8 @@ crosstab_stacked_multiple_cols <- function(
 
     if (add_percent && !percent_by_column) {
       if (add_total && add_total_row) {
-        result <- coerce_category(result, .category)
-        num_cols  <- c(all_freq_for_total, "total")
+        result <- coerce_category(result, ".category")
+        num_cols <- c(all_freq_for_total, "total")
         total_row <- as.data.frame(
           as.list(colSums(result[, num_cols, drop = FALSE], na.rm = TRUE)),
           check.names = FALSE
@@ -1269,8 +1101,8 @@ crosstab_stacked_multiple_cols <- function(
     } else if (add_percent && percent_by_column) {
       result <- add_percent_cols(result)
       if (add_total && add_total_row) {
-        result <- coerce_category(result, .category)
-        num_cols  <- c(all_freq_for_total, "total", pct_tmps)
+        result <- coerce_category(result, ".category")
+        num_cols <- c(all_freq_for_total, "total", pct_tmps)
         total_row <- as.data.frame(
           as.list(colSums(result[, num_cols, drop = FALSE], na.rm = TRUE)),
           check.names = FALSE
@@ -1288,8 +1120,8 @@ crosstab_stacked_multiple_cols <- function(
       }
     } else {
       if (add_total && add_total_row) {
-        result <- coerce_category(result, .category)
-        num_cols  <- c(all_freq_for_total, "total")
+        result <- coerce_category(result, ".category")
+        num_cols <- c(all_freq_for_total, "total")
         total_row <- as.data.frame(
           as.list(colSums(result[, num_cols, drop = FALSE], na.rm = TRUE)),
           check.names = FALSE
@@ -1314,7 +1146,7 @@ crosstab_stacked_multiple_cols <- function(
     if (!add_total || !add_total_row) {
       result <- dplyr::filter(
         result,
-        as.character(.category) != (label_total_row %||% label_total)
+        !is_total_label(.category, label_total_row %||% label_total)
       )
     }
 
@@ -1328,7 +1160,7 @@ crosstab_stacked_multiple_cols <- function(
     # Build final column order and rename.
     # Order: category, [total (if !pct_by_col)],
     #   ALL frequency columns (all groups): subtotal_freq_g, leaf_freq_g_1, leaf_freq_g_2, ...
-    #   ALL percent  columns (all groups): subtotal_pct_g,  leaf_pct_g_1,  leaf_pct_g_2, ...
+    #   ALL percent  columns (all groups): subtotal_pct_g, leaf_pct_g_1, leaf_pct_g_2, ...
     #   [total (if pct_by_col)]
     # This ensures the top-level xlsx header spanner groups all "Frequency" columns
     # together before all "Percent/Proportion" columns.
@@ -1350,7 +1182,7 @@ crosstab_stacked_multiple_cols <- function(
         }
         for (p in raw_parsed) {
           if (p$parts[1] != fv) next
-          rcn  <- p$raw
+          rcn <- p$raw
           info <- parse_wide_col(rcn)
           if (is.null(info) || !rcn %in% names(result)) next
           result <- dplyr::rename(result, !!info$freq_name := !!rlang::sym(rcn))
@@ -1370,10 +1202,10 @@ crosstab_stacked_multiple_cols <- function(
           }
           for (p in raw_parsed) {
             if (p$parts[1] != fv) next
-            rcn  <- p$raw
+            rcn <- p$raw
             info <- parse_wide_col(rcn)
             if (is.null(info)) next
-            tmp  <- paste0(".pct.", rcn)
+            tmp <- paste0(".pct.", rcn)
             if (!tmp %in% names(result)) next
             result <- dplyr::rename(result, !!info$pct_name := !!rlang::sym(tmp))
             attr(result[[info$pct_name]], "label") <- info$pct_label
@@ -1384,7 +1216,7 @@ crosstab_stacked_multiple_cols <- function(
     } else {
       # Single column variable — no subtotals; all freqs then all pcts (sorted order)
       for (p in raw_parsed) {
-        rcn  <- p$raw
+        rcn <- p$raw
         info <- parse_wide_col(rcn)
         if (is.null(info) || !rcn %in% names(result)) next
         result <- dplyr::rename(result, !!info$freq_name := !!rlang::sym(rcn))
@@ -1393,10 +1225,10 @@ crosstab_stacked_multiple_cols <- function(
       }
       if (add_percent) {
         for (p in raw_parsed) {
-          rcn  <- p$raw
+          rcn <- p$raw
           info <- parse_wide_col(rcn)
           if (is.null(info)) next
-          tmp  <- paste0(".pct.", rcn)
+          tmp <- paste0(".pct.", rcn)
           if (!tmp %in% names(result)) next
           result <- dplyr::rename(result, !!info$pct_name := !!rlang::sym(tmp))
           attr(result[[info$pct_name]], "label") <- info$pct_label
@@ -1420,147 +1252,123 @@ crosstab_stacked_multiple_cols <- function(
   }
 
   finalize_stacked <- function(result, is_list = FALSE) {
-    attr(result, "label_separator")       <- label_separator
-    attr(result, "name_separator")        <- name_separator
-    attr(result, "multiple_columns")      <- TRUE
+    attr(result, "label_separator") <- label_separator
+    attr(result, "name_separator") <- name_separator
+    attr(result, "multiple_columns") <- TRUE
     attr(result, "multiple_columns_type") <- "stacked"
-    if (is_list && length(groups) > 0) attr(result, "groups") <- groups
-    for (meta in names(metadata)) attr(result, meta) <- metadata[[meta]]
-    class(result) <- c("tsg", "tsgc", class(result))
-    result
+    new_tsg(result, "tsgc", groups = if(is_list) groups, metadata = metadata)
   }
 
-  # --- group_as_list path ---
-  if (group_as_list && length(groups) > 0) {
+  # groups missing a column combination get NA cells from unnest(); they count 0
+  fill_zero <- function(df) {
+    dplyr::mutate(
+      df,
+      dplyr::across(
+        dplyr::starts_with(c("frequency", paste0(multiplier$col, name_separator))),
+        ~ replace(., is.na(.), 0)
+      )
+    )
+  }
 
-    stacked_nested_fn <- function(sub_data) {
-      result_j  <- stacked_one_table(dplyr::ungroup(sub_data))
+  # unnest() drops the column labels that stack the headers and mixes up the column
+  # order; the table for all the data has every column, so take both from it.
+  restore_stacked_labels <- function(df) {
+    template <- stacked_one_table(dplyr::ungroup(data))
+    df <- dplyr::select(df, dplyr::any_of(groups), dplyr::any_of(names(template)), dplyr::everything())
+    for (cn in intersect(names(template), names(df))) {
+      attr(df[[cn]], "label") <- attr(template[[cn]], "label", exact = TRUE)
+    }
+    df
+  }
+
+  multiple_columns_by_group(
+    data, stacked_one_table, finalize_stacked, groups, group_attrs,
+    group_as_list, group_as_hierarchy, calculate_per_group, label_group_hierarchy,
+    after_grouped = fill_zero, relabel = restore_stacked_labels
+  )
+}
+
+
+
+# The grouping both multiple_columns layouts share. `one_table(df)` builds the table for
+# one ungrouped data frame and `finish(result, is_list)` sets the layout's attributes.
+# `after_grouped` runs on each per-group result, `relabel` restores column labels that
+# unnest() and bind_rows() drop.
+multiple_columns_by_group <- function(
+  data, one_table, finish, groups, group_attrs,
+  group_as_list, group_as_hierarchy, calculate_per_group, label_group_hierarchy,
+  after_grouped = identity, relabel = identity
+) {
+
+  if(group_as_list && length(groups) > 0) {
+
+    nested_fn <- function(sub_data) {
+      result_j <- one_table(dplyr::ungroup(sub_data))
       group_row <- dplyr::select(dplyr::ungroup(sub_data), dplyr::all_of(groups))[1, , drop = FALSE]
-      group_df  <- group_row[rep(1, nrow(result_j)), , drop = FALSE]
+      group_df <- group_row[rep(1, nrow(result_j)), , drop = FALSE]
       rownames(group_df) <- NULL
       dplyr::bind_cols(group_df, result_j) |>
         set_group_attrs(groups, group_attrs, resolve = FALSE)
     }
 
-    if (group_as_hierarchy) {
-
+    if(group_as_hierarchy || length(groups) > 1) {
       result_list <- build_nested_group_list(
-        raw_data    = dplyr::ungroup(data),
-        groups_rem  = groups,
+        raw_data = dplyr::ungroup(data),
+        groups_rem = groups,
         group_attrs = group_attrs,
-        add_totals  = TRUE,
-        total_label = label_group_hierarchy,
-        compute_fn  = stacked_nested_fn
+        add_totals = group_as_hierarchy,
+        total_label = if(group_as_hierarchy) label_group_hierarchy else "",
+        compute_fn = nested_fn
       )
-      return(finalize_stacked(result_list, is_list = TRUE))
-
-    } else if (length(groups) > 1) {
-
-      result_list <- build_nested_group_list(
-        raw_data    = dplyr::ungroup(data),
-        groups_rem  = groups,
-        group_attrs = group_attrs,
-        add_totals  = FALSE,
-        total_label = "",
-        compute_fn  = stacked_nested_fn
-      )
-      return(finalize_stacked(result_list, is_list = TRUE))
-
-    } else {
-
-      glue_arg <- paste0("{haven::as_factor(", groups, ")}")
-
-      df_groups <- dplyr::ungroup(data) |>
-        dplyr::select(dplyr::any_of(groups)) |>
-        dplyr::distinct(.keep_all = TRUE) |>
-        dplyr::mutate(list_group = glue::glue(glue_arg))
-
-      result_list <- list()
-      for (j in seq_along(df_groups$list_group)) {
-        list_group_j <- df_groups$list_group[j]
-        data_subset  <- dplyr::filter(dplyr::ungroup(data), glue::glue(glue_arg) == list_group_j)
-        result_j     <- stacked_one_table(data_subset)
-        group_df_j   <- df_groups[rep(j, nrow(result_j)), groups, drop = FALSE]
-        rownames(group_df_j) <- NULL
-        result_list[[list_group_j]] <- dplyr::bind_cols(group_df_j, result_j) |>
-          set_group_attrs(groups, group_attrs, resolve = FALSE)
-      }
-      return(finalize_stacked(result_list, is_list = TRUE))
+      return(finish(result_list, is_list = TRUE))
     }
 
-  # --- calculate_per_group path ---
-  } else if (calculate_per_group && length(groups) > 0) {
+    glue_arg <- paste0("{haven::as_factor(", groups, ")}")
+    df_groups <- dplyr::ungroup(data) |>
+      dplyr::select(dplyr::any_of(groups)) |>
+      dplyr::distinct(.keep_all = TRUE) |>
+      dplyr::mutate(list_group = glue::glue(glue_arg))
 
-    stacked_compute_grouped <- function(data_subset) {
-      data_subset |>
-        dplyr::group_by(dplyr::across(dplyr::all_of(groups))) |>
-        tidyr::nest(data = -dplyr::all_of(groups)) |>
-        dplyr::mutate(data = purrr::map(data, stacked_one_table)) |>
-        tidyr::unnest(cols = c(data), keep_empty = TRUE) |>
-        dplyr::ungroup() |>
-        dplyr::select(dplyr::any_of(groups), dplyr::everything()) |>
-        dplyr::mutate(
-          dplyr::across(
-            dplyr::starts_with(c(
-              "frequency",
-              paste0(multiplier$col, name_separator)
-            )),
-            ~ replace(., is.na(.), 0)
-          )
-        )
+    result_list <- list()
+    for(j in seq_along(df_groups$list_group)) {
+      list_group_j <- df_groups$list_group[j]
+      data_subset <- dplyr::filter(dplyr::ungroup(data), glue::glue(glue_arg) == !!list_group_j)
+      result_j <- one_table(data_subset)
+      group_df_j <- df_groups[rep(j, nrow(result_j)), groups, drop = FALSE]
+      rownames(group_df_j) <- NULL
+      result_list[[list_group_j]] <- dplyr::bind_cols(group_df_j, result_j) |>
+        set_group_attrs(groups, group_attrs, resolve = FALSE)
     }
-
-    result_df <- stacked_compute_grouped(data)
-
-    if (group_as_hierarchy) {
-
-      grand_total_df <- stacked_compute_grouped(
-        coerce_groups_total(data, groups, label_group_hierarchy)
-      )
-
-      subtotals <- list()
-      if (length(groups) >= 2) {
-        for (k in seq_len(length(groups) - 1)) {
-          parent_groups <- groups[seq_len(k)]
-          child_groups  <- groups[(k + 1):length(groups)]
-          combos <- dplyr::distinct(
-            dplyr::select(dplyr::ungroup(data), dplyr::all_of(parent_groups))
-          )
-          parts <- vector("list", nrow(combos))
-          for (i in seq_len(nrow(combos))) {
-            data_k <- dplyr::ungroup(data)
-            for (pg in parent_groups) {
-              pv     <- combos[[pg]][i]
-              data_k <- dplyr::filter(data_k, !!rlang::sym(pg) == pv)
-            }
-            for (cg in child_groups) {
-              data_k <- coerce_total(
-                data_k, cg, data_k[[cg]],
-                .resolve_hierarchy_label(label_group_hierarchy, cg),
-                default_code = -1L
-              )
-            }
-            parts[[i]] <- stacked_compute_grouped(data_k)
-          }
-          subtotals[[k]] <- dplyr::bind_rows(parts)
-        }
-      }
-
-      result_df <- assemble_group_hierarchy(grand_total_df, subtotals, result_df, groups)
-    }
-
-    return(finalize_stacked(result_df, is_list = FALSE))
-
-  # --- simple (no groups) path ---
-  } else {
-
-    result_df <- stacked_one_table(dplyr::ungroup(data))
-    return(finalize_stacked(result_df, is_list = FALSE))
-
+    return(finish(result_list, is_list = TRUE))
   }
 
-}
+  if(!(calculate_per_group && length(groups) > 0)) {
+    return(finish(one_table(dplyr::ungroup(data)), is_list = FALSE))
+  }
 
+  compute_grouped <- function(data_subset) {
+    data_subset |>
+      dplyr::group_by(dplyr::across(dplyr::all_of(groups))) |>
+      tidyr::nest(data = -dplyr::all_of(groups)) |>
+      dplyr::mutate(data = purrr::map(data, one_table)) |>
+      tidyr::unnest(cols = c(data), keep_empty = TRUE) |>
+      dplyr::ungroup() |>
+      dplyr::select(dplyr::any_of(groups), dplyr::everything()) |>
+      after_grouped()
+  }
+
+  result_df <- compute_grouped(data)
+
+  if(group_as_hierarchy) {
+    grand_total_df <- compute_grouped(coerce_groups_total(data, groups, label_group_hierarchy))
+
+    subtotals <- hierarchy_subtotals(data, groups, label_group_hierarchy, compute_grouped)
+
+    result_df <- assemble_group_hierarchy(grand_total_df, subtotals, result_df, groups)
+  }
+
+  finish(relabel(result_df), is_list = FALSE)
+}
 
 
 tsg_pivot_table <- function(
@@ -1608,7 +1416,7 @@ tsg_pivot_table <- function(
     )
 
   if(deselect_zero) {
-    data <- deselect_zero_cols(data)
+    data <- deselect_zero_cols(data, keep = groups)
   }
 
   total_col <- "total"
@@ -1631,7 +1439,7 @@ tsg_pivot_table <- function(
     if(!percent_by_column) {
       data <- tsg_add_row_total(
         data,
-        .category,
+        ".category",
         position = position_total,
         label_total = label_total,
         groups = groups
@@ -1659,7 +1467,7 @@ tsg_pivot_table <- function(
   if(percent_by_column | !add_percent) {
     data <- tsg_add_row_total(
       data,
-      .category,
+      ".category",
       position = position_total,
       label_total = label_total,
       groups = groups
@@ -1782,4 +1590,42 @@ add_total_label <- function(data, label, name_separator, label_separator, percen
 
   data
 
+}
+
+
+# A labelled total row stores a code (e.g. 0 = "Total"); compare its label, not the code.
+is_total_label <- function(x, label) {
+  if(haven::is.labelled(x)) x <- haven::as_factor(x)
+  as.character(x) %in% label
+}
+
+
+# Crosstabs against several column variables, joined side by side on the row keys;
+# each variable's columns are prefixed with its name so they sit under a spanner.
+collapse_crosstab <- function(data, keys, label_separator) {
+
+  keys <- intersect(keys, names(data[[1]]))
+  totals <- lapply(data, function(d) d[["total"]])
+  shared_total <- !is.null(totals[[1]]) & all(vapply(totals, identical, logical(1), totals[[1]]))
+  keep <- if(shared_total) c(keys, "total") else keys
+
+  blocks <- lapply(seq_along(data), function(i) {
+    name <- names(data)[i]
+    d <- dplyr::ungroup(data[[i]])
+    if(shared_total & i > 1) {
+      d <- dplyr::select(d, -"total")
+    }
+    prefixed <- setdiff(names(d), keep)
+    for(col in prefixed) {
+      attr(d[[col]], "label") <- paste0(name, label_separator, attr(d[[col]], "label") %||% col)
+    }
+    names(d)[names(d) %in% prefixed] <- paste0(name, label_separator, prefixed)
+    d
+  })
+
+  result <- Reduce(function(x, y) dplyr::full_join(x, y, by = keys), blocks)
+
+  result <- copy_table_attrs(result, data[[1]])
+
+  result
 }

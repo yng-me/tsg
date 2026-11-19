@@ -1,0 +1,16 @@
+# Striped facade: a coloured header band and banded body rows, no vertical lines.
+# Unset keys come from default.yaml.
+
+border_outer.border: ["bottom"]
+border_outer.borderColour: "#1F4E79"
+border_outer.borderStyle: "medium"
+
+border_header.border: ~
+
+header.border: ~
+header.fgFill: "#1F4E79"
+header.fontColour: "#FFFFFF"
+header.textDecoration: "bold"
+
+body.border: ~
+body.bandFill: "#EAF1F8"

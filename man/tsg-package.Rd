@@ -6,7 +6,7 @@
 \alias{tsg-package}
 \title{tsg: Generate Publication-Ready Statistical Tables}
 \description{
-A collection of functions for generating frequency tables and cross-tabulations of categorical variables. The resulting tables can be exported to various formats (Excel, PDF, HTML, etc.) with extensive formatting and layout customization options.
+tsg (Table and Summary Generator) is a collection of functions for generating frequency tables and cross-tabulations of categorical variables. The resulting tables can be exported to various formats (Excel, PDF, HTML, etc.) with extensive formatting and layout customization options.
 }
 \seealso{
 Useful links:
@@ -19,6 +19,11 @@ Useful links:
 }
 \author{
 \strong{Maintainer}: Bhas Abdulsamad \email{aeabdulsamad@gmail.com} (\href{https://orcid.org/0009-0002-5891-8124}{ORCID}) [copyright holder]
+
+Authors:
+\itemize{
+  \item Bhas Abdulsamad \email{aeabdulsamad@gmail.com} (\href{https://orcid.org/0009-0002-5891-8124}{ORCID}) [copyright holder]
+}
 
 }
 \keyword{internal}
