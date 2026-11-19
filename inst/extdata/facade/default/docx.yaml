@@ -1,6 +1,7 @@
 # DOCX (flextable + officer) facade defaults — cross-format keys only.
-# XLSX-only keys (gridLines, tabColour, locked, hidden, width, widthOffset,
-# offsetRow, offsetCol) are intentionally absent.
+# Spreadsheet-only keys (gridLines, tabColour, locked, hidden, width, widthOffset,
+# offsetRow, offsetCol, height) are absent: this format ignores them.
+# Border styles use the xlsx names (thin, medium, thick, dashed, ...).
 
 table.fontName: 'Arial'
 table.fontSize: 11
@@ -16,19 +17,21 @@ table.decimalPrecision: 2
 table.decimalCols: ~
 table.lastRowBold: false
 
+border_outer.border: ["top", "bottom", "left", "right"]
 border_outer.borderColour: "#999999"
+border_outer.borderStyle: "thin"
 border_header.border: "bottom"
 border_header.borderColour: "#999999"
-border_header.borderStyle: "solid"
+border_header.borderStyle: "thin"
 border_bottom.height: ~
 
 body.fontName: ~
 body.fontSize: ~
 body.fontColour: ~
 body.numFmt: ~
-body.border: ~
+body.border: ["top", "bottom", "left", "right"]
 body.borderColour: "#cccccc"
-body.borderStyle: ~
+body.borderStyle: "hair"
 body.bgFill: ~
 body.fgFill: ~
 body.halign: "center"
@@ -37,6 +40,7 @@ body.textDecoration: ~
 body.wrapText: ~
 body.indent: ~
 body.height: ~
+body.bandFill: ~
 
 title.fontName: ~
 title.fontSize: 14

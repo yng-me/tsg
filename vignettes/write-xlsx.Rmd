@@ -1,0 +1,463 @@
+---
+title: "Writing Excel workbooks with write_xlsx()"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Writing Excel workbooks with write_xlsx()}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+
+# The code below writes real workbooks. They go to a temporary folder, so building the
+# vignette leaves nothing behind. The screenshots are made from the same code by
+# data-raw/vignette-screenshots.R with Microsoft Excel and are stored in man/figures/.
+fig_dir <- normalizePath("../man/figures", mustWork = FALSE)
+out_dir <- Sys.getenv("TSG_VIGNETTE_OUT", file.path(tempdir(), "write-xlsx"))
+dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+knitr::opts_knit$set(root.dir = out_dir)
+
+# The screenshots are rendered at twice their size for sharp text; show them at half
+# their pixel width (read from the PNG header), which is their size in Excel at 100%.
+# A sheet wider than the page scrolls sideways instead of shrinking.
+shot <- function(name) {
+  path <- file.path(fig_dir, paste0("write-xlsx-", name, ".png"))
+  if (!file.exists(path)) return(invisible())
+  header <- readBin(path, "raw", 24)
+  width <- sum(as.integer(header[17:20]) * 256^(3:0))
+  knitr::asis_output(sprintf(
+    '<div style="overflow-x:auto"><img src="%s" width="%d" alt="Excel sheet: %s" style="max-width:none;height:auto"></div>',
+    knitr::image_uri(path), width %/% 2, name
+  ))
+}
+```
+
+```{r setup}
+library(tsg)
+library(dplyr)
+```
+
+`write_xlsx()` turns a tsg table, or a list of tables, into a formatted Excel workbook. What the workbook looks like depends on the structure of the table you generated: a single table, a crosstab with merged headers, a list of tables, or a grouped list. This vignette goes through each structure and shows the result.
+
+The screenshots are of the sheets as Microsoft Excel prints them.
+
+## The big picture
+
+```{r, eval = FALSE}
+write_xlsx(
+  data,                  # a tsg table, or a (nested) list of them
+  path,                  # a file, or a folder when separate_files = TRUE
+  title, subtitle,       # used when a table has none of its own
+  source_note, footnotes,
+  sheet_name,            # the sheet of a single table
+  separate_files,        # one workbook per list item
+  collapse_list,         # stack a list of tables on one sheet
+  row_group_as_column,   # show group names as a column instead of titles
+  include_table_list,    # add a "List of Tables" sheet
+  table_list_reference,  # titles, numbers and notes kept in a data frame or file
+  facade                 # the look: fonts, colours, borders
+)
+```
+
+| You pass | You get |
+|----------|---------|
+| One table | One sheet |
+| A list of tables | One sheet per table |
+| A list with `collapse_list = TRUE` | All tables stacked on one sheet |
+| A list with `separate_files = TRUE` | One workbook per table, in a folder |
+| `group_as_list = TRUE` with one group | One sheet per group |
+| `group_as_list = TRUE` with two or more groups | One sheet per first group, with the other groups as titles on that sheet |
+| Any of these with `include_table_list = TRUE` | The same, plus a "List of Tables" sheet with links |
+
+---
+
+## One table
+
+A frequency table is the simplest case: a header row, one row per category and a Total row. Titles and notes go above and below the table.
+
+```{r}
+frequency <- person_record |>
+  generate_frequency(marital_status) |>
+  add_table_title("Table 1. Marital status of household members") |>
+  add_table_subtitle("Both sexes, all ages") |>
+  add_source_note("Source: person_record sample data") |>
+  add_footnote("Percentages are calculated from all members, including those not reported.")
+
+write_xlsx(frequency, "frequency.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("frequency")
+```
+
+The title, subtitle, source note and footnotes live on the table itself, so they travel with it. You can also pass `title`, `subtitle`, `source_note` and `footnotes` straight to `write_xlsx()`. A table's own text always wins over the arguments.
+
+`sheet_name` names the sheet (the default is `"Sheet1"`):
+
+```{r}
+write_xlsx(frequency, "frequency-named.xlsx", sheet_name = "Marital status")
+openxlsx::getSheetNames("frequency-named.xlsx")
+```
+
+## A crosstab with merged headers
+
+A crosstab has a two-level header: the variable (here `Frequency` and `Percent`) sits above the categories of the column variable. `write_xlsx()` writes this as merged header cells. The stub header (`Marital status`) and `Total` are merged downwards so they span both header rows.
+
+```{r}
+crosstab <- person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_table_title("Table 2. Marital status by sex") |>
+  add_source_note("Source: person_record sample data")
+
+write_xlsx(crosstab, "crosstab.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("crosstab")
+```
+
+Header levels come from the column names, split at `names_separator` (`"__"` by default). If you build a table with your own column names, `"Frequency__Male"` becomes a `Frequency` header over a `Male` header.
+
+### Several column variables side by side
+
+With `collapse_list = TRUE`, `generate_crosstab()` puts the crosstabs against several column variables next to each other in one table. The header then has three levels: the variable, the statistic and the category.
+
+```{r}
+side_by_side <- person_record |>
+  generate_crosstab(marital_status, sex, employed, collapse_list = TRUE)
+
+write_xlsx(side_by_side, "crosstab-multi.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("crosstab-multi")
+```
+
+## A summary table
+
+`generate_summary()` gives one row per numeric variable and one column per statistic.
+
+```{r}
+summary_table <- person_record |>
+  generate_summary(age, stats = c("n", "mean", "sd", "median", "min", "max")) |>
+  add_table_title("Table 3. Age of household members")
+
+write_xlsx(summary_table, "summary.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("summary")
+```
+
+---
+
+## A list of tables: one sheet each
+
+Give `write_xlsx()` a named list and every table gets its own sheet, named after the list item.
+
+```{r}
+tables <- list(
+  Sex = generate_frequency(person_record, sex),
+  Marital = generate_frequency(person_record, marital_status),
+  Employment = generate_crosstab(person_record, employed, sex)
+)
+
+write_xlsx(tables, "tables.xlsx")
+openxlsx::getSheetNames("tables.xlsx")
+```
+
+Calling `generate_frequency()` with several variables returns such a list, named by the variable labels, so you can write it directly:
+
+```{r}
+several <- generate_frequency(person_record, sex, employed, seeing)
+names(several)
+```
+
+Sheet names follow Excel's rules: no `/` (written as " or ") and at most 31 characters. A longer name is an error, so you notice before a label is cut in the middle of a word. Set `trim_sheet_names = TRUE` to cut long names instead; names that then clash are numbered `(2)`, `(3)`. Unnamed list items become `Table 1`, `Table 2`, and so on.
+
+```{r}
+long_names <- generate_frequency(person_record, hearing, walking)
+names(long_names)
+
+write_xlsx(long_names, "long-names.xlsx", trim_sheet_names = TRUE)
+openxlsx::getSheetNames("long-names.xlsx")
+```
+
+When you pass `title` to a list, each sheet gets `"<title>: <sheet name>"` unless the table already has a title of its own:
+
+```{r}
+write_xlsx(tables, "tables-titled.xlsx", title = "Household survey", source_note = "Source: person_record")
+```
+
+```{r, echo = FALSE}
+shot("list-sheet")
+```
+
+### All tables on one sheet
+
+Use `collapse_list = TRUE` to stack the tables on a single sheet, each under its own heading. This is handy for a quick overview or for pasting into a document.
+
+```{r}
+write_xlsx(several, "stacked.xlsx", collapse_list = TRUE)
+```
+
+```{r, echo = FALSE}
+shot("stacked")
+```
+
+### One workbook per table
+
+With `separate_files = TRUE`, `path` is a folder and each list item becomes a workbook named after it.
+
+```{r}
+write_xlsx(tables, "separate", separate_files = TRUE)
+list.files("separate")
+```
+
+---
+
+## Grouped tables
+
+Group the data with `dplyr::group_by()` and `generate_*()` can return one table per group. How `write_xlsx()` lays them out depends on how many groups there are.
+
+### One group: one sheet per group
+
+```{r}
+by_sex <- person_record |>
+  group_by(sex) |>
+  generate_frequency(marital_status, group_as_list = TRUE)
+
+names(by_sex)
+
+write_xlsx(by_sex, "group-list.xlsx")
+openxlsx::getSheetNames("group-list.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("group-list")
+```
+
+### Groups in one table
+
+Without `group_as_list`, the group is a column and the groups sit under each other in a single table. With `group_as_hierarchy = TRUE` there is also an `All` block for the whole data.
+
+```{r}
+hierarchy <- person_record |>
+  group_by(sex) |>
+  generate_frequency(marital_status, group_as_hierarchy = TRUE)
+
+write_xlsx(hierarchy, "hierarchy.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("hierarchy")
+```
+
+### Two or more groups: titles inside the sheet
+
+With two groups, the first group gets a sheet each, and the second group becomes a title above its own block of rows. A third group would add a second level of titles, named by their path, such as `"Yes - No difficulty"`.
+
+```{r}
+nested <- person_record |>
+  group_by(sex, employed) |>
+  generate_frequency(marital_status, group_as_list = TRUE)
+
+write_xlsx(nested, "nested.xlsx")
+openxlsx::getSheetNames("nested.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("nested")
+```
+
+### All groups on one sheet
+
+To keep the groups together, write a one-group list with `collapse_list = TRUE`. The groups then share one header, and each group gets a title row above its rows.
+
+```{r}
+write_xlsx(by_sex, "group-one-sheet.xlsx", collapse_list = TRUE)
+```
+
+```{r, echo = FALSE}
+shot("group-one-sheet")
+```
+
+### Group names as a column
+
+A title row is awkward if you want to filter or sort the sheet in Excel. With `row_group_as_column = TRUE` the group names become the first column instead.
+
+```{r}
+write_xlsx(by_sex, "group-column.xlsx", collapse_list = TRUE, row_group_as_column = TRUE)
+```
+
+```{r, echo = FALSE}
+shot("group-column")
+```
+
+It works the same on the sheets of a list with two or more groups: each sheet gets one column per group.
+
+```{r}
+write_xlsx(nested, "nested-column.xlsx", row_group_as_column = TRUE)
+```
+
+```{r, echo = FALSE}
+shot("nested-column")
+```
+
+---
+
+## A table list: an index sheet with links
+
+Set `include_table_list = TRUE` to add a first sheet, `List of Tables`, with one row per table. The tab names are links to the sheets, and each table sheet gets a link back.
+
+```{r}
+write_xlsx(tables, "indexed.xlsx", include_table_list = TRUE)
+openxlsx::getSheetNames("indexed.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("toc")
+```
+
+Without a reference, the table numbers follow the list order, and each title is the table's own title, or its list name when it has none.
+
+### Keeping titles and numbers in a reference table
+
+In a long report, titles, table numbers and notes are easier to manage in one place than spread through the code. Give `table_list_reference` a data frame (or the path to a `.csv`, `.json` or `.xlsx` file) with one row per table.
+
+| Column | Meaning |
+|--------|---------|
+| `table_id` | The **name of the list item**. This is how a row finds its table. |
+| `table_name` | The sheet name, also shown in the index. |
+| `table_number` | The number in the index and in the title (`1` becomes "Table 1."). |
+| `title` | The title above the table. |
+| `subtitle`, `source_note`, `footnotes` | Optional. They replace the table's own text. |
+
+```{r}
+reference <- data.frame(
+  table_id = c("Sex", "Marital", "Employment"),
+  table_name = c("By sex", "By marital status", "Employment by sex"),
+  table_number = 1:3,
+  title = c(
+    "Household members by sex",
+    "Household members by marital status",
+    "Employment status by sex"
+  ),
+  subtitle = c(NA, NA, "Persons with a reported status"),
+  source_note = "Source: person_record sample data",
+  footnotes = NA
+)
+
+write_xlsx(
+  tables,
+  "reference.xlsx",
+  include_table_list = TRUE,
+  table_list_reference = reference
+)
+
+openxlsx::getSheetNames("reference.xlsx")
+```
+
+The index lists the tables by their `table_name` and number:
+
+```{r, echo = FALSE}
+shot("reference-index")
+```
+
+Each table sheet is named by `table_name`. The title is prefixed with the table number, and the subtitle and source note come from the reference:
+
+```{r, echo = FALSE}
+shot("reference-table")
+```
+
+### From a file
+
+The reference can be a file, so someone who does not write R can edit titles and numbers. `generate_template()` writes an empty one with the right columns:
+
+```{r, eval = FALSE}
+generate_template("table-list.xlsx", template = "table-list")
+```
+
+```{r}
+write.csv(reference, "table-list.csv", row.names = FALSE)
+
+write_xlsx(
+  tables,
+  "reference-file.xlsx",
+  include_table_list = TRUE,
+  table_list_reference = "table-list.csv"
+)
+```
+
+A few rules worth knowing:
+
+- Only the tables whose `table_id` is in the reference are looked up. A table with no row keeps its own title and its list name as the sheet name.
+- A row whose `table_id` matches no list item is ignored.
+- `table_id` must match the list names exactly, so name your list items.
+- `table_list_reference` only has an effect together with `include_table_list = TRUE`.
+
+---
+
+## Changing the look
+
+The look of a workbook is a facade: fonts, fills, borders and column widths. Pass a built-in one by name:
+
+```{r}
+crosstab_plain <- person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_table_title("Marital status by sex")
+
+write_xlsx(crosstab_plain, "booktabs.xlsx", facade = "booktabs")
+write_xlsx(crosstab_plain, "financial.xlsx", facade = "financial")
+write_xlsx(crosstab_plain, "dark.xlsx", facade = "dark")
+```
+
+`"booktabs"`: a thick rule on top and bottom, a thin one under the header.
+
+```{r, echo = FALSE}
+shot("facade-booktabs")
+```
+
+`"financial"`: a dark header, a thin grid and a bold last row.
+
+```{r, echo = FALSE}
+shot("facade-financial")
+```
+
+`"dark"`: light text on a dark background.
+
+```{r, echo = FALSE}
+shot("facade-dark")
+```
+
+To change one table only, use `add_facade()`. It takes precedence over the `facade` argument of `write_xlsx()`:
+
+```{r}
+crosstab_plain |>
+  add_facade(header.fgFill = "#FFF2CC", table.offsetRow = 1, table.offsetCol = 1) |>
+  write_xlsx("offset.xlsx")
+```
+
+```{r, echo = FALSE}
+shot("facade-offset")
+```
+
+The same facades style HTML, PDF and Word output. All the facade settings and the full list of built-in styles are in `vignette("facade")`.
+
+## Passing options to openxlsx
+
+Extra arguments in `...` go to `openxlsx::createWorkbook()` (such as `creator`) or `openxlsx::addWorksheet()` (such as `zoom`), matched by name:
+
+```{r}
+write_xlsx(frequency, "options.xlsx", creator = "Survey Unit", zoom = 120)
+```
+
+## Where to go next
+
+- `vignette("facade")` for styles and every facade setting.
+- `vignette("output-formats")` for HTML, PDF and Word.
+- `vignette("google-sheets")` to send the same workbook to Google Sheets.

@@ -15,7 +15,9 @@ add_facade_alt(data, ...)
 A \code{tsg} object with the specified facade settings applied as attributes.
 }
 \description{
-This function adds a facade to a \code{tsg}, an alternative way to allow dynamic values and programmatic evaluation.
+\ifelse{html}{\href{https://lifecycle.r-lib.org/articles/stages.html#deprecated}{\figure{lifecycle-deprecated.svg}{options: alt='[Deprecated]'}}}{\strong{[Deprecated]}}
+
+\code{\link[=add_facade]{add_facade()}} now evaluates its arguments, so this alternative is no longer needed.
 }
 \examples{
 person_record |>

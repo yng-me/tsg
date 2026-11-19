@@ -1,18 +1,25 @@
-
-#' Convert a tsg table to a gt object
+#' Convert a tsg table to a gt table
 #'
-#' @param data A \code{tsg} or data frame object.
-#' @param title Optional title string.
-#' @param subtitle Optional subtitle string.
-#' @param source_note Optional source note string.
-#' @param footnotes Optional character vector of footnotes.
+#' @description Builds the \pkg{gt} table that [write_html()] and [write_pdf()] save, styled with a facade, so you can show it in a Quarto or R Markdown document, a Shiny app, or style it further with \pkg{gt}.
+#'
+#' @param data A \code{tsg} table or a data frame.
+#' @param title Optional title; defaults to the table's title (see [add_table_title()]).
+#' @param subtitle Optional subtitle; defaults to the table's subtitle.
+#' @param source_note Optional source note; defaults to the table's source note.
+#' @param footnotes Optional character vector of footnotes; defaults to the table's footnotes.
 #' @param names_separator Column name separator for spanners. Default \code{"__"}.
-#' @param facade A facade list for styling. Defaults to the global tsg facade.
+#' @param facade A built-in facade name (e.g. \code{"booktabs"}; see [get_tsg_facade()]), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. Keys missing from it fall back to the html default facade; settings added with [add_facade()] take precedence over it.
 #'
 #' @return A \code{gt_tbl} object.
-#' @keywords internal
+#' @export
+#'
+#' @examplesIf requireNamespace("gt", quietly = TRUE)
+#' person_record |>
+#'   generate_crosstab(marital_status, sex) |>
+#'   add_table_title("Marital status by sex") |>
+#'   as_gt(facade = "booktabs")
 
-tsg_to_gt <- function(
+as_gt <- function(
   data,
   title = NULL,
   subtitle = NULL,
@@ -22,11 +29,13 @@ tsg_to_gt <- function(
   facade = get_tsg_facade(which = "html")
 ) {
 
+  rlang::check_installed("gt", reason = "to build a gt table.")
+
   attrs <- attributes(data)
-  title       <- title       %||% attrs$title
-  subtitle    <- subtitle    %||% attrs$subtitle
+  title <- title       %||% attrs$title
+  subtitle <- subtitle    %||% attrs$subtitle
   source_note <- source_note %||% attrs$source_note
-  footnotes   <- .normalize_footnotes(footnotes %||% attrs$footnotes)
+  footnotes <- .normalize_footnotes(footnotes %||% attrs$footnotes)
 
   facade <- resolve_facade(facade %||% get_tsg_facade(which = "html"), attrs$facade, which = "html")
 
@@ -35,7 +44,8 @@ tsg_to_gt <- function(
   # Extract display labels from original data BEFORE convert_factor() since
   # haven::as_factor() may drop label_xlsx attributes
   col_labels <- vapply(col_names, function(cn) {
-    attr(data[[cn]], "label_xlsx") %||% attr(data[[cn]], "label") %||% cn
+    # exact: a bare "label" would partial-match the value labels of a labelled column
+    attr(data[[cn]], "label_xlsx", exact = TRUE) %||% attr(data[[cn]], "label", exact = TRUE) %||% cn
   }, character(1))
 
   # Convert haven_labelled columns to factor so gt renders value labels, not codes
@@ -59,9 +69,9 @@ tsg_to_gt <- function(
 
   if (!is.null(footnotes)) {
     for (i in seq_along(footnotes$text)) {
-      fn_text      <- footnotes$text[[i]]
+      fn_text <- footnotes$text[[i]]
       fn_placement <- footnotes$placement[[i]] %||% "auto"
-      fn_locs      <- footnotes$locations[[i]]
+      fn_locs <- footnotes$locations[[i]]
 
       gt_locs <- if (!is.null(fn_locs) && length(fn_locs) > 0) {
         # Map column names to gt column-label locations; silently drop unknown names
@@ -73,7 +83,7 @@ tsg_to_gt <- function(
 
       gt_tbl <- gt::tab_footnote(
         gt_tbl,
-        footnote  = fn_text,
+        footnote = fn_text,
         locations = gt_locs,
         placement = fn_placement
       )
@@ -82,7 +92,13 @@ tsg_to_gt <- function(
 
   gt_tbl <- gt_apply_numeric_format(gt_tbl, data_for_gt, facade)
 
-  gt_tbl <- gt_apply_facade(gt_tbl, facade, col_names, n_body_rows = nrow(data_for_gt))
+  # The spanner each column sits under (NA for none), as gt_apply_spanners() names them
+  spanners <- vapply(col_labels, function(lbl) {
+    parts <- strsplit(lbl, sep, fixed = TRUE)[[1]]
+    if (length(parts) > 1) paste(parts[-length(parts)], collapse = sep) else NA_character_
+  }, character(1))
+
+  gt_tbl <- gt_apply_facade(gt_tbl, facade, col_names, n_body_rows = nrow(data_for_gt), spanners = spanners)
 
   gt_tbl
 }
@@ -115,12 +131,12 @@ gt_apply_spanners <- function(gt_tbl, col_names, sep, col_labels = NULL) {
   leaf_label_map <- list()
 
   for (i in seq_along(col_names)) {
-    cn  <- col_names[i]
+    cn <- col_names[i]
     lbl <- col_labels[i]
 
     if (grepl(sep, lbl, fixed = TRUE)) {
-      parts        <- strsplit(lbl, sep, fixed = TRUE)[[1]]
-      leaf_label   <- parts[length(parts)]
+      parts <- strsplit(lbl, sep, fixed = TRUE)[[1]]
+      leaf_label <- parts[length(parts)]
       spanner_label <- paste(parts[-length(parts)], collapse = sep)
       spanner_groups[[spanner_label]] <- c(spanner_groups[[spanner_label]], cn)
       leaf_label_map[[cn]] <- leaf_label
@@ -151,13 +167,9 @@ gt_apply_spanners <- function(gt_tbl, col_names, sep, col_labels = NULL) {
 
 #' Apply numeric cell formatting to a gt table based on facade settings
 #'
-#' Mirrors \code{xlsx_decimal_format()} for gt output. Integer-like columns
-#' (R \code{integer} type or double columns whose values are all whole numbers)
-#' are formatted with comma separators and no decimal places.
-#' Double columns with fractional values are formatted with
-#' \code{table.decimalPrecision} decimal places (default 2).
-#' \code{table.decimalCols}, \code{body.numFmt}, \code{col_first.numFmt}, and
-#' \code{col_last.numFmt} override the auto-detection.
+#' Mirrors \code{xlsx_decimal_format()} for gt output: the columns are chosen by
+#' \code{number_format_cols()}, decimals use \code{table.decimalPrecision} (default 2),
+#' and \code{body.numFmt}, \code{col_first.numFmt} and \code{col_last.numFmt} override it.
 #'
 #' @keywords internal
 
@@ -169,26 +181,9 @@ gt_apply_numeric_format <- function(gt_tbl, data, facade) {
   if (is.null(precision) || !is.numeric(precision)) precision <- 2L
   precision <- as.integer(precision)
 
-  explicit_decimal_cols <- facade$table.decimalCols
-
-  # Identify integer-like columns
-  int_names  <- names(dplyr::select(data, dplyr::where(is.integer)))
-  dbl_names  <- names(dplyr::select(data, dplyr::where(is.double)))
-
-  maybe_int <- dbl_names[vapply(dbl_names, function(col) {
-    vals <- data[[col]]
-    !all(is.na(vals)) &&
-      isTRUE(all.equal(sum(vals, na.rm = TRUE), sum(as.integer(vals), na.rm = TRUE)))
-  }, logical(1))]
-
-  int_cols <- c(int_names, maybe_int)
-  dec_cols <- setdiff(dbl_names, maybe_int)
-
-  # table.decimalCols forces those columns into decimal (even if whole-number)
-  if (!is.null(explicit_decimal_cols)) {
-    int_cols <- setdiff(int_cols, explicit_decimal_cols)
-    dec_cols <- union(dec_cols, intersect(explicit_decimal_cols, names(data)))
-  }
+  formats <- number_format_cols(data, facade$table.decimalCols)
+  int_cols <- formats$integer
+  dec_cols <- formats$decimal
 
   all_num_cols <- c(int_cols, dec_cols)
 
@@ -277,12 +272,13 @@ parse_excel_numfmt_decimals <- function(numfmt) {
   if (valign == "center") "middle" else valign
 }
 
-gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL) {
+gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL, spanners = NULL) {
 
   if (is.null(facade)) return(gt_tbl)
   font_opts <- list()
   if (!is.null(facade$table.fontName)) {
-    font_opts[["table.font.names"]] <- facade$table.fontName
+    # gt's font stack after the facade's, so a font the machine lacks falls back to sans-serif
+    font_opts[["table.font.names"]] <- c(facade$table.fontName, gt::default_fonts())
   }
   if (!is.null(facade$table.fontSize)) {
     font_opts[["table.font.size"]] <- gt::px(round(facade$table.fontSize * 1.33))
@@ -307,7 +303,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
       !is.null(facade$title.textDecoration) || !is.null(facade$title.fgFill) ||
       !is.null(facade$title.bgFill) || !is.null(facade$title.fontName)) {
     title_styles <- list()
-    if (!is.null(facade$title.fontName)) title_styles[["font.names"]] <- facade$title.fontName
+    if (!is.null(facade$title.fontName)) title_styles[["font"]] <- facade$title.fontName
     if (!is.null(facade$title.fontSize)) title_styles[["size"]] <- gt::px(round(facade$title.fontSize * 1.33))
     if (!is.null(facade$title.fontColour)) title_styles[["color"]] <- facade$title.fontColour
     if (length(title_styles) > 0) {
@@ -335,7 +331,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
       !is.null(facade$subtitle.textDecoration) || !is.null(facade$subtitle.fgFill) ||
       !is.null(facade$subtitle.bgFill) || !is.null(facade$subtitle.fontName)) {
     sub_styles <- list()
-    if (!is.null(facade$subtitle.fontName)) sub_styles[["font.names"]] <- facade$subtitle.fontName
+    if (!is.null(facade$subtitle.fontName)) sub_styles[["font"]] <- facade$subtitle.fontName
     if (!is.null(facade$subtitle.fontSize)) sub_styles[["size"]] <- gt::px(round(facade$subtitle.fontSize * 1.33))
     if (!is.null(facade$subtitle.fontColour)) sub_styles[["color"]] <- facade$subtitle.fontColour
     if (length(sub_styles) > 0) {
@@ -378,7 +374,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
 
   # Header font name / size
   header_text_extra <- list()
-  if (!is.null(facade$header.fontName)) header_text_extra[["font.names"]] <- facade$header.fontName
+  if (!is.null(facade$header.fontName)) header_text_extra[["font"]] <- facade$header.fontName
   if (!is.null(facade$header.fontSize)) header_text_extra[["size"]] <- gt::px(round(facade$header.fontSize * 1.33))
   if (!is.null(facade$header.halign))   header_text_extra[["align"]] <- facade$header.halign
   if (!is.null(facade$header.valign))   header_text_extra[["v_align"]] <- .gt_valign(facade$header.valign)
@@ -401,7 +397,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
 
   # Spanner-specific overrides (applied after header, so they win)
   spanner_overrides <- list()
-  if (!is.null(facade$spanner.fontName)) spanner_overrides[["font.names"]] <- facade$spanner.fontName
+  if (!is.null(facade$spanner.fontName)) spanner_overrides[["font"]] <- facade$spanner.fontName
   if (!is.null(facade$spanner.fontSize)) spanner_overrides[["size"]] <- gt::px(round(facade$spanner.fontSize * 1.33))
   if (!is.null(facade$spanner.halign))   spanner_overrides[["align"]] <- facade$spanner.halign
   if (!is.null(facade$spanner.valign))   spanner_overrides[["v_align"]] <- .gt_valign(facade$spanner.valign)
@@ -437,6 +433,15 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
     )
   }
 
+  # Banded rows: every other body row (the 2nd, 4th, ...), as in xlsx
+  if (!is.null(facade$body.bandFill) && !is.null(n_body_rows) && n_body_rows >= 2L) {
+    gt_tbl <- gt::tab_style(
+      gt_tbl,
+      style = gt::cell_fill(color = facade$body.bandFill),
+      locations = gt::cells_body(rows = seq(2L, n_body_rows, by = 2L))
+    )
+  }
+
   # Body text color
   if (!is.null(facade$body.fontColour)) {
     gt_tbl <- gt::tab_style(
@@ -448,7 +453,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
 
   # Body font name / size / valign
   body_text_extra <- list()
-  if (!is.null(facade$body.fontName)) body_text_extra[["font.names"]] <- facade$body.fontName
+  if (!is.null(facade$body.fontName)) body_text_extra[["font"]] <- facade$body.fontName
   if (!is.null(facade$body.fontSize)) body_text_extra[["size"]] <- gt::px(round(facade$body.fontSize * 1.33))
   if (!is.null(facade$body.valign))   body_text_extra[["v_align"]] <- .gt_valign(facade$body.valign)
   if (length(body_text_extra) > 0) {
@@ -479,7 +484,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
 
   # Row group styling
   row_group_styles <- list()
-  if (!is.null(facade$row_group.fontName))  row_group_styles[["font.names"]] <- facade$row_group.fontName
+  if (!is.null(facade$row_group.fontName))  row_group_styles[["font"]] <- facade$row_group.fontName
   if (!is.null(facade$row_group.fontSize))  row_group_styles[["size"]] <- gt::px(round(facade$row_group.fontSize * 1.33))
   if (!is.null(facade$row_group.fontColour)) row_group_styles[["color"]] <- facade$row_group.fontColour
   if (!is.null(facade$row_group.halign))    row_group_styles[["align"]] <- facade$row_group.halign
@@ -512,7 +517,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
     gt_tbl <- do.call(gt::tab_options, c(list(gt_tbl), sn_tab_opts))
   }
   sn_styles <- list()
-  if (!is.null(facade$source_note.fontName))  sn_styles[["font.names"]] <- facade$source_note.fontName
+  if (!is.null(facade$source_note.fontName))  sn_styles[["font"]] <- facade$source_note.fontName
   if (!is.null(facade$source_note.fontColour)) sn_styles[["color"]] <- facade$source_note.fontColour
   if (!is.null(facade$source_note.halign))    sn_styles[["align"]] <- facade$source_note.halign
   if (length(sn_styles) > 0) {
@@ -543,7 +548,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
     gt_tbl <- do.call(gt::tab_options, c(list(gt_tbl), fn_tab_opts))
   }
   fn_styles <- list()
-  if (!is.null(facade$footnotes.fontName))  fn_styles[["font.names"]] <- facade$footnotes.fontName
+  if (!is.null(facade$footnotes.fontName))  fn_styles[["font"]] <- facade$footnotes.fontName
   if (!is.null(facade$footnotes.fontColour)) fn_styles[["color"]] <- facade$footnotes.fontColour
   if (length(fn_styles) > 0) {
     gt_tbl <- gt::tab_style(
@@ -556,26 +561,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
     gt_tbl <- gt_apply_text_decoration(gt_tbl, facade$footnotes.textDecoration, gt::cells_footnotes())
   }
 
-  # Outer border (table outline)
-  border_outer_colour <- facade$border_outer.borderColour
-  if (!is.null(border_outer_colour)) {
-    gt_tbl <- do.call(gt::tab_options, list(
-      gt_tbl,
-      table.border.top.color    = border_outer_colour,
-      table.border.bottom.color = border_outer_colour
-    ))
-  }
-
-  # Header-body border
-  bh_col   <- facade$border_header.borderColour
-  bh_style <- facade$border_header.borderStyle %||% "solid"
-  if (!is.null(bh_col)) {
-    gt_tbl <- do.call(gt::tab_options, list(
-      gt_tbl,
-      column_labels.border.bottom.color = bh_col,
-      column_labels.border.bottom.style = bh_style
-    ))
-  }
+  gt_tbl <- gt_apply_borders(gt_tbl, facade, col_names, n_body_rows, spanners)
 
   # Last-row bold
   if (isTRUE(facade$table.lastRowBold) && !is.null(n_body_rows) && n_body_rows > 0L) {
@@ -594,7 +580,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
 
   # First column additional styles
   col_first_styles <- list()
-  if (!is.null(facade$col_first.fontName))  col_first_styles[["font.names"]] <- facade$col_first.fontName
+  if (!is.null(facade$col_first.fontName))  col_first_styles[["font"]] <- facade$col_first.fontName
   if (!is.null(facade$col_first.fontSize))  col_first_styles[["size"]] <- gt::px(round(facade$col_first.fontSize * 1.33))
   if (!is.null(facade$col_first.fontColour)) col_first_styles[["color"]] <- facade$col_first.fontColour
   if (length(col_first_styles) > 0) {
@@ -629,7 +615,7 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
 
   # Last column additional styles
   col_last_styles <- list()
-  if (!is.null(facade$col_last.fontName))  col_last_styles[["font.names"]] <- facade$col_last.fontName
+  if (!is.null(facade$col_last.fontName))  col_last_styles[["font"]] <- facade$col_last.fontName
   if (!is.null(facade$col_last.fontSize))  col_last_styles[["size"]] <- gt::px(round(facade$col_last.fontSize * 1.33))
   if (!is.null(facade$col_last.fontColour)) col_last_styles[["color"]] <- facade$col_last.fontColour
   if (length(col_last_styles) > 0 && !is.null(last_col_sel)) {
@@ -651,6 +637,71 @@ gt_apply_facade <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL
       locations = gt::cells_body(columns = last_col_sel)
     )
   }
+
+  gt_tbl
+}
+
+
+# Draws only the borders the facade asks for, with the same parts as the xlsx writer:
+# body/header/spanner cells, the rule under the header (border_header) and the outline
+# around header and body (border_outer). The outline is drawn on the edge cells last: where
+# two borders of the same width meet, the browser keeps the cell's, so a row or table
+# setting would lose to the cell borders next to it.
+gt_apply_borders <- function(gt_tbl, facade, col_names = NULL, n_body_rows = NULL, spanners = NULL) {
+
+  off <- c(
+    "table.border.top.style", "table.border.bottom.style", "table.border.left.style",
+    "table.border.right.style", "heading.border.bottom.style", "column_labels.border.top.style",
+    "column_labels.border.bottom.style", "column_labels.border.lr.style", "column_labels.vlines.style",
+    "table_body.border.top.style", "table_body.border.bottom.style", "table_body.hlines.style",
+    "table_body.vlines.style", "row_group.border.top.style", "row_group.border.bottom.style",
+    "stub.border.style", "footnotes.border.bottom.style", "source_notes.border.bottom.style"
+  )
+  gt_tbl <- do.call(gt::tab_options, c(list(gt_tbl), as.list(stats::setNames(rep("none", length(off)), off))))
+  # gt hides the line under a spanner row, which would swallow a header or spanner border there.
+  gt_tbl <- gt::opt_css(gt_tbl, ".gt_table .gt_spanner_row { border-bottom-style: none !important; }")
+
+  draw <- function(gt_tbl, borders, locations) {
+    for (side in names(borders)) {
+      b <- borders[[side]]
+      gt_tbl <- gt::tab_style(
+        gt_tbl,
+        style = gt::cell_borders(sides = side, color = b$color, style = b$style, weight = gt::px(b$width)),
+        locations = locations
+      )
+    }
+    gt_tbl
+  }
+
+  gt_tbl <- draw(gt_tbl, facade_borders(facade, "body"), gt::cells_body())
+  gt_tbl <- draw(gt_tbl, facade_borders(facade, "header"), list(gt::cells_column_labels(), gt::cells_column_spanners()))
+  gt_tbl <- draw(gt_tbl, facade_borders(facade, "spanner"), gt::cells_column_spanners())
+  gt_tbl <- draw(gt_tbl, facade_borders(facade, "border_header"), gt::cells_column_labels())
+
+  outer <- facade_borders(facade, "border_outer")
+  if (length(outer) == 0 || length(col_names) == 0) return(gt_tbl)
+
+  spanners <- spanners %||% stats::setNames(rep(NA_character_, length(col_names)), col_names)
+  # A header edge cell: the label, or the spanner above it when the column has one.
+  header_edge <- function(col) {
+    locs <- list(gt::cells_column_labels(columns = dplyr::all_of(col)))
+    if (!is.na(spanners[[col]])) locs <- c(locs, list(gt::cells_column_spanners(spanners = spanners[[col]])))
+    locs
+  }
+  first <- col_names[[1L]]
+  last <- col_names[[length(col_names)]]
+  unspanned <- col_names[is.na(spanners[col_names])]
+
+  top <- list(gt::cells_column_spanners())
+  if (length(unspanned) > 0) top <- c(top, list(gt::cells_column_labels(columns = dplyr::all_of(unspanned))))
+  bottom <- if (isTRUE(n_body_rows > 0L)) gt::cells_body(rows = n_body_rows) else gt::cells_column_labels()
+
+  gt_tbl <- draw(gt_tbl, outer[intersect("top", names(outer))], top)
+  gt_tbl <- draw(gt_tbl, outer[intersect("bottom", names(outer))], bottom)
+  gt_tbl <- draw(gt_tbl, outer[intersect("left", names(outer))],
+    c(header_edge(first), list(gt::cells_body(columns = dplyr::all_of(first)))))
+  gt_tbl <- draw(gt_tbl, outer[intersect("right", names(outer))],
+    c(header_edge(last), list(gt::cells_body(columns = dplyr::all_of(last)))))
 
   gt_tbl
 }
@@ -700,7 +751,7 @@ gt_apply_text_decoration <- function(gt_tbl, decoration, locations) {
 #' @param data A \code{tsg} or data frame, or a named list of them.
 #' @param path File path for the HTML output. A \code{.html} extension is added if missing.
 #'   When \code{separate_files = TRUE} the path (minus extension) is used as the directory.
-#' @param ... Additional arguments passed to \code{tsg_to_gt()}.
+#' @param ... Additional arguments passed to \code{as_gt()}.
 #' @param title Optional title string (overrides data attribute).
 #' @param subtitle Optional subtitle string.
 #' @param source_note Optional source note string.
@@ -710,7 +761,7 @@ gt_apply_text_decoration <- function(gt_tbl, decoration, locations) {
 #' @param include_table_list Logical. When \code{TRUE} and \code{data} is a named list
 #'   with \code{separate_files = FALSE}, prepends a clickable table of contents.
 #' @param names_separator Column name separator for spanners. Default \code{"__"}.
-#' @param facade Styling options. Defaults to the global tsg facade.
+#' @param facade A built-in facade name (e.g. \code{"booktabs"}; see [get_tsg_facade()]), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with [add_facade()] take precedence over it.
 #'
 #' @return Invisibly returns \code{NULL}.
 #' @export
@@ -729,6 +780,8 @@ write_html <- function(
   facade = get_tsg_facade(which = "html")
 ) {
 
+  rlang::check_installed("gt", reason = "to write HTML.")
+
   facade <- facade %||% get_tsg_facade(which = "html")
 
   if (!grepl("\\.html?$", path, ignore.case = TRUE)) {
@@ -737,6 +790,8 @@ write_html <- function(
 
   if (inherits(data, "list")) {
 
+    data <- flatten_tables(data)
+
     if (separate_files) {
 
       path_dir <- sub("\\.html?$", "", path, ignore.case = TRUE)
@@ -744,12 +799,12 @@ write_html <- function(
 
       for (i in seq_along(data)) {
         nm <- names(data)[i]
-        path_i <- file.path(path_dir, paste0(nm, ".html"))
+        path_i <- file.path(path_dir, paste0(xlsx_set_valid_sheet_name(nm, trim = FALSE), ".html"))
         data_i <- data[[i]]
         attrs_i <- attributes(data_i)
 
         title_i <- if (!is.null(title)) glue::glue("{title}: {nm}") else attrs_i$title
-        gt_tbl <- tsg_to_gt(
+        gt_tbl <- as_gt(
           data_i,
           title = title_i,
           subtitle = subtitle %||% attrs_i$subtitle,
@@ -764,18 +819,18 @@ write_html <- function(
     } else {
 
       html_parts <- character(0)
-      toc_items  <- character(0)
+      toc_items <- character(0)
 
       for (i in seq_along(data)) {
-        nm      <- names(data)[i] %||% as.character(i)
-        anchor  <- paste0("tsg-table-", i)
-        data_i  <- data[[i]]
+        nm <- names(data)[i] %||% as.character(i)
+        anchor <- paste0("tsg-table-", i)
+        data_i <- data[[i]]
         attrs_i <- attributes(data_i)
 
         title_i <- if (!is.null(title)) glue::glue("{title}: {nm}") else attrs_i$title
         display_label <- title_i %||% nm
 
-        gt_tbl <- tsg_to_gt(
+        gt_tbl <- as_gt(
           data_i,
           title = title_i,
           subtitle = subtitle %||% attrs_i$subtitle,
@@ -791,7 +846,7 @@ write_html <- function(
           '</section>'
         )
         html_parts <- c(html_parts, section_html)
-        toc_items  <- c(toc_items, paste0(
+        toc_items <- c(toc_items, paste0(
           '<li><a href="#', anchor, '">', .html_escape(display_label), '</a></li>'
         ))
       }
@@ -830,7 +885,7 @@ write_html <- function(
   } else {
 
     attrs <- attributes(data)
-    gt_tbl <- tsg_to_gt(
+    gt_tbl <- as_gt(
       data,
       title = title %||% attrs$title,
       subtitle = subtitle %||% attrs$subtitle,
@@ -859,7 +914,7 @@ write_html <- function(
 #' @param data A \code{tsg} or data frame, or a named list of them.
 #' @param path File path for the PDF output. A \code{.pdf} extension is added if missing.
 #'   When \code{data} is a list and \code{separate_files = TRUE}, this is used as a directory.
-#' @param ... Additional arguments passed to \code{tsg_to_gt()}.
+#' @param ... Additional arguments passed to \code{as_gt()}.
 #' @param title Optional title string (overrides data attribute).
 #' @param subtitle Optional subtitle string.
 #' @param source_note Optional source note string.
@@ -868,7 +923,7 @@ write_html <- function(
 #'   each table as a separate PDF file inside a subdirectory; \code{FALSE} merges them into
 #'   a single PDF (requires \pkg{qpdf}).
 #' @param names_separator Column name separator for spanners. Default \code{"__"}.
-#' @param facade Styling options. Defaults to the global tsg facade.
+#' @param facade A built-in facade name (e.g. \code{"booktabs"}; see [get_tsg_facade()]), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with [add_facade()] take precedence over it.
 #'
 #' @return Invisibly returns \code{NULL}.
 #' @export
@@ -886,16 +941,13 @@ write_pdf <- function(
   facade = get_tsg_facade(which = "html")
 ) {
 
-  if (!requireNamespace("webshot2", quietly = TRUE)) {
-    stop(
-      "Package 'webshot2' is required for PDF output. ",
-      "Install it with: install.packages('webshot2')"
-    )
-  }
+  rlang::check_installed(c("gt", "webshot2"), reason = "to write PDF.")
 
   facade <- facade %||% get_tsg_facade(which = "html")
 
   if (inherits(data, "list")) {
+
+    data <- flatten_tables(data)
 
     if (separate_files) {
 
@@ -903,13 +955,13 @@ write_pdf <- function(
       fs::dir_create(path_dir)
 
       for (i in seq_along(data)) {
-        nm     <- names(data)[i]
-        path_i <- file.path(path_dir, paste0(nm, ".pdf"))
+        nm <- names(data)[i]
+        path_i <- file.path(path_dir, paste0(xlsx_set_valid_sheet_name(nm, trim = FALSE), ".pdf"))
         data_i <- data[[i]]
         attrs_i <- attributes(data_i)
 
         title_i <- if (!is.null(title)) glue::glue("{title}: {nm}") else attrs_i$title
-        gt_tbl <- tsg_to_gt(
+        gt_tbl <- as_gt(
           data_i,
           title = title_i,
           subtitle = subtitle %||% attrs_i$subtitle,
@@ -933,13 +985,13 @@ write_pdf <- function(
 
       tmp_paths <- character(length(data))
       for (i in seq_along(data)) {
-        nm     <- names(data)[i] %||% as.character(i)
-        path_i <- file.path(tmp_dir, paste0(sprintf("%03d", i), "_", nm, ".pdf"))
+        nm <- names(data)[i] %||% as.character(i)
+        path_i <- file.path(tmp_dir, paste0(sprintf("%03d", i), "_", xlsx_set_valid_sheet_name(nm, trim = FALSE), ".pdf"))
         data_i <- data[[i]]
         attrs_i <- attributes(data_i)
 
         title_i <- if (!is.null(title)) glue::glue("{title}: {nm}") else attrs_i$title
-        gt_tbl <- tsg_to_gt(
+        gt_tbl <- as_gt(
           data_i,
           title = title_i,
           subtitle = subtitle %||% attrs_i$subtitle,
@@ -952,6 +1004,7 @@ write_pdf <- function(
         tmp_paths[i] <- path_i
       }
 
+      rlang::check_installed("qpdf", reason = "to combine PDF tables into one file.")
       qpdf::pdf_combine(input = tmp_paths, output = path)
     }
 
@@ -962,7 +1015,7 @@ write_pdf <- function(
     }
 
     attrs <- attributes(data)
-    gt_tbl <- tsg_to_gt(
+    gt_tbl <- as_gt(
       data,
       title = title %||% attrs$title,
       subtitle = subtitle %||% attrs$subtitle,
@@ -980,9 +1033,9 @@ write_pdf <- function(
 
 # Minimal HTML entity escaping for safe inline TOC labels.
 .html_escape <- function(x) {
-  x <- gsub("&",  "&amp;",  x, fixed = TRUE)
-  x <- gsub("<",  "&lt;",   x, fixed = TRUE)
-  x <- gsub(">",  "&gt;",   x, fixed = TRUE)
-  x <- gsub('"',  "&quot;", x, fixed = TRUE)
+  x <- gsub("&", "&amp;", x, fixed = TRUE)
+  x <- gsub("<", "&lt;", x, fixed = TRUE)
+  x <- gsub(">", "&gt;", x, fixed = TRUE)
+  x <- gsub('"', "&quot;", x, fixed = TRUE)
   x
 }

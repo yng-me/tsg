@@ -1,0 +1,22 @@
+# Dark facade: light text on a dark background, subtle row lines.
+# Unset keys come from default.yaml.
+
+border_outer.border: ~
+border_header.border: "bottom"
+border_header.borderColour: "#6B7280"
+border_header.borderStyle: "thin"
+
+header.border: ~
+header.fgFill: "#111827"
+header.fontColour: "#F9FAFB"
+header.textDecoration: "bold"
+
+body.border: "bottom"
+body.borderColour: "#374151"
+body.borderStyle: "thin"
+body.fgFill: "#1F2937"
+body.fontColour: "#E5E7EB"
+body.bandFill: "#273244"
+
+table.gridLines: false
+table.fontName: 'Arial'

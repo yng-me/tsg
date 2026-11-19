@@ -570,7 +570,7 @@ test_that("generate_crosstab add_total = FALSE removes total row (top)", {
 })
 
 test_that("generate_crosstab add_total_row = FALSE removes only the total row", {
-  result_with    <- generate_crosstab(mock_data, type, sex, add_total_row = TRUE)
+  result_with <- generate_crosstab(mock_data, type, sex, add_total_row = TRUE)
   result_without <- generate_crosstab(mock_data, type, sex, add_total_row = FALSE)
   expect_equal(nrow(result_without), nrow(result_with) - 1)
   expect_false(any(as.character(result_without$category) == "Total"))
@@ -635,7 +635,7 @@ test_that("add_column_label handles category values with regex special character
   # Category values containing "(", ")", "." should not break label extraction
   data_special <- dplyr::tibble(
     group = c("Yes (all)", "No (none)", "Yes (all)", "No (none)", "Yes (all)"),
-    sex   = c("Male", "Female", "Male", "Female", "Male")
+    sex = c("Male", "Female", "Male", "Female", "Male")
   )
   result <- generate_crosstab(data_special, group, sex,
     name_separator = "_", label_separator = "__")
@@ -668,15 +668,15 @@ test_that("get_header splits labels by fixed string, not regex", {
 # ─── multiple_columns feature ─────────────────────────────────────────────────
 
 mock_mc <- dplyr::tibble(
-  sex      = factor(c("M","F","M","F","M","F","M","F","M","F")),
-  seeing   = c(1,1,2,1,1,2,1,1,2,1),
-  hearing  = c(1,2,1,1,2,1,1,2,1,1),
-  walking  = c(2,1,1,1,1,2,1,1,2,1)
+  sex = factor(c("M","F","M","F","M","F","M","F","M","F")),
+  seeing = c(1,1,2,1,1,2,1,1,2,1),
+  hearing = c(1,2,1,1,2,1,1,2,1,1),
+  walking = c(2,1,1,1,1,2,1,1,2,1)
 )
 
 mock_mc_labelled <- dplyr::tibble(
-  sex     = haven::labelled(c(1,2,1,2,1,2,1,2), labels = c(Male=1, Female=2), label="Sex"),
-  seeing  = c(1,1,2,1,1,2,1,1),
+  sex = haven::labelled(c(1,2,1,2,1,2,1,2), labels = c(Male=1, Female=2), label="Sex"),
+  seeing = c(1,1,2,1,1,2,1,1),
   hearing = c(1,2,1,1,2,1,1,2)
 )
 
@@ -798,7 +798,7 @@ test_that("multiple_columns works with group_as_list", {
 
 test_that("multiple_columns works with calculate_per_group", {
   mock_grp <- dplyr::tibble(
-    sex    = factor(c("M","F","M","F","M","F","M","F","M","F","M","M")),
+    sex = factor(c("M","F","M","F","M","F","M","F","M","F","M","M")),
     region = factor(c("A","A","A","A","A","A","B","B","B","B","B","B")),
     seeing = c(1, 1, 2, 1, 1, 2, 1, 1, 1, 1, 1, 1),
     hearing = c(1, 2, 1, 1, 2, 1, 1, 2, 1, 1, 2, 1)
@@ -816,10 +816,10 @@ test_that("multiple_columns works with calculate_per_group", {
 # ── tidyselect support ────────────────────────────────────────────────────────
 
 mock_ts <- dplyr::tibble(
-  sex      = factor(c("M","F","M","F","M","F","M","F","M","F","M","M")),
-  col_see  = c(1L, 1L, 2L, 1L, 1L, 2L, 1L, 1L, 1L, 1L, 1L, 1L),
+  sex = factor(c("M","F","M","F","M","F","M","F","M","F","M","M")),
+  col_see = c(1L, 1L, 2L, 1L, 1L, 2L, 1L, 1L, 1L, 1L, 1L, 1L),
   col_hear = c(1L, 2L, 1L, 1L, 2L, 1L, 1L, 2L, 1L, 1L, 2L, 1L),
-  other    = c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L)
+  other = c(1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L, 1L)
 )
 
 test_that("tidyselect contains() works in regular crosstab mode", {
@@ -915,8 +915,8 @@ test_that("stacked mode wide columns are combinations of ... column categories w
     add_total = FALSE)
   # seeing in {1,2}, hearing in {1,2} -> up to 4 leaf combos; (2,2) is zero -> removed
   # Plus one subtotal per first-level category (seeing=1, seeing=2)
-  leaf_cols    <- grep("^frequency_[0-9]+_[0-9]+$", names(result), value = TRUE)
-  subtot_cols  <- grep("^frequency_[0-9]+$",        names(result), value = TRUE)
+  leaf_cols <- grep("^frequency_[0-9]+_[0-9]+$", names(result), value = TRUE)
+  subtot_cols <- grep("^frequency_[0-9]+$", names(result), value = TRUE)
   expect_true(length(leaf_cols) >= 1L)
   expect_true(length(subtot_cols) >= 1L)  # at least one subtotal per first-level cat
   # Subtotal columns contain exactly one index in suffix (no extra separator)
@@ -927,8 +927,8 @@ test_that("stacked mode column labels use label_separator between levels", {
   result <- generate_crosstab(mock_mc, sex, seeing, hearing,
     multiple_columns = TRUE, multiple_columns_type = "stacked",
     label_separator = "__", add_total = FALSE)
-  leaf_cols   <- grep("^frequency_[0-9]+_[0-9]+$", names(result), value = TRUE)
-  subtot_cols <- grep("^frequency_[0-9]+$",        names(result), value = TRUE)
+  leaf_cols <- grep("^frequency_[0-9]+_[0-9]+$", names(result), value = TRUE)
+  subtot_cols <- grep("^frequency_[0-9]+$", names(result), value = TRUE)
   # Leaf columns (2 indices) must have exactly 2 occurrences of "__"
   for (col in leaf_cols) {
     lbl <- attr(result[[col]], "label")
@@ -946,15 +946,15 @@ test_that("stacked mode column labels use label_separator between levels", {
     )
   }
   # Global ordering: ALL frequency columns (all groups) come before ANY percent column
-  col_names  <- names(result)
+  col_names <- names(result)
   freq_positions <- grep("^frequency_", col_names)
-  pct_positions  <- grep("^percent_",   col_names)
+  pct_positions <- grep("^percent_", col_names)
   expect_true(length(freq_positions) > 0 && length(pct_positions) > 0)
   expect_true(max(freq_positions) < min(pct_positions),
     info = "All frequency columns must precede all percent columns")
   # Within frequency block, group 1 subtotal and leaves come before group 2
-  freq_1_pos  <- which(col_names == "frequency_1")
-  freq_2_pos  <- which(col_names == "frequency_2")
+  freq_1_pos <- which(col_names == "frequency_1")
+  freq_2_pos <- which(col_names == "frequency_2")
   if (length(freq_1_pos) > 0 && length(freq_2_pos) > 0) {
     expect_true(freq_1_pos < freq_2_pos)
   }
@@ -969,7 +969,7 @@ test_that("stacked mode name_separator used in column names", {
   expect_true(length(leaf_cols) >= 1L)
   for (col in leaf_cols) {
     suffix <- sub("^frequency_", "", col)
-    n_sep  <- lengths(regmatches(suffix, gregexpr("_", suffix, fixed = TRUE)))
+    n_sep <- lengths(regmatches(suffix, gregexpr("_", suffix, fixed = TRUE)))
     expect_equal(n_sep, 1L, info = paste("Column:", col))
   }
 })
@@ -1067,4 +1067,111 @@ test_that("stacked mode with labelled x uses haven labels in category column", {
   # x = sex (labelled Male=1, Female=2); category col should contain labelled values
   expect_true(haven::is.labelled(result$category) || is.factor(result$category) ||
                 any(c("Male", "Female") %in% as.character(result$category)))
+})
+
+
+# --- Ported from the 0.2.0 branch ---
+
+test_that("generate_crosstab without column variables respects add_percent", {
+  # falls back to generate_frequency(), with a warning
+  result <- suppressWarnings(generate_crosstab(person_record, sex, add_percent = FALSE))
+  expect_false("percent" %in% names(result))
+})
+
+test_that("multi-x crosstab labels missing values and keeps the tsg class", {
+  result <- generate_crosstab(person_record, c(employed, seeing), hearing, metadata = list(title = "T"))
+  employed <- as.character(haven::as_factor(result$employed))
+
+  expect_true(inherits(result, "tsg"))
+  expect_equal(attr(result, "title"), "T")
+  expect_contains(employed, "Not reported")
+  expect_equal(sum(employed == "Total"), 1)
+  expect_equal(result$total[employed == "Total"], nrow(person_record))
+})
+
+test_that("add_total_row = FALSE drops the total row of every group", {
+  result <- person_record |>
+    dplyr::group_by(sex) |>
+    generate_crosstab(employed, seeing, add_total_row = FALSE)
+
+  expect_false("Total" %in% as.character(haven::as_factor(result$category)))
+})
+
+test_that("multi-x crosstab honours group_as_hierarchy", {
+  result <- person_record |>
+    dplyr::group_by(sex) |>
+    generate_crosstab(c(employed, seeing), hearing, group_as_hierarchy = TRUE)
+  ungrouped <- generate_crosstab(person_record, c(employed, seeing), hearing)
+
+  is_all <- as.character(haven::as_factor(result$sex)) == "All"
+  expect_equal(sum(result$frequency_1[is_all]), sum(ungrouped$frequency_1))
+})
+
+test_that("collapse_list combines column variables side by side", {
+  separate <- generate_crosstab(person_record, marital_status, sex, employed)
+  result <- generate_crosstab(person_record, marital_status, sex, employed, collapse_list = TRUE)
+
+  expect_true(inherits(result, "tsg"))
+  expect_equal(nrow(result), nrow(separate[[1]]))
+  expect_equal(sum(names(result) == "total"), 1)
+  expect_equal(result[["Sex__frequency_1"]], separate[[1]]$frequency_1, ignore_attr = TRUE)
+  expect_equal(attr(result[["Sex__frequency_1"]], "label"), "Sex__Frequency__Male")
+})
+
+test_that("multi-x crosstab works with a labelled character x without a variable label", {
+  data <- dplyr::mutate(
+    person_record,
+    emp = haven::labelled(c("a", "b")[as.integer(employed)], c(Yes = "a", No = "b"))
+  )
+  result <- generate_crosstab(data, c(emp, seeing), hearing)
+
+  expect_true(inherits(result, "tsg"))
+  expect_contains(as.character(haven::as_factor(result$emp)), c("Yes", "No", "Not reported"))
+})
+
+test_that("grouping by a numeric column with a group equal to 0 works", {
+  data <- dplyr::filter(person_record, age %in% 0:2) |> dplyr::group_by(age)
+  result <- generate_crosstab(data, marital_status, employed, group_as_list = TRUE)
+  expect_length(result, 3)
+})
+
+test_that("generate_crosstab() renames a group named category", {
+  d <- dplyr::tibble(category = c("a", "a", "b"), x = c("u", "v", "u"), z = c("p", "q", "p"))
+  grouped <- dplyr::group_by(d, category)
+
+  expect_message(out <- generate_crosstab(grouped, x, z), "category_group")
+  expect_equal(names(out)[1:2], c("category_group", "category"))
+  expect_equal(get_header(out)$category_group, "category_group")
+
+  out <- suppressMessages(generate_crosstab(grouped, x, z, group_as_list = TRUE))
+  expect_named(out, c("a", "b"))
+  expect_equal(attr(out, "groups"), "category_group")
+})
+
+test_that("the crosstab Total row never reuses a code the labels use", {
+  d <- dplyr::tibble(
+    q = haven::labelled(c(1L, 1L, 2L), c(None = 0L, Some = 1L, Many = 2L)),
+    s = c("M", "F", "M")
+  )
+  out <- generate_crosstab(d, q, s)
+  expect_equal(as.character(haven::as_factor(out$category)), c("Some", "Many", "Total"))
+})
+
+test_that("stacked multiple_columns keeps its stacked headers on grouped data (#13)", {
+  ungrouped <- generate_crosstab(
+    person_record, marital_status, seeing, hearing,
+    multiple_columns = TRUE, multiple_columns_type = "stacked"
+  )
+  grouped <- person_record |>
+    dplyr::group_by(sex) |>
+    generate_crosstab(
+      marital_status, seeing, hearing,
+      multiple_columns = TRUE, multiple_columns_type = "stacked"
+    )
+
+  labels <- function(x) vapply(x, function(col) attr(col, "label", exact = TRUE) %||% NA_character_, character(1))
+
+  expect_equal(setdiff(names(grouped), "sex"), names(ungrouped))
+  expect_equal(labels(grouped)[names(ungrouped)], labels(ungrouped))
+  expect_true(any(grepl("__", labels(grouped))))
 })

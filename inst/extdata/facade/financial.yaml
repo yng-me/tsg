@@ -1,0 +1,24 @@
+# Financial facade: dark blue header with white bold text, thin grey grid, bold last row.
+# Unset keys come from default.yaml.
+
+border_outer.border: ["top", "bottom", "left", "right"]
+border_outer.borderColour: "#1F3864"
+border_outer.borderStyle: "thin"
+border_header.border: ~
+
+header.border: ["top", "bottom", "left", "right"]
+header.borderColour: "#1F3864"
+header.borderStyle: "thin"
+header.fgFill: "#1F3864"
+header.fontColour: "#FFFFFF"
+header.textDecoration: "bold"
+header.halign: "center"
+
+body.border: ["top", "bottom", "left", "right"]
+body.borderColour: "#BFBFBF"
+body.borderStyle: "thin"
+body.indent: 1
+
+table.gridLines: false
+table.fontName: 'Calibri'
+table.lastRowBold: true

@@ -21,8 +21,16 @@
 #'
 
 add_row_total <- function(data, position = c("bottom", "top"), label_total = "Total", fill = "-") {
+  row_total(data, position, label_total, fill, groups = table_meta(data)$groups)
+}
 
-  nn_cols <- ncol(dplyr::select(data, dplyr::where(is.numeric)))
+# `col` is the category column whose total-row value gets `label_total`.
+row_total <- function(data, position = "bottom", label_total = "Total", fill = "-", col = NULL, groups = NULL) {
+
+  # Base R instead of dplyr::select(): this runs once per table and per group, and
+  # tidyselect's setup cost dominates on small tables.
+  is_num <- vapply(data, is.numeric, logical(1))
+  nn_cols <- sum(is_num)
 
   if(nn_cols == 0) {
     stop("No numeric columns in the dataset")
@@ -30,8 +38,6 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
 
   position <- match.arg(position[1], c("top", "bottom"))
 
-  col <- attributes(data)$category
-  groups <- attributes(data)$groups
   is_grouped_df <- FALSE
 
   if(!is.null(groups)) {
@@ -42,16 +48,15 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
     }
   }
 
-  exclude_cols <- unique(
-    c(
-      groups,
-      names(dplyr::select(data, -dplyr::where(is.numeric)))
-    )
-  )
+  # groups can name columns already split off (per-group tables); use only those present
+  groups <- intersect(groups, names(data))
+  if(length(groups) == 0) groups <- NULL
+
+  exclude_cols <- unique(c(groups, names(data)[!is_num]))
 
   if(!is.null(col)) {
     exclude_cols <- unique(c(exclude_cols, col))
-    data <- coerce_category(data, !!as.name(col))
+    data <- coerce_category(data, col)
   }
 
   total_row <-dplyr::summarise(
@@ -63,13 +68,10 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
     total_row <- coerce_total(total_row, col, data[[col]], label_total = label_total)
   }
 
-  total_row <- dplyr::select(total_row, dplyr::any_of(exclude_cols), dplyr::everything())
+  total_row <- move_cols_first(total_row, exclude_cols)
 
   if(!is.null(groups) & !is.null(col)) {
-    total_row <- data |>
-      dplyr::select(dplyr::all_of(groups)) |>
-      dplyr::first() |>
-      dplyr::bind_cols(total_row)
+    total_row <- dplyr::bind_cols(data[1, groups], total_row)
   } else if (length(exclude_cols) == 1 & is.null(col)) {
     total_row[[exclude_cols]] <- label_total
   }
@@ -86,7 +88,7 @@ add_row_total <- function(data, position = c("bottom", "top"), label_total = "To
     data <- dplyr::group_by(data, dplyr::pick(dplyr::all_of(groups)))
   }
 
-  data <- dplyr::select(data, dplyr::any_of(names_order))
+  data <- data[intersect(names_order, names(data))]
 
   if(is.null(col) & ncol(data) > nn_cols) {
 
@@ -177,10 +179,13 @@ add_footnote <- function(data, footnote, locations = NULL, placement = c("auto",
   if(!is.character(footnote)) stop("Footnote must be a character string.")
   if(length(footnote) > 1) stop("Footnote must be a single character string.")
 
+  existing <- attr(data, "footnotes")
+  if (!is.list(existing)) existing <- list(text = existing)
+
   value <- list(
-    text = c(attributes(data)$footnotes$text, footnote),
-    locations = c(attributes(data)$footnotes$locations, locations),
-    placement = c(attributes(data)$footnotes$placement, placement[1])
+    text = c(existing$text, footnote),
+    locations = c(existing$locations, locations),
+    placement = c(existing$placement, placement[1])
   )
 
   attr(data, "footnotes") <- value
@@ -262,18 +267,6 @@ add_table_subtitle <- function(data, subtitle) {
   attr(data, "subtitle") <- subtitle
 
   data
-}
-
-
-add_table_number <- function(data, table_number) {
-
-  if(!is.numeric(table_number)) stop("Table number must be numeric.")
-  if(length(table_number) > 1) stop("Table number must be a single numeric value.")
-
-  attr(data, "table_number") <- table_number
-
-  data
-
 }
 
 

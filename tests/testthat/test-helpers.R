@@ -156,3 +156,14 @@ test_that("convert_factor leaves non-labelled columns unchanged", {
   expect_equal(result$y, c(10, 20))
 })
 
+
+test_that("number_format_cols() picks decimal and whole-number columns after category", {
+  data <- data.frame(
+    group = c(2019, 2020), category = c(1.5, 2),
+    count = c(3, 4), share = c(42.5, 57.5), change = c(1.5, -0.5), n = 1:2
+  )
+  # the label columns are never formatted; fractions, even ones summing to a whole, get decimals
+  expect_equal(number_format_cols(data), list(integer = c("count", "n"), decimal = c("share", "change")))
+  # table.decimalCols: exactly the listed columns get decimals
+  expect_equal(number_format_cols(data, "count"), list(integer = c("share", "change", "n"), decimal = "count"))
+})

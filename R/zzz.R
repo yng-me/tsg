@@ -4,6 +4,8 @@ utils::globalVariables(
     ".",
     ":=",
     ".category",
+    ".var",
+    ".data",
     ".total_n",
     "category",
     "frequency",
@@ -16,21 +18,3 @@ utils::globalVariables(
   )
 )
 
-
-.onLoad <- function(libname, pkgname) {
-  op <- options()
-  op.tsg <- list(
-    tsg.options = list(
-      facade = list(
-        xlsx = "default",
-        pdf = "default",
-        html = "default"
-      )
-    )
-  )
-
-  to_set <- !(names(op.tsg) %in% names(op))
-  if (any(to_set)) options(op.tsg[to_set])
-
-  invisible()
-}

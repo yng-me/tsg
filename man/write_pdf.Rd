@@ -23,7 +23,7 @@ write_pdf(
 \item{path}{File path for the PDF output. A \code{.pdf} extension is added if missing.
 When \code{data} is a list and \code{separate_files = TRUE}, this is used as a directory.}
 
-\item{...}{Additional arguments passed to \code{tsg_to_gt()}.}
+\item{...}{Additional arguments passed to \code{as_gt()}.}
 
 \item{title}{Optional title string (overrides data attribute).}
 
@@ -39,7 +39,7 @@ a single PDF (requires \pkg{qpdf}).}
 
 \item{names_separator}{Column name separator for spanners. Default \code{"__"}.}
 
-\item{facade}{Styling options. Defaults to the global tsg facade.}
+\item{facade}{A built-in facade name (e.g. \code{"booktabs"}; see \code{\link[=get_tsg_facade]{get_tsg_facade()}}), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with \code{\link[=add_facade]{add_facade()}} take precedence over it.}
 }
 \value{
 Invisibly returns \code{NULL}.

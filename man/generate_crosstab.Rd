@@ -54,7 +54,7 @@ generate_crosstab(
 
 \item{add_percent}{Logical. If \code{TRUE}, adds percent or proportion values to the table.}
 
-\item{as_proportion}{Logical. If \code{TRUE}, displays proportions instead of percentages (range 0–1).}
+\item{as_proportion}{Logical. If \code{TRUE}, displays proportions instead of percentages (range 0 to 1).}
 
 \item{percent_by_column}{Logical. If \code{TRUE}, percentages are calculated by column; otherwise, by row.}
 
@@ -92,7 +92,7 @@ generate_crosstab(
 
 \item{sort_column_names}{Logical. If \code{TRUE}, sorts the column names in the output.}
 
-\item{collapse_list}{Logical (NOT YET IMPLEMENTED). If \code{TRUE} and \code{group_as_list = TRUE}, collapses the list of frequency tables into a single data frame with group identifiers. See also \code{\link[=collapse_list]{collapse_list()}}.}
+\item{collapse_list}{Logical. If \code{TRUE} and several column variables are given in \code{...}, combines their cross-tabulations side by side into one table, with each variable's columns under a spanner header. Ignored when \code{group_as_list = TRUE}.}
 
 \item{convert_factor}{Logical. If \code{TRUE}, converts labelled variables to factors in the output. See also \code{\link[=convert_factor]{convert_factor()}}.}
 

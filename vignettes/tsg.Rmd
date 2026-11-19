@@ -18,7 +18,7 @@ knitr::opts_chunk$set(
 library(tsg)
 ```
 
-`tsg` helps you turn a dataset into a publication-ready summary table — a count of each category, a two-way comparison, or anything in between — and save it to Excel in one short pipeline. No manual formatting required.
+`tsg` helps you turn a dataset into a publication-ready summary table (a count of each category, a two-way comparison, or anything in between) and save it to Excel in one short pipeline. No manual formatting required.
 
 This vignette walks through the most common tasks:
 
@@ -52,7 +52,7 @@ The result is a table with one row per category, plus a **Total** row at the bot
 
 ### Count several columns at once
 
-Pass more than one column name and you get back a list of tables — one per column.
+Pass more than one column name and you get back a list of tables, one per column.
 
 ```{r}
 person_record |>
@@ -77,14 +77,14 @@ Set `top_n_only = TRUE` to drop the "Others" row entirely and show only the top 
 person_record |>
   generate_frequency(
     marital_status, 
-    top_n      = 3,
+    top_n = 3,
     top_n_only = TRUE
   )
 ```
 
 ### Control how rows are sorted
 
-By default, rows are sorted by frequency (most common first). Set `sort_value = FALSE` to sort by the category values instead — useful for ordered variables like `age`.
+By default, rows are sorted by frequency (most common first). Set `sort_value = FALSE` to sort by the category values instead. This is useful for ordered variables like `age`.
 
 ```{r}
 person_record |>
@@ -134,16 +134,16 @@ person_record |>
 
 ### Other options
 
-- **Running totals** — add cumulative counts and percentages with `add_cumulative = TRUE` and `add_cumulative_percent = TRUE`.
-- **Proportions instead of percentages** — use `as_proportion = TRUE` to get values between 0 and 1.
-- **Total row at the top** — set `position_total = "top"` to move the Total row above the data rows.
-- **Custom total label** — use `label_total` to rename the "Total" row.
+- **Running totals**: add cumulative counts and percentages with `add_cumulative = TRUE` and `add_cumulative_percent = TRUE`.
+- **Proportions instead of percentages**: use `as_proportion = TRUE` to get values between 0 and 1.
+- **Total row at the top**: set `position_total = "top"` to move the Total row above the data rows.
+- **Custom total label**: use `label_total` to rename the "Total" row.
 
 ```{r}
 person_record |>
   generate_frequency(
     sex, 
-    add_cumulative         = TRUE, 
+    add_cumulative = TRUE, 
     add_cumulative_percent = TRUE 
   )
 ```
@@ -163,7 +163,7 @@ person_record |>
 
 ### Percentages by column instead of by row
 
-By default, percentages are calculated across each row (what share of each marital-status group is male vs. female?). Set `percent_by_column = TRUE` to flip this — percentages are then calculated down each column (what share of males is in each marital-status group?).
+By default, percentages are calculated across each row (what share of each marital-status group is male vs. female?). Set `percent_by_column = TRUE` to flip this: percentages are then calculated down each column (what share of males is in each marital-status group?).
 
 ```{r}
 person_record |>
@@ -176,7 +176,7 @@ person_record |>
 
 ### Cross-tabulate against several columns at once
 
-Pass more than one column after the row variable and you get a list of cross-tabs — one per column.
+Pass more than one column after the row variable and you get a list of cross-tabs, one per column.
 
 ```{r}
 person_record |>
@@ -193,7 +193,7 @@ person_record |>
 
 ### Other options
 
-The same options available for `generate_frequency()` also work in `generate_crosstab()` — `as_proportion`, `position_total`, `include_na`, `label_total`, and more.
+The same options available for `generate_frequency()` also work in `generate_crosstab()`: `as_proportion`, `position_total`, `include_na`, `label_total`, and more.
 
 ```{r}
 person_record |>
@@ -228,6 +228,43 @@ person_record |>
 
 ---
 
+## Summarise numeric columns
+
+`generate_summary()` computes descriptive statistics of numeric columns, with one row per column and one column per statistic.
+
+```{r}
+person_record |>
+  generate_summary(age)
+```
+
+Choose the statistics with `stats`: any of `n`, `n_missing`, `mean`, `sd`, `median`, `min`, `max`, `p25` and `p75`. Group with `group_by()` to summarise per group.
+
+```{r}
+person_record |>
+  dplyr::group_by(sex) |>
+  generate_summary(age, stats = c("n", "mean", "median", "p25", "p75"))
+```
+
+Categorical columns (character, factor, or with value labels) are not summarised; use `generate_frequency()` for them.
+
+---
+
+## Work with data in a database
+
+All three functions accept a database table, e.g. `dplyr::tbl()` on a connection. The counting (or the summary statistics) runs in the database, and only the result is pulled into R.
+
+```{r, eval=FALSE}
+con <- DBI::dbConnect(RSQLite::SQLite(), "survey.sqlite")
+
+dplyr::tbl(con, "person_record") |>
+  dplyr::group_by(region) |>
+  generate_frequency(sex)
+```
+
+A database has no variable or value labels, so categories show their stored values and `expand_categories` is ignored. A statistic the database cannot compute (SQLite has no `quantile()`, used by `p25` and `p75`) is an error naming it.
+
+---
+
 ## Save your table to a file
 
 Once you have a table, pipe it to `write_xlsx()` to save it as an Excel file.
@@ -254,22 +291,22 @@ person_record |>
 
 ### Change the look of your table
 
-Pass a built-in style with `get_tsg_facade()` to quickly change the visual appearance of your exported table. The package ships with two built-in styles: `"default"` (clean and neutral) and `"yolo"` (bolder colours).
+Pass the name of a built-in style as `facade` to change how your exported table looks. A style looks the same in Excel, HTML, PDF and Word. The package ships with thirteen, among them `"default"` (clean and neutral), `"yolo"` (bolder colours), `"apa"` (horizontal rules only, Times New Roman), `"booktabs"` (thick top and bottom rules, a thin rule under the header), `"striped"` (coloured header, banded rows) and `"gridded"` (thin lines around every cell).
 
 ```{r, eval=FALSE}
 person_record |>
   generate_frequency(sex) |>
   write_xlsx(
-    path   = "table-sex-styled.xlsx",
-    facade = get_tsg_facade("yolo")
+    path = "table-sex-styled.xlsx",
+    facade = "yolo"
   )
 ```
 
-For fine-grained control — changing specific fonts, colours, or cell sizes — see the [Customizing How Your Tables Look](facade.html) vignette.
+For the full list of styles and fine-grained control (changing specific fonts, colours, borders or cell sizes), see the [Customizing How Your Tables Look](facade.html) vignette.
 
 ### Save to other formats
 
-`tsg` can also save to HTML, PDF, and Word. The API is identical — just change the function name.
+`tsg` can also save to HTML, PDF, and Word. The API is identical; just change the function name.
 
 ```{r, eval=FALSE}
 tbl <- person_record |>
@@ -279,9 +316,12 @@ tbl <- person_record |>
 
 write_xlsx(tbl, path = "table.xlsx")   # Excel
 write_html(tbl, path = "table.html")   # HTML  (requires the gt package)
-write_pdf(tbl,  path = "table.pdf")    # PDF   (requires gt + webshot2)
+write_pdf(tbl, path = "table.pdf")    # PDF   (requires gt + webshot2)
 write_docx(tbl, path = "table.docx")  # Word  (requires officer + flextable)
+write_gsheet(tbl, "Marital status by sex")  # Google Sheets (requires googledrive)
 ```
 
-For a full guide to each format — including multi-sheet workbooks and managing metadata for large reports — see the [Saving and Sharing Your Tables](output-formats.html) vignette.
+Writing to Google Sheets needs a signed-in Google account; see the [Writing tables to Google Sheets](google-sheets.html) vignette.
+
+For a full guide to each format, including multi-sheet workbooks and managing metadata for large reports, see the [Saving and Sharing Your Tables](output-formats.html) vignette.
 

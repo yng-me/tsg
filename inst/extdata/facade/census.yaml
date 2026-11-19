@@ -1,0 +1,26 @@
+# Official-statistics facade: grey header, bold group titles, small italic notes.
+# Unset keys come from default.yaml.
+
+border_outer.border: ["top", "bottom"]
+border_outer.borderColour: "#404040"
+border_outer.borderStyle: "medium"
+border_header.border: "bottom"
+border_header.borderColour: "#404040"
+border_header.borderStyle: "thin"
+
+header.border: ~
+header.fgFill: "#E7E6E6"
+header.textDecoration: "bold"
+
+body.border: ~
+row_group.textDecoration: "bold"
+row_group.fgFill: "#F2F2F2"
+
+source_note.fontSize: 9
+source_note.textDecoration: "italic"
+footnotes.fontSize: 9
+footnotes.textDecoration: "italic"
+
+table.gridLines: false
+table.fontName: 'Arial'
+table.fontSize: 10

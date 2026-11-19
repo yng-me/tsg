@@ -98,7 +98,7 @@ xlsx_write_footnotes <- function(
 
   for (i in seq_len(n)) {
 
-    fn_text      <- footnotes$text[[i]]
+    fn_text <- footnotes$text[[i]]
     fn_placement <- footnotes$placement[[i]] %||% "auto"
 
     # For right-aligned footnotes, write starting from the right-most data column
@@ -109,9 +109,9 @@ xlsx_write_footnotes <- function(
     }
 
     openxlsx::writeData(
-      wb       = wb,
-      x        = fn_text,
-      sheet    = sheet_name,
+      wb = wb,
+      x = fn_text,
+      sheet = sheet_name,
       startRow = offset_row + i,
       startCol = start_col,
       colNames = FALSE
@@ -123,22 +123,22 @@ xlsx_write_footnotes <- function(
     footnote_style[["halign"]] <- fn_halign
 
     xlsx_eval_style(
-      wb         = wb,
+      wb = wb,
       sheet_name = sheet_name,
-      style      = footnote_style,
-      cols       = start_col,
-      rows       = offset_row + i
+      style = footnote_style,
+      cols = start_col,
+      rows = offset_row + i
     )
 
   }
 
   # Apply base footnote style to the whole footnote row range (for borders etc.)
   xlsx_eval_style(
-    wb         = wb,
+    wb = wb,
     sheet_name = sheet_name,
-    style      = extract_facade(facade, 'footnotes'),
-    cols       = (offset_col + 1L):(offset_col + max(1L, n_cols)),
-    rows       = (offset_row + 1L):(offset_row + n)
+    style = extract_facade(facade, 'footnotes'),
+    cols = (offset_col + 1L):(offset_col + max(1L, n_cols)),
+    rows = (offset_row + 1L):(offset_row + n)
   )
 
   attr(wb, "offset_row") <- n
@@ -148,9 +148,7 @@ xlsx_write_footnotes <- function(
 }
 
 
-resolve_source_note <- function(data, source_note) {
-
-  source_note <- source_note %||% attributes(data)$source_note
+resolve_source_note <- function(source_note) {
 
   if(!is.null(source_note)) {
     if(!grepl('^source', source_note, ignore.case = TRUE)) {

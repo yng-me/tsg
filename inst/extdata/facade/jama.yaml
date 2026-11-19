@@ -1,0 +1,23 @@
+# Medical-journal facade: horizontal rules only, bold sans-serif header, bold first column.
+# Unset keys come from default.yaml.
+
+border_outer.border: ["top", "bottom"]
+border_outer.borderColour: "#000000"
+border_outer.borderStyle: "medium"
+border_header.border: "bottom"
+border_header.borderColour: "#000000"
+border_header.borderStyle: "thin"
+
+header.border: ~
+header.fgFill: ~
+header.textDecoration: "bold"
+
+body.border: ~
+col_first.textDecoration: "bold"
+
+table.gridLines: false
+table.fontName: 'Arial'
+table.fontSize: 10
+
+# no side borders to keep text off: the first column lines up with the title and notes
+body.indent: 0

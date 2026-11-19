@@ -58,7 +58,7 @@ collapse_list <- function(
 
   pluck_col <- function(df) {
     if(length(pluck) == 1) {
-      cols_to_remove <- paste0("^", setdiff(c("frequency", "percent"), pluck), "_")
+      cols_to_remove <- paste0("^", setdiff(c("frequency", multiplier_col), pluck), "_")
       df <- dplyr::select(df, -dplyr::matches(cols_to_remove))
     }
     df
@@ -157,7 +157,7 @@ rename_label <- function(data, ...) {
 #'   remove_label()
 
 remove_label <- function(data, ...) {
-  clear_col_attrs(data, ..., attrs_to_clear = "label")
+  remove_column_attrs(data, "label", ...)
 }
 
 #' Remove all labels
@@ -182,46 +182,31 @@ remove_label <- function(data, ...) {
 #'   remove_labels()
 
 remove_labels <- function(data, ...) {
-  clear_col_attrs(data, ..., attrs_to_clear = c("label", "labels", "xlsx_label"))
+  remove_column_attrs(data, c("label", "labels", "label_xlsx"), ...)
 }
 
-clear_col_attrs <- function(data, ..., attrs_to_clear) {
+
+remove_column_attrs <- function(data, attrs, ...) {
 
   if(inherits(data, "list")) {
-
-    list_names <- names(data)
-
-    for(j in seq_along(list_names)) {
-      data[[list_names[j]]] <- clear_col_attrs(data[[list_names[j]]], ..., attrs_to_clear = attrs_to_clear)
+    for(j in names(data)) {
+      data[[j]] <- remove_column_attrs(data[[j]], attrs, ...)
     }
+    return(data)
+  }
 
-  } else {
+  cols <- names(data)
+  if(rlang::dots_n(...) > 0) {
+    cols <- names(dplyr::select(data, ...))
+  }
 
-    if(rlang::dots_n(...) == 0) {
-      data_labels <- data
-    } else {
-      data_labels <- dplyr::select(data, ...)
-    }
-
-    cols <- names(data_labels)
-
-    for(i in cols) {
-
-      if(i %in% names(data)) {
-
-        for(a in attrs_to_clear) {
-          attr(data[[i]], a) <- NULL
-        }
-
-      } else {
-        warning(paste0("Column '", i, "' not found in data."))
-      }
-
+  for(i in cols) {
+    for(a in attrs) {
+      attr(data[[i]], a) <- NULL
     }
   }
 
-  return(data)
-
+  data
 }
 
 
@@ -255,7 +240,10 @@ add_data_label <- function(data, labels) {
 }
 
 
-separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_total = TRUE, convert_factor = FALSE) {
+# Split the united `category` column of a multi-x crosstab back into its x columns.
+# A missing x value arrives as the string "NA"; the split total row leaves the other
+# x columns empty (NA).
+separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_total = TRUE, convert_factor = FALSE, label_na = "Not reported", recode_na = "auto") {
 
   if(inherits(data, "list")) {
     for(i in seq_along(data)) {
@@ -265,7 +253,9 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
         data_attrs = data_attrs,
         label_total = label_total,
         add_total = add_total,
-        convert_factor = convert_factor
+        convert_factor = convert_factor,
+        label_na = label_na,
+        recode_na = recode_na
       )
     }
 
@@ -273,6 +263,7 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
 
   } else {
 
+    original <- data
     data <- tidyr::separate(
       data,
       col = category,
@@ -285,6 +276,7 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
     for(i in seq_along(cols)) {
       col_name <- cols[i]
       data_attr <- data_attrs[[col_name]]
+      missing <- data[[col_name]] %in% "NA"
 
       if(!is.null(data_attr)) {
 
@@ -298,12 +290,14 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
             data[[col_name]] <- suppressWarnings(as.character(data[[col_name]]))
           }
 
+          data[[col_name]][missing] <- NA
           attr_labels <- data_attr$labels
+          is_total <- is.na(data[[col_name]]) & !missing
 
-          if(add_total) {
+          if(add_total & any(is_total)) {
             .value <- 0L
             if(min(as.integer(data[[col_name]]), na.rm = TRUE) == 0) { .value <- -1L }
-            data[[col_name]][is.na(data[[col_name]])] <- .value
+            data[[col_name]][is_total] <- .value
 
             attr_labels <- c(attr_labels, stats::setNames(.value, label_total))
 
@@ -315,7 +309,13 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
             labels = attr_labels
           )
 
+          if(any(missing)) {
+            data[[col_name]] <- add_missing_label(data[[col_name]], label_na = label_na, recode_na = recode_na)
+          }
+
         } else {
+          data[[col_name]][missing] <- label_na
+          if(add_total) { data[[col_name]][is.na(data[[col_name]])] <- label_total }
           attr(data[[col_name]], "label") <- data_attr$label
         }
       } else {
@@ -324,6 +324,11 @@ separate_cols <- function(data, cols, data_attrs, label_total = "Total", add_tot
     }
 
     if(convert_factor) { data <- convert_factor(data) }
+
+    # separate() drops the tsg class and table metadata
+    data <- copy_table_attrs(data, original)
+    class(data) <- class(original)
+
     return(data)
   }
 

@@ -3,32 +3,33 @@
 #' @description This function adds a facade to a \code{tsg} table object. A facade is a set of styling options that can be applied to the table to customize its appearance. For Excel output, see [openxlsx::createStyle()] for all valid values.
 #'
 #' @param data A tsg table object to which the facade will be added. This is typically a data frame or tibble that has been processed using tsg functions.
-#' @param table.offsetRow Row offset of the table
-#' @param table.offsetCol Column offset of the table
-#' @param table.gridLines Boolean indicating whether to show grid lines in the table
-#' @param table.tabColour Color of the table tab (Excel worksheet) in the output file. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").
-#' @param table.locked Logical indicating whether the table is locked.
-#' @param table.hidden Logical indicating whether the table (Excel worksheet) is hidden.
-#' @param table.decimalPrecision Numeric value indicating the number of decimal places to display in numeric columns.
-#' @param table.decimalCols Character vector of column names that should have decimal formatting applied.
-#' @param table.lastRowBold Logical indicating whether the last row of the table should be bold.
-#' @param table.widthOffset Numeric value indicating the width offset for the table.
-#' @param table.fontName,title.fontName,subtitle.fontName,header.fontName,spanner.fontName,body.fontName,row_group.fontName,col_first.fontName,col_last.fontName,source_note.fontName,footnotes.fontName Font name or font family for the table, title, subtitle, header, spanner, body, row group header, source note, and footnotes respectively.
-#' @param table.fontSize,title.fontSize,subtitle.fontSize,header.fontSize,spanner.fontSize,body.fontSize,col_first.fontSize,col_last.fontSize,row_group.fontSize,source_note.fontSize,footnotes.fontSize Font size for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.
-#' @param table.fontColour,title.fontColour,subtitle.fontColour,header.fontColour,spanner.fontColour,body.fontColour,col_first.fontColour,col_last.fontColour,row_group.fontColour,source_note.fontColour,footnotes.fontColour Font color for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").
-#' @param table.bgFill,title.bgFill,subtitle.bgFill,header.bgFill,spanner.bgFill,body.bgFill,col_first.bgFill,col_last.bgFill,row_group.bgFill,source_note.bgFill,footnotes.bgFill Background fill color for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").
-#' @param table.fgFill,title.fgFill,subtitle.fgFill,header.fgFill,spanner.fgFill,body.fgFill,col_first.fgFill,col_last.fgFill,row_group.fgFill,source_note.fgFill,footnotes.fgFill Foreground fill color for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red").
-#' @param table.halign,title.halign,subtitle.halign,header.halign,spanner.halign,body.halign,col_first.halign,col_last.halign,row_group.halign,source_note.halign,footnotes.halign Horizontal alignment for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be "left", "center", or "right".
-#' @param table.valign,title.valign,subtitle.valign,header.valign,spanner.valign,body.valign,col_first.valign,col_last.valign,row_group.valign,source_note.valign,footnotes.valign Vertical alignment for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be "top", "middle", or "bottom".
-#' @param table.wrapText,title.wrapText,subtitle.wrapText,header.wrapText,spanner.wrapText,body.wrapText,col_first.wrapText,col_last.wrapText,row_group.wrapText,source_note.wrapText,footnotes.wrapText Logical indicating whether to wrap text in the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.
-#' @param table.indent,title.indent,subtitle.indent,header.indent,spanner.indent,body.indent,col_first.indent,col_last.indent,row_group.indent,source_note.indent,footnotes.indent Indentation for the table, title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a numeric value indicating the number of spaces to indent. Defaults to NULL.
-#' @param title.border,subtitle.border,header.border,spanner.border,body.border,col_first.border,col_last.border,row_group.border,source_note.border,footnotes.border,border_header.border Border style for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a string representing the border style. The \code{border_header.border} is used for the header border style.
-#' @param title.borderColour,subtitle.borderColour,header.borderColour,spanner.borderColour,body.borderColour,col_first.borderColour,col_last.borderColour,row_group.borderColour,source_note.borderColour,footnotes.borderColour,border_header.borderColour,border_outer.borderColour Border color for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. Can be a hexadecimal color code (e.g., "#FF0000" for red) or a named color (e.g., "red"). The \code{border_header.borderColour} and \code{border_outer.borderColour} are used for the header and outer borders of the table.
-#' @param title.borderStyle,subtitle.borderStyle,header.borderStyle,spanner.borderStyle,body.borderStyle,col_first.borderStyle,col_last.borderStyle,row_group.borderStyle,source_note.borderStyle,footnotes.borderStyle,border_header.borderStyle Border style for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively. The \code{border_header.borderStyle} is used for the header border style.
-#' @param title.textDecoration,subtitle.textDecoration,header.textDecoration,spanner.textDecoration,body.textDecoration,col_first.textDecoration,col_last.textDecoration,row_group.textDecoration,source_note.textDecoration,footnotes.textDecoration Text decoration for the title, subtitle, header, spanner, body, first column, last column, row group header, source note, and footnotes respectively.
-#' @param body.numFmt,col_first.numFmt,col_last.numFmt Numeric format for the body, first column, and last column respectively. Can be a string representing the numeric format.
-#' @param title.height,subtitle.height,header.height,spanner.height,body.height,row_group.height,source_note.height,footnotes.height,border_bottom.height Height for the title, subtitle, header, spanner, body, row group, source note, footnotes, and bottom border of the table respectively. Can be a numeric value indicating the height in points.
-#' @param table.width,col_first.width,col_last.width,row_group.width Column widths for the table, first column, last column, and row group header respectively. Can be a numeric value indicating the width in points.
+#' @param ... Facade settings as \code{part.property = value} pairs, e.g. \code{header.fontSize = 12}. Valid keys are those of the default facade (see Details); an unknown key is an error. \code{NULL} values are ignored (they do not turn a setting off; use a facade file for that).
+#'
+#' @details
+#' Keys are \code{part.property}. The parts are \code{table}, \code{title}, \code{subtitle}, \code{header}, \code{spanner} (upper rows of a multi-level header), \code{body}, \code{col_first}, \code{col_last}, \code{row_group}, \code{sub_group}, \code{source_note}, \code{footnotes}, \code{border_header}, \code{border_outer}, \code{border_bottom} and \code{label}.
+#'
+#' Style properties follow [openxlsx::createStyle()]: \code{fontName}, \code{fontSize}, \code{fontColour}, \code{numFmt}, \code{border}, \code{borderColour}, \code{borderStyle}, \code{bgFill}, \code{fgFill}, \code{halign}, \code{valign}, \code{textDecoration}, \code{wrapText} and \code{indent}. \code{fgFill} is the fill colour of a cell; \code{bgFill} is the background of an Excel fill pattern and shows only behind one (HTML and Word use it when \code{fgFill} is unset). Colours are hexadecimal codes (e.g. \code{"#FF0000"}) or colour names. \code{border} is any of \code{"top"}, \code{"bottom"}, \code{"left"} and \code{"right"}; \code{borderStyle} uses the Excel names (\code{"thin"}, \code{"medium"}, \code{"thick"}, \code{"dashed"}, \code{"dotted"}, \code{"double"}, \code{"hair"}, \code{"mediumDashed"}, \code{"dashDot"}, ...) in every output format; HTML, PDF and Word translate them to their nearest line.
+#'
+#' The same keys style every output format. Settings that only mean something in a spreadsheet (\code{height}, \code{width}, \code{table.offsetRow}, \code{table.offsetCol}, \code{table.gridLines}, \code{table.tabColour}, \code{table.locked}, \code{table.hidden}, \code{table.widthOffset}, \code{indent}, \code{wrapText}) are ignored by HTML, PDF and Word.
+#'
+#' Layout properties:
+#' \itemize{
+#'   \item \code{height}: row height in points (\code{border_bottom.height} is the last header row of a multi-level header).
+#'   \item \code{width}: column width (\code{table.width} for all columns, \code{col_first.width} for the category column, \code{row_group.width} for grouping columns before it, \code{col_last.width} for the last). An unset (\code{~}) \code{col_first.width} or \code{row_group.width} fits the column's content.
+#'   \item \code{table.offsetRow}, \code{table.offsetCol}: rows and columns left empty before the table.
+#'   \item \code{table.gridLines}, \code{table.tabColour}, \code{table.hidden}: worksheet grid lines, tab colour and visibility.
+#'   \item \code{table.decimalPrecision}: decimal places for numeric columns with fractional values; other numbers are shown as whole numbers with thousands separators. The category and grouping columns are not formatted.
+#'   \item \code{table.decimalCols}: names of the columns to show with decimals (even when their values are whole); all other numeric columns are shown as whole numbers. The same in Excel, HTML, PDF and Word.
+#'   \item \code{table.lastRowBold}: bold last row.
+#'   \item \code{border_outer.border}: which outer sides of the table get a border, any of \code{"top"}, \code{"bottom"}, \code{"left"} and \code{"right"}.
+#'   \item \code{body.bandFill}: fill colour of every other body row (banded rows); off by default.
+#'   \item \code{table.widthOffset}: width of the offset columns.
+#'   \item \code{label.titleTableList}, \code{label.backHyperlink}: name of the table-list sheet and text of the link back to it.
+#' }
+#'
+#' In a facade file (or a \code{facade} list passed to a writer), a key set to \code{~} (\code{NULL}) turns that setting off instead of falling back to the default. In \code{add_facade()} a \code{NULL} value is ignored, so it cannot turn a setting off for one table.
+#'
+#' Use \code{generate_template(path, "facade")} to get a YAML file listing every key with its default.
 #'
 #' @returns A \code{tsg} object with the specified facade settings applied as attributes.
 #' @export
@@ -38,200 +39,30 @@
 #'  generate_frequency(sex) |>
 #'  add_facade(table.offsetRow = 2, table.offsetCol = 1)
 
-add_facade <- function(
-  data,
-  table.offsetRow = 0,
-  table.offsetCol = 0,
-  table.gridLines = NULL,
-  table.tabColour = NULL,
-  table.fontName = NULL,
-  table.fontSize = NULL,
-  table.fontColour = NULL,
-  table.bgFill = NULL,
-  table.fgFill = NULL,
-  table.halign = NULL,
-  table.valign = NULL,
-  table.wrapText = FALSE,
-  table.indent = NULL,
-  table.locked = NULL,
-  table.hidden = NULL,
-  table.decimalPrecision = NULL,
-  table.decimalCols = NULL,
-  table.lastRowBold = NULL,
-  table.width = NULL,
-  table.widthOffset = NULL,
-  title.fontName = NULL,
-  title.fontSize = NULL,
-  title.fontColour = NULL,
-  title.border = NULL,
-  title.borderColour = NULL,
-  title.borderStyle = NULL,
-  title.bgFill = NULL,
-  title.fgFill = NULL,
-  title.halign = NULL,
-  title.valign = NULL,
-  title.textDecoration = NULL,
-  title.wrapText = NULL,
-  title.indent = NULL,
-  title.height = NULL,
-  subtitle.fontName = NULL,
-  subtitle.fontSize = NULL,
-  subtitle.fontColour = NULL,
-  subtitle.border = NULL,
-  subtitle.borderColour = NULL,
-  subtitle.borderStyle = NULL,
-  subtitle.bgFill = NULL,
-  subtitle.fgFill = NULL,
-  subtitle.halign = NULL,
-  subtitle.valign = NULL,
-  subtitle.textDecoration = NULL,
-  subtitle.wrapText = NULL,
-  subtitle.indent = NULL,
-  subtitle.height = NULL,
-  header.fontName = NULL,
-  header.fontSize = NULL,
-  header.fontColour = NULL,
-  header.border = NULL,
-  header.borderColour = NULL,
-  header.borderStyle = NULL,
-  header.bgFill = NULL,
-  header.fgFill = NULL,
-  header.halign = NULL,
-  header.valign = NULL,
-  header.textDecoration = NULL,
-  header.wrapText = NULL,
-  header.indent = NULL,
-  header.height = NULL,
-  spanner.fontName = NULL,
-  spanner.fontSize = NULL,
-  spanner.fontColour = NULL,
-  spanner.border = NULL,
-  spanner.borderColour = NULL,
-  spanner.borderStyle = NULL,
-  spanner.bgFill = NULL,
-  spanner.fgFill = NULL,
-  spanner.halign = NULL,
-  spanner.valign = NULL,
-  spanner.textDecoration = NULL,
-  spanner.wrapText = NULL,
-  spanner.indent = NULL,
-  spanner.height = NULL,
-  body.fontName = NULL,
-  body.fontSize = NULL,
-  body.fontColour = NULL,
-  body.numFmt = NULL,
-  body.border = NULL,
-  body.borderColour = NULL,
-  body.borderStyle = NULL,
-  body.bgFill = NULL,
-  body.fgFill = NULL,
-  body.halign = NULL,
-  body.valign = NULL,
-  body.textDecoration = NULL,
-  body.wrapText = NULL,
-  body.indent = NULL,
-  body.height = NULL,
-  col_first.fontName = NULL,
-  col_first.fontSize = NULL,
-  col_first.fontColour = NULL,
-  col_first.numFmt = NULL,
-  col_first.border = NULL,
-  col_first.borderColour = NULL,
-  col_first.borderStyle = NULL,
-  col_first.bgFill = NULL,
-  col_first.fgFill = NULL,
-  col_first.halign = NULL,
-  col_first.valign = NULL,
-  col_first.textDecoration = NULL,
-  col_first.wrapText = NULL,
-  col_first.indent = NULL,
-  col_first.width = NULL,
-  col_last.fontName = NULL,
-  col_last.fontSize = NULL,
-  col_last.fontColour = NULL,
-  col_last.numFmt = NULL,
-  col_last.border = NULL,
-  col_last.borderColour = NULL,
-  col_last.borderStyle = NULL,
-  col_last.bgFill = NULL,
-  col_last.fgFill = NULL,
-  col_last.halign = NULL,
-  col_last.valign = NULL,
-  col_last.textDecoration = NULL,
-  col_last.wrapText = NULL,
-  col_last.indent = NULL,
-  col_last.width = NULL,
-  row_group.fontName = NULL,
-  row_group.fontSize = NULL,
-  row_group.fontColour = NULL,
-  row_group.border = NULL,
-  row_group.borderColour = NULL,
-  row_group.borderStyle = NULL,
-  row_group.bgFill = NULL,
-  row_group.fgFill = NULL,
-  row_group.halign = NULL,
-  row_group.valign = NULL,
-  row_group.textDecoration = NULL,
-  row_group.wrapText = NULL,
-  row_group.indent = NULL,
-  row_group.width = NULL,
-  row_group.height = NULL,
-  source_note.fontName = NULL,
-  source_note.fontSize = NULL,
-  source_note.fontColour = NULL,
-  source_note.border = NULL,
-  source_note.borderColour = NULL,
-  source_note.borderStyle = NULL,
-  source_note.bgFill = NULL,
-  source_note.fgFill = NULL,
-  source_note.halign = NULL,
-  source_note.valign = NULL,
-  source_note.textDecoration = NULL,
-  source_note.wrapText = NULL,
-  source_note.indent = NULL,
-  source_note.height = NULL,
-  footnotes.fontName = NULL,
-  footnotes.fontSize = NULL,
-  footnotes.fontColour = NULL,
-  footnotes.border = NULL,
-  footnotes.borderColour = NULL,
-  footnotes.borderStyle = NULL,
-  footnotes.bgFill = NULL,
-  footnotes.fgFill = NULL,
-  footnotes.halign = NULL,
-  footnotes.valign = NULL,
-  footnotes.textDecoration = NULL,
-  footnotes.wrapText = NULL,
-  footnotes.indent = NULL,
-  footnotes.height = NULL,
-  border_header.border = NULL,
-  border_header.borderColour = NULL,
-  border_header.borderStyle = NULL,
-  border_outer.borderColour = NULL,
-  border_bottom.height = NULL
-) {
+add_facade <- function(data, ...) {
 
-  args <- as.list(match.call())[-1]
-  args$data <- NULL
-  args <- purrr::discard(args, is.null)
+  args <- list(...)
+  keys <- names(args)
 
-  existing_facade <- attributes(data)$facade
-
-  if (is.null(existing_facade)) {
-    attr(data, "facade") <- args
-  } else {
-    attr(data, "facade") <- utils::modifyList(existing_facade, args)
+  if(length(args) > 0 & (is.null(keys) | any(keys == ""))) {
+    stop("All facade settings must be named, e.g. `header.fontSize = 12`.")
   }
 
-  return(data)
+  unknown <- setdiff(keys, names(get_tsg_facade()))
+  if(length(unknown) > 0) {
+    stop("Unknown facade setting(s): ", paste0("`", unknown, "`", collapse = ", "))
+  }
 
+  merge_facade_attr(data, args)
 }
 
 
 #' Get a facade from the package or a file
 #'
-#' @param facade A character string specifying the name of the facade to retrieve. Defaults to "default". The facade is a YAML file that defines the styling and layout of the table
-#' @param which A character string specifying the format of the facade to retrieve. Options are "xlsx", "pdf", or "html". Defaults to "xlsx".
+#' @param facade A character string specifying the name of the facade to retrieve. Defaults to "default". Built-in facades: \code{"default"}, \code{"yolo"}, \code{"apa"} (horizontal rules only, Times New Roman), \code{"booktabs"} (thick top and bottom rules, thin rule under the header), \code{"striped"} (coloured header, banded rows) \code{"gridded"} (thin lines around every cell), \code{"minimal"} (no borders or fills), \code{"financial"} (dark blue header, grid, bold last row), \code{"nyt"} (editorial, banded), \code{"jama"} (medical journal, horizontal rules), \code{"dark"} (light text on dark), \code{"pastel"} (soft blue accents) and \code{"census"} (grey header, small italic notes). An unknown name is an error. Or the path to a \code{.yaml} or \code{.json} facade file.
+#'
+#' Every built-in facade is one file shared by all output formats, so a table looks the same in Excel, HTML, PDF and Word. Only \code{"default"} differs per format; the other facades are laid over that format's default. Spreadsheet-only settings (row heights, column widths, grid lines, tab colour, sheet offsets, cell locking) are ignored outside Excel.
+#' @param which The output format whose default facade to use: \code{"xlsx"} (default), \code{"html"}, \code{"pdf"} (same as \code{"html"}) or \code{"docx"}. It only changes the result for \code{"default"}.
 #'
 #' @returns A list containing the facade settings for the specified format. The facade includes styling attributes such as font size, color, border styles, and background fills for different parts of the table.
 #' @export
@@ -241,8 +72,9 @@ add_facade <- function(
 #' # Default facade
 #' get_tsg_facade()
 #'
-#' # Other built-in facade
+#' # Other built-in facades
 #' get_tsg_facade("yolo")
+#' get_tsg_facade("booktabs")
 
 get_tsg_facade <- function(facade = "default", which = c("xlsx", "html", "docx", "pdf")) {
 
@@ -254,23 +86,40 @@ get_tsg_facade <- function(facade = "default", which = c("xlsx", "html", "docx",
     }
   }
 
-  match.arg(which, several.ok = FALSE)
-  facade_path <- system.file("extdata", file.path("facade", which[1], paste0(facade, ".yaml")), package = "tsg")
+  which <- match.arg(which)
+  # PDF is rendered from the gt (html) table, so it shares the html default facade.
+  if(which == "pdf") which <- "html"
 
-  if(!file.exists(facade_path)) {
-    facade_path <- system.file("extdata", file.path("facade", which[1], "default.yaml"), package = "tsg")
+  # One file per built-in facade serves every format (adr/0002); only the default differs.
+  facade_dir <- system.file("extdata", "facade", package = "tsg")
+  facade_path <- if(identical(facade, "default")) {
+    file.path(facade_dir, "default", paste0(which, ".yaml"))
+  } else {
+    file.path(facade_dir, paste0(facade, ".yaml"))
   }
 
-  facade <- yaml::read_yaml(facade_path)
-  attr(facade, "source") <- "built-in"
-  facade
+  if(!file.exists(facade_path)) {
+    names <- c("default", sub("\\.yaml$", "", list.files(facade_dir, pattern = "\\.yaml$")))
+    stop(
+      "Unknown facade `", facade, "`. Built-in facades: ", paste(names, collapse = ", "),
+      ". Or give the path to a .yaml or .json facade file.",
+      call. = FALSE
+    )
+  }
 
+  # Built-in facades never change in a session; write_xlsx() resolves one per table.
+  facade_cache[[facade_path]] <- facade_cache[[facade_path]] %||% yaml::read_yaml(facade_path)
+  facade_cache[[facade_path]]
 }
+
+facade_cache <- new.env(parent = emptyenv())
 
 
 #' Add a facade to a tsg table (alternative way)
 #'
-#' @description This function adds a facade to a \code{tsg}, an alternative way to allow dynamic values and programmatic evaluation.
+#' @description `r lifecycle::badge("deprecated")`
+#'
+#' [add_facade()] now evaluates its arguments, so this alternative is no longer needed.
 #'
 #' @param data a \code{tsg} data frame
 #' @param ... List of supported facade items (see [tsg::add_facade()])
@@ -284,77 +133,103 @@ get_tsg_facade <- function(facade = "default", which = c("xlsx", "html", "docx",
 #'  add_facade_alt(table.offsetRow = 2, table.offsetCol = 1)
 
 add_facade_alt <- function(data, ...) {
-  dots <- list(...)
-  args <- purrr::discard(dots, is.null)
+  lifecycle::deprecate_soft("0.2.0", "add_facade_alt()", "add_facade()")
+  add_facade(data, ...)
+}
 
-  existing_facade <- attributes(data)$facade
 
-  if (is.null(existing_facade)) {
-    attr(data, "facade") <- args
-  } else {
-    attr(data, "facade") <- utils::modifyList(existing_facade, args)
-  }
-
+merge_facade_attr <- function(data, args) {
+  args <- purrr::discard(args, is.null)
+  attr(data, "facade") <- utils::modifyList(attr(data, "facade") %||% list(), args)
   data
 }
 
 
 extract_facade <- function(facade, key, which = NULL) {
 
-  facade <- facade |>
-    purrr::discard(is.null) |>
-    convert_to_nested_list() |>
-    purrr::pluck(key)
+  prefix <- paste0(key, ".")
+  keys <- names(facade)[startsWith(names(facade), prefix)]
+  props <- purrr::discard(stats::setNames(facade[keys], substring(keys, nchar(prefix) + 1)), is.null)
 
-  if(is.null(which)) {
-
-    facade[
-      names(facade) %in% c(
-        "fontName",
-        "fontSize",
-        "fontColour",
-        "numFmt",
-        "border",
-        "borderColour",
-        "borderStyle",
-        "bgFill",
-        "fgFill",
-        "halign",
-        "valign",
-        "textDecoration",
-        "wrapText",
-        "textRotation",
-        "indent",
-        "locked",
-        "hidden"
-      )
-    ]
-  } else {
-    return(facade[[which]])
+  if(!is.null(which)) {
+    return(props[[which]])
   }
 
+  props[
+    names(props) %in% c(
+      "fontName",
+      "fontSize",
+      "fontColour",
+      "numFmt",
+      "border",
+      "borderColour",
+      "borderStyle",
+      "bgFill",
+      "fgFill",
+      "halign",
+      "valign",
+      "textDecoration",
+      "wrapText",
+      "textRotation",
+      "indent",
+      "locked",
+      "hidden"
+    )
+  ]
 }
 
 
-resolve_facade <- function(facade, attrs, which = "xlsx") {
-
-  facade_source <- attributes(facade)$source
-
-  if(!is.null(attrs)) {
-    if(is.null(facade_source)) {
-      facade <- utils::modifyList(attrs, facade)
-    } else if (facade_source == "built-in") {
-      facade <- utils::modifyList(facade, attrs)
-    } else {
-      facade <- utils::modifyList(get_tsg_facade(which = which), facade)
-    }
+# Precedence, least to most specific: built-in default < facade given to the writer
+# < add_facade() on the list < add_facade() on the table.
+# A key set to ~ (NULL) turns that setting off; it is kept as NULL rather than
+# dropped (as modifyList() would), so resolving again cannot bring the default back.
+resolve_facade <- function(facade, attrs = NULL, which = "xlsx") {
+  out <- get_tsg_facade(which = which)
+  # A built-in facade name or a .yaml/.json path, as well as a list.
+  if(is.character(facade)) facade <- get_tsg_facade(facade, which = which)
+  for(layer in list(facade, attrs)) {
+    out[names(layer)] <- layer
   }
-
-  facade
-
+  out
 }
 
 
+# Excel border style names (the facade's vocabulary, adr/0002) as a CSS line style and
+# a width in px; the docx writer converts px to pt. CSS has no dash-dot, so those dash.
+border_lines <- list(
+  thin = c("solid", 1), hair = c("solid", 1), medium = c("solid", 2), thick = c("solid", 3),
+  dashed = c("dashed", 1), mediumDashed = c("dashed", 2), dotted = c("dotted", 1),
+  double = c("double", 3), dashDot = c("dashed", 1), mediumDashDot = c("dashed", 2),
+  dashDotDot = c("dashed", 1), mediumDashDotDot = c("dashed", 2), slantDashDot = c("dashed", 2)
+)
 
+# The borders `part.border` asks for, as list(<side> = list(style, width, color)), for
+# writers other than xlsx. Sides may be a vector or openxlsx's joined form ("TopBottom");
+# borderStyle and borderColour pair with the sides in order, as in openxlsx::createStyle().
+facade_borders <- function(facade, part) {
+  sides <- facade[[paste0(part, ".border")]]
+  if (length(sides) == 0) return(list())
 
+  sides <- tolower(unlist(strsplit(gsub("([a-z])([A-Z])", "\\1 \\2", sides), " ")))
+  sides <- intersect(sides, c("top", "bottom", "left", "right"))
+  styles <- rep_len(facade[[paste0(part, ".borderStyle")]] %||% "thin", length(sides))
+  colours <- rep_len(facade[[paste0(part, ".borderColour")]] %||% "black", length(sides))
 
+  unknown <- setdiff(styles, c("none", names(border_lines)))
+  if (length(unknown) > 0) {
+    stop(
+      "Unknown `", part, ".borderStyle`: ", paste0("\"", unknown, "\"", collapse = ", "),
+      ". Use one of: ", paste0("\"", names(border_lines), "\"", collapse = ", "), ".",
+      call. = FALSE
+    )
+  }
+
+  keep <- styles != "none"
+  stats::setNames(
+    purrr::map2(styles[keep], colours[keep], function(style, colour) {
+      line <- border_lines[[style]]
+      list(style = line[[1]], width = as.numeric(line[[2]]), color = colour)
+    }),
+    sides[keep]
+  )
+}

@@ -19,15 +19,20 @@ test_that("generate_output errors on invalid format", {
   expect_error(generate_output(data, tempfile(), format = "csv"))
 })
 
-test_that("generate_output errors for xlsx with too-deep data structure", {
+test_that("generate_output writes deeply nested and unnamed lists", {
+  # unnamed items get sheet names by position instead of writing an empty workbook
   deep <- list(list(list(list(list(data.frame(x = 1))))))
-  expect_error(
-    generate_output(deep, tempfile(fileext = ".xlsx"), format = "xlsx"),
-    "too deep"
-  )
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  expect_no_warning(generate_output(deep, path, format = "xlsx"))
+  expect_equal(openxlsx::getSheetNames(path), "Table 1")
+
+  flat <- withr::local_tempfile(fileext = ".xlsx")
+  write_xlsx(list(data.frame(x = 1), b = data.frame(x = 2)), flat)
+  expect_equal(openxlsx::getSheetNames(flat), c("Table 1", "b"))
 })
 
 test_that("generate_output format = 'html' writes a file", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B", "A")), x)
   path <- tempfile(fileext = ".html")
   generate_output(data, path, format = "html")
@@ -36,6 +41,7 @@ test_that("generate_output format = 'html' writes a file", {
 })
 
 test_that("generate_output format = 'html' file contains table content", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B", "A")), x)
   path <- tempfile(fileext = ".html")
   generate_output(data, path, format = "html")
@@ -45,6 +51,7 @@ test_that("generate_output format = 'html' file contains table content", {
 })
 
 test_that("generate_output format = 'html' list writes stacked single file", {
+  skip_if_not_installed("gt")
   data_list <- list(
     a = generate_frequency(dplyr::tibble(x = c("A", "B")), x),
     b = generate_frequency(dplyr::tibble(x = c("C", "D")), x)
@@ -59,6 +66,7 @@ test_that("generate_output format = 'html' list writes stacked single file", {
 })
 
 test_that("write_html list with separate_files writes directory of files", {
+  skip_if_not_installed("gt")
   data_list <- list(
     table_a = generate_frequency(dplyr::tibble(x = c("A", "B")), x),
     table_b = generate_frequency(dplyr::tibble(x = c("C", "D")), x)
@@ -71,6 +79,7 @@ test_that("write_html list with separate_files writes directory of files", {
 })
 
 test_that("write_html adds .html extension when missing", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
   path_no_ext <- tempfile()
   write_html(data, path_no_ext)
@@ -79,6 +88,7 @@ test_that("write_html adds .html extension when missing", {
 })
 
 test_that("write_html stacked list contains section separators", {
+  skip_if_not_installed("gt")
   data_list <- list(
     a = generate_frequency(dplyr::tibble(x = c("A", "B")), x),
     b = generate_frequency(dplyr::tibble(x = c("C", "D")), x)
@@ -91,6 +101,7 @@ test_that("write_html stacked list contains section separators", {
 })
 
 test_that("write_html passes title to each table in stacked list", {
+  skip_if_not_installed("gt")
   data_list <- list(
     foo = generate_frequency(dplyr::tibble(x = c("A", "B")), x),
     bar = generate_frequency(dplyr::tibble(x = c("C", "D")), x)
@@ -104,6 +115,7 @@ test_that("write_html passes title to each table in stacked list", {
 })
 
 test_that("write_html uses title/source_note from data attributes", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(
     dplyr::tibble(x = c("A", "B")), x,
     metadata = list(title = "Attr Title", source_note = "Attr Source")
@@ -117,8 +129,9 @@ test_that("write_html uses title/source_note from data attributes", {
 })
 
 test_that("generate_output format = 'pdf' writes a file", {
+  skip_if_not_installed("gt")
   skip_on_cran()
-  skip_if_not_installed("webshot2")
+  skip_if_no_chrome()
   data <- generate_frequency(dplyr::tibble(x = c("A", "B", "A")), x)
   path <- tempfile(fileext = ".pdf")
   generate_output(data, path, format = "pdf")
@@ -127,8 +140,9 @@ test_that("generate_output format = 'pdf' writes a file", {
 })
 
 test_that("write_pdf list writes separate files in directory", {
+  skip_if_not_installed("gt")
   skip_on_cran()
-  skip_if_not_installed("webshot2")
+  skip_if_no_chrome()
   data_list <- list(
     t1 = generate_frequency(dplyr::tibble(x = c("A", "B")), x),
     t2 = generate_frequency(dplyr::tibble(x = c("C", "D")), x)
@@ -141,8 +155,9 @@ test_that("write_pdf list writes separate files in directory", {
 })
 
 test_that("write_pdf adds .pdf extension when missing", {
+  skip_if_not_installed("gt")
   skip_on_cran()
-  skip_if_not_installed("webshot2")
+  skip_if_no_chrome()
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
   path_no_ext <- tempfile()
   write_pdf(data, path_no_ext)
@@ -151,6 +166,8 @@ test_that("write_pdf adds .pdf extension when missing", {
 })
 
 test_that("generate_output format = 'word' calls write_docx", {
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
   path <- tempfile(fileext = ".docx")
   generate_output(data, path, format = "word")
@@ -182,7 +199,8 @@ test_that("create_table_list uses title attribute when present", {
   data_list <- list(foo = item)
   result <- create_table_list(data_list)
   expect_equal(result$title[1], "My Special Table")
-  expect_equal(result$table_id[1], "My Special Table")
+  # table_id is the list name, so it matches the sheet write_xlsx() creates
+  expect_equal(result$table_id[1], "foo")
 })
 
 test_that("create_table_list falls back to list name when title attr absent", {
@@ -205,88 +223,98 @@ test_that("create_table_list assigns sequential table_number", {
   expect_equal(result$table_number, 1:3)
 })
 
-# ── tsg_to_gt() ──────────────────────────────────────────────────────────────
+# ── as_gt() ──────────────────────────────────────────────────────────────
 
-test_that("tsg_to_gt returns a gt object", {
+test_that("as_gt returns a gt object", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B", "A")), x)
-  gt_tbl <- tsg_to_gt(data, title = "Test Title")
+  gt_tbl <- as_gt(data, title = "Test Title")
   expect_s3_class(gt_tbl, "gt_tbl")
 })
 
-test_that("tsg_to_gt attaches title and source_note", {
+test_that("as_gt attaches title and source_note", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B", "A")), x)
-  gt_tbl <- tsg_to_gt(data, title = "My Title", source_note = "Source: test")
+  gt_tbl <- as_gt(data, title = "My Title", source_note = "Source: test")
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("My Title", html))
   expect_true(grepl("Source: test", html))
 })
 
-test_that("tsg_to_gt attaches subtitle", {
+test_that("as_gt attaches subtitle", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
-  gt_tbl <- tsg_to_gt(data, title = "T", subtitle = "My Subtitle")
+  gt_tbl <- as_gt(data, title = "T", subtitle = "My Subtitle")
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("My Subtitle", html))
 })
 
-test_that("tsg_to_gt attaches footnotes", {
+test_that("as_gt attaches footnotes", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
-  gt_tbl <- tsg_to_gt(data, footnotes = c("Note one", "Note two"))
+  gt_tbl <- as_gt(data, footnotes = c("Note one", "Note two"))
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("Note one", html))
   expect_true(grepl("Note two", html))
 })
 
-test_that("tsg_to_gt reads metadata from data attributes", {
+test_that("as_gt reads metadata from data attributes", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(
     dplyr::tibble(x = c("A", "B")), x,
     metadata = list(title = "AttrTitle", source_note = "AttrSource")
   )
-  gt_tbl <- tsg_to_gt(data)
+  gt_tbl <- as_gt(data)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("AttrTitle", html))
   expect_true(grepl("AttrSource", html))
 })
 
-test_that("tsg_to_gt explicit args override data attributes", {
+test_that("as_gt explicit args override data attributes", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(
     dplyr::tibble(x = c("A", "B")), x,
     metadata = list(title = "AttrTitle")
   )
-  gt_tbl <- tsg_to_gt(data, title = "ExplicitTitle")
+  gt_tbl <- as_gt(data, title = "ExplicitTitle")
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("ExplicitTitle", html))
   expect_false(grepl("AttrTitle", html))
 })
 
-test_that("tsg_to_gt with no title or subtitle adds no heading", {
+test_that("as_gt with no title or subtitle adds no heading", {
+  skip_if_not_installed("gt")
   data <- dplyr::tibble(x = c("A", "B"), n = c(1L, 2L))
-  gt_tbl <- tsg_to_gt(data, facade = NULL)
+  gt_tbl <- as_gt(data, facade = NULL)
   html <- gt::as_raw_html(gt_tbl)
   expect_false(grepl("gt_heading", html))
 })
 
-test_that("tsg_to_gt with NULL facade returns valid gt object", {
+test_that("as_gt with NULL facade returns valid gt object", {
+  skip_if_not_installed("gt")
   data <- dplyr::tibble(x = c("A", "B"), n = c(1L, 2L))
-  expect_s3_class(tsg_to_gt(data, facade = NULL), "gt_tbl")
+  expect_s3_class(as_gt(data, facade = NULL), "gt_tbl")
 })
 
-test_that("tsg_to_gt applies spanners for __ separated column names", {
+test_that("as_gt applies spanners for __ separated column names", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(
     category = c("A", "B"),
     `Male__Count` = c(10L, 20L),
     `Male__Percent` = c(33.3, 66.7)
   )
-  gt_tbl <- tsg_to_gt(df, facade = NULL)
+  gt_tbl <- as_gt(df, facade = NULL)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("Male", html))
   expect_true(grepl("Count", html))
 })
 
-test_that("tsg_to_gt applies facade header background color", {
+test_that("as_gt applies facade header background color", {
+  skip_if_not_installed("gt")
   data <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
   facade <- get_tsg_facade()
   facade$header.fgFill <- "#FF0000"
-  gt_tbl <- tsg_to_gt(data, facade = facade)
+  gt_tbl <- as_gt(data, facade = facade)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("FF0000", html, ignore.case = TRUE))
 })
@@ -294,6 +322,7 @@ test_that("tsg_to_gt applies facade header background color", {
 # ── gt_apply_spanners() ──────────────────────────────────────────────────────
 
 test_that("gt_apply_spanners returns unchanged gt_tbl when no separator present", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = c("A", "B"), n = c(1L, 2L))
   base_tbl <- gt::gt(df)
   result <- gt_apply_spanners(base_tbl, names(df), "__")
@@ -301,6 +330,7 @@ test_that("gt_apply_spanners returns unchanged gt_tbl when no separator present"
 })
 
 test_that("gt_apply_spanners creates spanner labels in HTML", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(
     cat = c("A", "B"),
     `Sex__Male` = c(10L, 20L),
@@ -315,6 +345,7 @@ test_that("gt_apply_spanners creates spanner labels in HTML", {
 })
 
 test_that("gt_apply_spanners handles multiple distinct spanner groups", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(
     cat = "A",
     `Age__Under 18` = 1L,
@@ -330,6 +361,7 @@ test_that("gt_apply_spanners handles multiple distinct spanner groups", {
 })
 
 test_that("gt_apply_spanners renames column labels to suffix only", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(`Group__Count` = 10L, `Group__Percent` = 50.0)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_spanners(gt_tbl, names(df), "__")
@@ -341,6 +373,7 @@ test_that("gt_apply_spanners renames column labels to suffix only", {
 })
 
 test_that("gt_apply_spanners handles triple-level name (a__b__c)", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(`A__B__C` = 1L, `A__B__D` = 2L)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_spanners(gt_tbl, names(df), "__")
@@ -350,6 +383,7 @@ test_that("gt_apply_spanners handles triple-level name (a__b__c)", {
 })
 
 test_that("gt_apply_spanners leaves columns without separator untouched", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(plain = "x", `A__B` = 1L)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_spanners(gt_tbl, names(df), "__")
@@ -360,6 +394,7 @@ test_that("gt_apply_spanners leaves columns without separator untouched", {
 # ── gt_apply_facade() ────────────────────────────────────────────────────────
 
 test_that("gt_apply_facade returns gt_tbl unchanged when facade is NULL", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = c("A", "B"), n = c(1L, 2L))
   base_tbl <- gt::gt(df)
   result <- gt_apply_facade(base_tbl, NULL)
@@ -370,6 +405,7 @@ test_that("gt_apply_facade returns gt_tbl unchanged when facade is NULL", {
 })
 
 test_that("gt_apply_facade applies table.fontName to HTML", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = c("A", "B"))
   tbl <- gt::gt(df)
   facade <- list(table.fontName = "Courier New", table.fontSize = NULL)
@@ -379,6 +415,7 @@ test_that("gt_apply_facade applies table.fontName to HTML", {
 })
 
 test_that("gt_apply_facade applies table.fontSize to HTML", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   facade <- list(table.fontName = NULL, table.fontSize = 14)
@@ -389,6 +426,7 @@ test_that("gt_apply_facade applies table.fontSize to HTML", {
 })
 
 test_that("gt_apply_facade applies header.fontColour to HTML", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A", n = 1L)
   tbl <- gt::gt(df)
   facade <- list(header.fontColour = "#0011FF")
@@ -398,6 +436,7 @@ test_that("gt_apply_facade applies header.fontColour to HTML", {
 })
 
 test_that("gt_apply_facade applies header.textDecoration bold to column labels", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   facade <- list(header.textDecoration = "bold")
@@ -407,6 +446,7 @@ test_that("gt_apply_facade applies header.textDecoration bold to column labels",
 })
 
 test_that("gt_apply_facade applies spanner.fgFill overriding header", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(`G__A` = 1L, `G__B` = 2L)
   tbl <- gt::gt(df) |>
     gt::tab_spanner(label = "G", columns = dplyr::everything())
@@ -417,6 +457,7 @@ test_that("gt_apply_facade applies spanner.fgFill overriding header", {
 })
 
 test_that("gt_apply_facade applies body.fgFill to table body", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A", n = 1L)
   tbl <- gt::gt(df)
   facade <- list(body.fgFill = "#FFEE00")
@@ -426,6 +467,7 @@ test_that("gt_apply_facade applies body.fgFill to table body", {
 })
 
 test_that("gt_apply_facade applies body.fontColour to table body", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   facade <- list(body.fontColour = "#112233")
@@ -435,6 +477,7 @@ test_that("gt_apply_facade applies body.fontColour to table body", {
 })
 
 test_that("gt_apply_facade applies body.textDecoration italic to body", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   facade <- list(body.textDecoration = "italic")
@@ -444,6 +487,7 @@ test_that("gt_apply_facade applies body.textDecoration italic to body", {
 })
 
 test_that("gt_apply_facade applies body.halign to body cells", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   facade <- list(body.halign = "right")
@@ -453,6 +497,7 @@ test_that("gt_apply_facade applies body.halign to body cells", {
 })
 
 test_that("gt_apply_facade with default facade (mostly NULLs) does not error", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A", n = 1L)
   tbl <- gt::gt(df)
   facade <- get_tsg_facade()
@@ -462,6 +507,7 @@ test_that("gt_apply_facade with default facade (mostly NULLs) does not error", {
 # ── gt_apply_text_decoration() ───────────────────────────────────────────────
 
 test_that("gt_apply_text_decoration applies bold", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   result <- gt_apply_text_decoration(tbl, "bold", gt::cells_body())
@@ -470,6 +516,7 @@ test_that("gt_apply_text_decoration applies bold", {
 })
 
 test_that("gt_apply_text_decoration applies italic", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   result <- gt_apply_text_decoration(tbl, "italic", gt::cells_body())
@@ -478,6 +525,7 @@ test_that("gt_apply_text_decoration applies italic", {
 })
 
 test_that("gt_apply_text_decoration applies underline", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   result <- gt_apply_text_decoration(tbl, "underline", gt::cells_body())
@@ -486,6 +534,7 @@ test_that("gt_apply_text_decoration applies underline", {
 })
 
 test_that("gt_apply_text_decoration applies multiple decorations", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   result <- gt_apply_text_decoration(tbl, c("bold", "italic"), gt::cells_body())
@@ -495,6 +544,7 @@ test_that("gt_apply_text_decoration applies multiple decorations", {
 })
 
 test_that("gt_apply_text_decoration unknown decoration does not error", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   expect_s3_class(
@@ -504,6 +554,7 @@ test_that("gt_apply_text_decoration unknown decoration does not error", {
 })
 
 test_that("gt_apply_text_decoration is case insensitive", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(x = "A")
   tbl <- gt::gt(df)
   result <- gt_apply_text_decoration(tbl, "BOLD", gt::cells_body())
@@ -514,6 +565,7 @@ test_that("gt_apply_text_decoration is case insensitive", {
 # ── Regression: generate_crosstab() HTML/PDF spanner handling ─────────────────
 
 test_that("gt_apply_spanners with col_labels creates spanners from labels, not col names", {
+  skip_if_not_installed("gt")
   # Simulate crosstab output: col names are plain, labels have "__"
   df <- dplyr::tibble(category = "A", frequency_1 = 10L, frequency_2 = 20L)
   col_labels <- c("Category", "Frequency__Male", "Frequency__Female")
@@ -528,6 +580,7 @@ test_that("gt_apply_spanners with col_labels creates spanners from labels, not c
 })
 
 test_that("gt_apply_spanners relabels non-spanner columns from col_labels", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(category = "A", total = 10L)
   col_labels <- c("Marital status", "Total")
   gt_tbl <- gt::gt(df)
@@ -537,9 +590,10 @@ test_that("gt_apply_spanners relabels non-spanner columns from col_labels", {
   expect_true(grepl("Total", html))
 })
 
-test_that("tsg_to_gt creates spanners from generate_crosstab output", {
+test_that("as_gt creates spanners from generate_crosstab output", {
+  skip_if_not_installed("gt")
   ct <- generate_crosstab(person_record, marital_status, sex)
-  gt_tbl <- tsg_to_gt(ct, facade = NULL)
+  gt_tbl <- as_gt(ct, facade = NULL)
   # Spanners for Frequency and Percent groups
   expect_gt(nrow(gt_tbl[["_spanners"]]), 0L)
   html <- gt::as_raw_html(gt_tbl)
@@ -550,31 +604,34 @@ test_that("tsg_to_gt creates spanners from generate_crosstab output", {
   expect_true(grepl("Female", html))
 })
 
-test_that("tsg_to_gt relabels category and total columns from label attributes", {
+test_that("as_gt relabels category and total columns from label attributes", {
+  skip_if_not_installed("gt")
   ct <- generate_crosstab(person_record, marital_status, sex)
-  gt_tbl <- tsg_to_gt(ct, facade = NULL)
+  gt_tbl <- as_gt(ct, facade = NULL)
   html <- gt::as_raw_html(gt_tbl)
   # "category" col should show its label "Marital status", not "category"
   expect_true(grepl("Marital status", html, fixed = TRUE))
 })
 
-test_that("tsg_to_gt creates spanners from collapse_list() output", {
+test_that("as_gt creates spanners from collapse_list() output", {
+  skip_if_not_installed("gt")
   cl <- person_record |>
     generate_frequency(seeing, hearing) |>
     collapse_list()
-  gt_tbl <- tsg_to_gt(cl, facade = NULL)
+  gt_tbl <- as_gt(cl, facade = NULL)
   expect_gt(nrow(gt_tbl[["_spanners"]]), 0L)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("Frequency", html))
   expect_true(grepl("No difficulty", html, fixed = TRUE))
 })
 
-test_that("tsg_to_gt respects label_separator stored in data attributes", {
+test_that("as_gt respects label_separator stored in data attributes", {
+  skip_if_not_installed("gt")
   ct <- generate_crosstab(person_record, marital_status, sex, label_separator = ">>")
   # label_separator attr should be stored
   expect_equal(attr(ct, "label_separator"), ">>")
-  # tsg_to_gt should auto-detect ">>" and still create spanners
-  gt_tbl <- tsg_to_gt(ct, names_separator = "__", facade = NULL)
+  # as_gt should auto-detect ">>" and still create spanners
+  gt_tbl <- as_gt(ct, names_separator = "__", facade = NULL)
   expect_gt(nrow(gt_tbl[["_spanners"]]), 0L)
 })
 
@@ -602,6 +659,7 @@ test_that("parse_excel_numfmt_decimals returns NA for non-numeric formats", {
 # ── gt_apply_numeric_format() ─────────────────────────────────────────────────
 
 test_that("gt_apply_numeric_format formats integer columns with commas", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(n = 1234567L, x = "A")
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, list())
@@ -610,6 +668,7 @@ test_that("gt_apply_numeric_format formats integer columns with commas", {
 })
 
 test_that("gt_apply_numeric_format formats whole-number doubles as integers", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(n = 9876.0)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, list())
@@ -619,6 +678,7 @@ test_that("gt_apply_numeric_format formats whole-number doubles as integers", {
 })
 
 test_that("gt_apply_numeric_format formats decimal doubles with default 2 places", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(p = 12.3456)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, list())
@@ -627,6 +687,7 @@ test_that("gt_apply_numeric_format formats decimal doubles with default 2 places
 })
 
 test_that("gt_apply_numeric_format respects table.decimalPrecision", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(p = 12.3456)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, list(table.decimalPrecision = 3))
@@ -635,6 +696,7 @@ test_that("gt_apply_numeric_format respects table.decimalPrecision", {
 })
 
 test_that("gt_apply_numeric_format respects table.decimalCols override", {
+  skip_if_not_installed("gt")
   # 'n' would normally be treated as integer (whole-number double), but forced to decimal
   df <- dplyr::tibble(n = 10.0)
   gt_tbl <- gt::gt(df)
@@ -644,6 +706,7 @@ test_that("gt_apply_numeric_format respects table.decimalCols override", {
 })
 
 test_that("gt_apply_numeric_format body.numFmt is base, auto-detection overrides it", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(n = 1234L, p = 5.678)
   gt_tbl <- gt::gt(df)
   # body.numFmt "#,##0.0" sets 1-decimal base, but auto-detection wins:
@@ -656,6 +719,7 @@ test_that("gt_apply_numeric_format body.numFmt is base, auto-detection overrides
 })
 
 test_that("gt_apply_numeric_format applies col_first.numFmt to first column", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(a = 100L, b = 200L)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, list(col_first.numFmt = "#,##0.00"))
@@ -664,6 +728,7 @@ test_that("gt_apply_numeric_format applies col_first.numFmt to first column", {
 })
 
 test_that("gt_apply_numeric_format applies col_last.numFmt to last column", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(a = 100L, b = 200L)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, list(col_last.numFmt = "#,##0.0"))
@@ -672,6 +737,7 @@ test_that("gt_apply_numeric_format applies col_last.numFmt to last column", {
 })
 
 test_that("gt_apply_numeric_format with NULL facade is a no-op", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(n = 1234567L)
   gt_tbl <- gt::gt(df)
   result <- gt_apply_numeric_format(gt_tbl, df, NULL)
@@ -679,9 +745,10 @@ test_that("gt_apply_numeric_format with NULL facade is a no-op", {
   expect_identical(result, gt_tbl)
 })
 
-test_that("tsg_to_gt applies numeric formatting to frequency table output", {
+test_that("as_gt applies numeric formatting to frequency table output", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(person_record, sex)
-  gt_tbl <- tsg_to_gt(tbl, facade = NULL)
+  gt_tbl <- as_gt(tbl, facade = NULL)
   html <- gt::as_raw_html(gt_tbl)
   # Frequency counts should appear with comma formatting (no raw integers)
   # Row counts are small here but should not trigger decimal formatting
@@ -691,11 +758,12 @@ test_that("tsg_to_gt applies numeric formatting to frequency table output", {
 
 # ── Bug regression: haven_labelled, decimal precision, first-col alignment ────
 
-test_that("tsg_to_gt renders haven_labelled category as text labels, not integer codes", {
+test_that("as_gt renders haven_labelled category as text labels, not integer codes", {
+  skip_if_not_installed("gt")
   # generate_frequency produces a haven_labelled<integer> category column
   tbl <- generate_frequency(person_record, marital_status)
   expect_s3_class(tbl$category, "haven_labelled")
-  gt_tbl <- tsg_to_gt(tbl, facade = NULL)
+  gt_tbl <- as_gt(tbl, facade = NULL)
   html <- gt::as_raw_html(gt_tbl)
   # Value labels should appear; raw integer codes should not
   expect_true(grepl("Single/never married", html, fixed = TRUE))
@@ -704,25 +772,28 @@ test_that("tsg_to_gt renders haven_labelled category as text labels, not integer
   expect_false(grepl(">1<", html, fixed = TRUE))
 })
 
-test_that("tsg_to_gt decimal precision matches facade table.decimalPrecision", {
+test_that("as_gt decimal precision matches facade table.decimalPrecision", {
+  skip_if_not_installed("gt")
   # Default facade has table.decimalPrecision: 2 and body.numFmt: "###0"
   # body.numFmt must NOT override the per-column auto-detected decimal format
   tbl <- generate_frequency(person_record, marital_status)
-  gt_tbl <- tsg_to_gt(tbl)
+  gt_tbl <- as_gt(tbl)
   html <- gt::as_raw_html(gt_tbl)
   # percent column should have 2 decimal places (e.g. "52.91"), not rounded to integer
   pct_decimals <- regmatches(html, gregexpr("[0-9]+[.][0-9]{2}", html))[[1]]
   expect_true(length(pct_decimals) > 0)
 })
 
-test_that("tsg_to_gt left-aligns the first column by default", {
+test_that("as_gt left-aligns the first column by default", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(person_record, sex)
-  gt_tbl <- tsg_to_gt(tbl, facade = NULL)
+  gt_tbl <- as_gt(tbl, facade = NULL)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("text-align: left", html, fixed = TRUE))
 })
 
 test_that("gt_apply_facade col_first.halign overrides the default left alignment", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(label = c("A", "B"), n = 1:2)
   tbl <- gt::gt(df)
   facade <- list(col_first.halign = "center")
@@ -732,6 +803,7 @@ test_that("gt_apply_facade col_first.halign overrides the default left alignment
 })
 
 test_that("gt_apply_facade col_last.halign applies to the last column", {
+  skip_if_not_installed("gt")
   df <- dplyr::tibble(label = c("A", "B"), n = 1:2)
   tbl <- gt::gt(df)
   facade <- list(col_last.halign = "center")
@@ -741,6 +813,7 @@ test_that("gt_apply_facade col_last.halign applies to the last column", {
 })
 
 test_that("gt_apply_numeric_format skips col_first.numFmt when first col is not numeric", {
+  skip_if_not_installed("gt")
   # After convert_factor, the first col is a factor — should not apply numFmt
   df <- dplyr::tibble(label = factor(c("A", "B")), n = c(10L, 20L))
   gt_tbl <- gt::gt(df)
@@ -765,7 +838,7 @@ test_that(".normalize_footnotes handles character vector input", {
 
 test_that(".normalize_footnotes handles full list input", {
   input <- list(
-    text      = c("A", "B"),
+    text = c("A", "B"),
     placement = c("left", "right"),
     locations = list(NULL, "frequency")
   )
@@ -793,34 +866,38 @@ test_that("add_footnote stores placement and locations correctly", {
   expect_equal(fn$locations, "frequency")
 })
 
-test_that("tsg_to_gt renders footnote with placement (no error)", {
+test_that("as_gt renders footnote with placement (no error)", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_footnote("Right note.", placement = "right") |>
     add_footnote("Left note.", placement = "left")
-  gt_tbl <- tsg_to_gt(tbl)
+  gt_tbl <- as_gt(tbl)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("Right note", html))
   expect_true(grepl("Left note", html))
 })
 
-test_that("tsg_to_gt renders footnote with valid column locations", {
+test_that("as_gt renders footnote with valid column locations", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_footnote("Unweighted count.", locations = "frequency")
-  gt_tbl <- tsg_to_gt(tbl)
+  gt_tbl <- as_gt(tbl)
   html <- gt::as_raw_html(gt_tbl)
   expect_true(grepl("Unweighted count", html))
 })
 
-test_that("tsg_to_gt silently drops unknown column locations", {
+test_that("as_gt silently drops unknown column locations", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_footnote("Note.", locations = "nonexistent_col")
-  expect_s3_class(tsg_to_gt(tbl), "gt_tbl")
+  expect_s3_class(as_gt(tbl), "gt_tbl")
 })
 
-test_that("tsg_to_gt does not leak 'auto' as footnote text in HTML output", {
+test_that("as_gt does not leak 'auto' as footnote text in HTML output", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_footnote("Only this note.", placement = "auto")
-  html <- gt::as_raw_html(tsg_to_gt(tbl))
+  html <- gt::as_raw_html(as_gt(tbl))
   # Strip all HTML tags and check plain text
   text <- gsub("<[^>]+>", " ", html)
   expect_true(grepl("Only this note", text))
@@ -830,6 +907,8 @@ test_that("tsg_to_gt does not leak 'auto' as footnote text in HTML output", {
 })
 
 test_that("write_docx with footnote placement does not error", {
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_footnote("Left note.", placement = "left") |>
     add_footnote("Right note.", placement = "right")
@@ -874,26 +953,31 @@ test_that("resolve_facade uses which= for fallback format (docx)", {
   expect_equal(f_resolved[["body.fontSize"]], 14)
 })
 
-test_that("tsg_to_gt applies add_facade overrides for html", {
+test_that("as_gt applies add_facade overrides for html", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_facade("body.fontSize" = 18)
   # Should not error
-  expect_s3_class(tsg_to_gt(tbl), "gt_tbl")
+  expect_s3_class(as_gt(tbl), "gt_tbl")
 })
 
-test_that("tsg_to_gt handles NULL facade gracefully", {
+test_that("as_gt handles NULL facade gracefully", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x)
   # Passing NULL facade must not error
-  expect_s3_class(tsg_to_gt(tbl, facade = NULL), "gt_tbl")
+  expect_s3_class(as_gt(tbl, facade = NULL), "gt_tbl")
 })
 
 test_that("tsg_to_flextable applies add_facade overrides for docx", {
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_facade("header.bgFill" = "#FF0000")
   expect_s3_class(tsg_to_flextable(tbl), "flextable")
 })
 
 test_that("write_html applies add_facade override without error", {
+  skip_if_not_installed("gt")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_facade("body.fontSize" = 14)
   tmp <- tempfile(fileext = ".html")
@@ -903,6 +987,8 @@ test_that("write_html applies add_facade override without error", {
 })
 
 test_that("write_docx applies add_facade override without error", {
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
   tbl <- generate_frequency(dplyr::tibble(x = c("A", "B")), x) |>
     add_facade("body.fontSize" = 12)
   tmp <- tempfile(fileext = ".docx")
@@ -923,4 +1009,129 @@ test_that("docx facade yaml excludes xlsx-only keys", {
   expect_false("table.gridLines" %in% names(f))
   expect_false("table.tabColour" %in% names(f))
   expect_false("table.offsetRow" %in% names(f))
+})
+
+# ── One facade for every format (adr/0002) ──────────────────────────────────
+
+# The inline style of the <th>/<td> whose text is `text` (gt may wrap the text in a <span> or <div>).
+gt_cell_style <- function(html, text) {
+  m <- regmatches(html, regexec(paste0('<t[hd][[:space:]][^>]*style="([^"]*)"[^>]*>([[:space:]]*<[^/][^>]*>)*', text, "<"), html))[[1]]
+  m[2]
+}
+
+
+test_that("facade_borders() translates xlsx border names and checks them", {
+  b <- facade_borders(
+    list(body.border = c("TopBottom", "left"), body.borderStyle = c("medium", "dashed", "none"), body.borderColour = "#123456"),
+    "body"
+  )
+  expect_equal(names(b), c("top", "bottom"))
+  expect_equal(b$top, list(style = "solid", width = 2, color = "#123456"))
+  expect_equal(b$bottom$style, "dashed")
+  # unset style is openxlsx's default, thin
+  expect_equal(facade_borders(list(x.border = "top"), "x")$top$width, 1)
+  expect_length(facade_borders(list(x.border = NULL), "x"), 0)
+  expect_error(facade_borders(list(x.border = "top", x.borderStyle = "wavy"), "x"), "Unknown `x.borderStyle`.*thin")
+})
+
+test_that("writers take a built-in facade by name", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
+  tbl <- generate_crosstab(person_record, marital_status, sex) |> add_table_title("T")
+  # nyt sets title.fontName, which gt used to reject
+  expect_s3_class(as_gt(tbl, facade = "nyt"), "gt_tbl")
+  tmp <- tempfile(fileext = ".docx")
+  on.exit(unlink(tmp))
+  expect_no_error(write_docx(tbl, tmp, facade = "striped"))
+})
+
+test_that("every built-in facade writes to html and docx", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("flextable")
+  tbl <- generate_crosstab(person_record, marital_status, sex) |> add_source_note("S")
+  facades <- sub("\\.yaml$", "", list.files(system.file("extdata/facade", package = "tsg"), pattern = "\\.yaml$"))
+  for (f in facades) {
+    expect_s3_class(as_gt(tbl, facade = f), "gt_tbl")
+    expect_s3_class(tsg_to_flextable(tbl, facade = f), "flextable")
+  }
+})
+
+test_that("html draws a facade's borders and banded rows", {
+  skip_if_not_installed("gt")
+  tbl <- generate_frequency(person_record, sex)
+  html <- gt::as_raw_html(as_gt(tbl, facade = "booktabs"), inline_css = TRUE)
+  # booktabs: medium (2px) outer rules, no lines between body rows
+  expect_match(gt_cell_style(html, "Sex"), "border-top-width: 2px; border-top-style: solid; border-top-color: #000000")
+  expect_match(gt_cell_style(html, "Total"), "border-bottom-width: 2px; border-bottom-style: solid; border-bottom-color: #000000")
+  expect_false(grepl("border-top-style: solid; border-top-width: 1px; border-top-color: #D3D3D3", html, fixed = TRUE))
+
+  html <- gt::as_raw_html(as_gt(tbl, facade = "striped"), inline_css = TRUE)
+  expect_match(html, "#EAF1F8", ignore.case = TRUE)
+})
+
+test_that("html outline wins over the cell borders next to it", {
+  skip_if_not_installed("gt")
+  tbl <- generate_crosstab(person_record, marital_status, sex)
+
+  # financial: grey row lines, navy outline of the same width; the last row keeps navy
+  html <- gt::as_raw_html(as_gt(tbl, facade = "financial"), inline_css = TRUE)
+  expect_match(gt_cell_style(html, "Total"), "border-bottom-color: #1F3864")
+
+  # yolo: grey header cell borders, darker outline on the header's outer edges
+  html <- gt::as_raw_html(as_gt(tbl, facade = "yolo"), inline_css = TRUE)
+  expect_match(gt_cell_style(html, "Marital status"), "border-left-color: #8f8f8f")
+  expect_match(gt_cell_style(html, "Percent"), "border-right-color: #8f8f8f")
+
+  # a font the machine may lack falls back to gt's sans-serif stack
+  expect_match(html, "font-family: Arial, system-ui", fixed = TRUE)
+})
+
+test_that("docx draws a facade's borders and banded rows", {
+  skip_if_not_installed("flextable")
+  tbl <- generate_frequency(person_record, sex)
+  cells <- function(ft, part = "body") ft[[part]]$styles$cells
+
+  ft <- tsg_to_flextable(tbl, facade = "booktabs")
+  n <- nrow(tbl)
+  expect_true(all(cells(ft, "header")$border.width.top$data == 1.5))
+  expect_true(all(cells(ft)$border.width.bottom$data[n, ] == 1.5))
+  expect_true(all(cells(ft)$border.width.left$data == 0))
+
+  ft <- tsg_to_flextable(tbl, facade = "striped")
+  expect_true(all(cells(ft)$background.color$data[2, ] == "#EAF1F8"))
+  expect_false(any(cells(ft)$background.color$data[1, ] == "#EAF1F8"))
+})
+
+test_that("nested group lists (2+ groups) write to HTML and Word", {
+  skip_if_not_installed("gt")
+  skip_if_not_installed("officer")
+  skip_if_not_installed("flextable")
+  nested <- person_record |>
+    dplyr::group_by(sex, employed) |>
+    generate_frequency(marital_status, group_as_list = TRUE)
+
+  # one section per leaf table, named by its path through the list
+  html <- withr::local_tempfile(fileext = ".html")
+  write_html(nested, html, include_table_list = TRUE)
+  page <- paste(readLines(html, warn = FALSE), collapse = "\n")
+  expect_match(page, "Male - Yes", fixed = TRUE)
+  expect_match(page, "Female - No", fixed = TRUE)
+
+  dir <- withr::local_tempdir()
+  write_html(nested, file.path(dir, "tables.html"), separate_files = TRUE)
+  expect_true(file.exists(file.path(dir, "tables", "Male - Yes.html")))
+
+  docx <- withr::local_tempfile(fileext = ".docx")
+  write_docx(nested, docx)
+  expect_true(file.exists(docx))
+})
+
+test_that("generate_output() writes lists nested 3 groups deep, as write_xlsx() does", {
+  nested <- person_record |>
+    dplyr::group_by(sex, employed, seeing) |>
+    generate_frequency(marital_status, group_as_list = TRUE)
+  path <- withr::local_tempfile(fileext = ".xlsx")
+  generate_output(nested, path, format = "xlsx")
+  expect_equal(openxlsx::getSheetNames(path), c("Male", "Female"))
 })

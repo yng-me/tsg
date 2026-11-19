@@ -1,5 +1,5 @@
-table.offsetRow: 0
-table.offsetCol: 0
+table.offsetRow: 1
+table.offsetCol: 1
 table.gridLines: false
 
 table.tabColour: ~
@@ -21,11 +21,12 @@ table.lastRowBold: false
 table.width: 14
 table.widthOffset: 2
 
+border_outer.border: ["top", "bottom", "left", "right"]
 border_outer.borderColour: "#8f8f8f"
 border_header.border: "bottom"
 border_header.borderColour: "#9f9e9e"
 border_header.borderStyle: "medium"
-border_bottom.height: 52
+border_bottom.height: 42
 
 body.fontName: ~
 body.fontSize: ~
@@ -44,7 +45,7 @@ body.indent: 1
 body.height: 20
 
 title.fontName: ~
-title.fontSize: 13
+title.fontSize: 14
 title.fontColour: ~
 title.numFmt: ~
 title.border: ~
@@ -77,19 +78,19 @@ subtitle.height: 22
 
 header.fontName: ~
 header.fontSize: ~
-header.fontColour: ~
+header.fontColour: "white"
 header.numFmt: ~
 header.border: ["top", "bottom", "left", "right"]
 header.borderColour: "#cfcfcf"
-header.borderStyle: "dashed"
+header.borderStyle: "thin"
 header.bgFill: ~
-header.fgFill: "#f5f5f5"
-header.halign: ~
+header.fgFill: "#000000"
+header.halign: "center"
 header.valign: ~
 header.textDecoration: ~
 header.wrapText: true
 header.indent: ~
-header.height: 28
+header.height: 24
 
 spanner.fontName: ~
 spanner.fontSize: ~
@@ -116,12 +117,12 @@ col_first.borderColour: ~
 col_first.borderStyle: ~
 col_first.bgFill: ~
 col_first.fgFill: ~
-col_first.halign: ~
+col_first.halign: "left"
 col_first.valign: ~
 col_first.textDecoration: ~
 col_first.wrapText: ~
 col_first.indent: ~
-col_first.width: 32
+col_first.width: 24
 
 col_last.fontName: ~
 col_last.fontSize: ~
@@ -156,25 +157,8 @@ row_group.indent: ~
 row_group.width: ~
 row_group.height: 24
 
-sub_group.fontName: ~
-sub_group.fontSize: 12
-sub_group.fontColour: ~
-sub_group.numFmt: ~
-sub_group.border: ~
-sub_group.borderColour: ~
-sub_group.borderStyle: ~
-sub_group.bgFill: ~
-sub_group.fgFill: ~
-sub_group.halign: ~
-sub_group.valign: "center"
-sub_group.textDecoration: "bold"
-sub_group.wrapText: ~
-sub_group.indent: ~
-sub_group.width: ~
-sub_group.height: 24
-
 source_note.fontName: ~
-source_note.fontSize: 10
+source_note.fontSize: 12
 source_note.fontColour: ~
 source_note.numFmt: ~
 source_note.border: ~
@@ -190,7 +174,7 @@ source_note.indent: ~
 source_note.height: 20
 
 footnotes.fontName: ~
-footnotes.fontSize: 10
+footnotes.fontSize: 12
 footnotes.fontColour: ~
 footnotes.numFmt: ~
 footnotes.border: ~
@@ -205,8 +189,5 @@ footnotes.wrapText: ~
 footnotes.indent: ~
 footnotes.height: 20
 
-label.titleTableList: "List of Tables"
 label.backHyperlink: "← Back"
-
-
-
+label.titleTableList: "List of Tables"

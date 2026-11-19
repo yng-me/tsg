@@ -11,17 +11,18 @@
 #'   }
 #' @param path A file path (if \code{separate_files = FALSE}) or directory path (if \code{separate_files = TRUE})
 #'   where the Excel file(s) will be saved. File extension \code{.xlsx} is automatically added if missing.
-#' @param ... Additional arguments passed to \code{openxlsx::createWorkbook()} and \code{openxlsx::addWorksheet()}.
+#' @param ... Additional arguments passed to \code{openxlsx::createWorkbook()} (e.g. \code{creator}) or \code{openxlsx::addWorksheet()} (e.g. \code{zoom}), matched by name.
 #' @param sheet_name Optional name for the Excel sheet. Ignored if \code{data} is a list and \code{separate_files = FALSE}.
+#' @param trim_sheet_names Logical. Excel limits sheet names to 31 characters. If \code{FALSE} (default), a longer sheet name (from \code{sheet_name}, a list name or the \code{table_name} of \code{table_list_reference}) is an error. If \code{TRUE}, it is cut to 31 characters, and names that then repeat are numbered (\code{"... (2)"}). File names (\code{separate_files = TRUE}) are never cut.
 #' @param title Optional title displayed above the data in each sheet or file.
 #' @param subtitle Optional subtitle displayed under the title.
 #' @param source_note Optional source note displayed below the data.
 #' @param footnotes Optional character vector of footnotes to display below the source note.
 #' @param separate_files Logical. If \code{TRUE}, each list item in \code{data} is saved as a separate Excel file.
 #' @param collapse_list Logical. If \code{TRUE}, a list of data frames will be merged into one sheet (if applicable).
-#' @param row_group_as_column Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles.
+#' @param row_group_as_column Logical. If \code{TRUE}, row groupings are included as columns instead of grouped titles. Applies to a grouped list written on one sheet (\code{collapse_list = TRUE}) and to the sheets of a list nested two or more groups deep.
 #' @param names_separator Character used to separate column names when dealing with nested or grouped headers.
-#' @param facade A list of styling options (colors, fonts, sizes, border styles, etc.). Defaults to the global option \code{tsg.options.facade}.
+#' @param facade A built-in facade name (e.g. \code{"booktabs"}; see [get_tsg_facade()]), the path to a \code{.yaml} or \code{.json} facade file, or a facade list. A built-in facade looks the same in every output format. Keys missing from it fall back to this format's default facade; settings added with [add_facade()] take precedence over it.
 #' @param include_table_list Logical. If \code{TRUE}, a table list reference is included in the Excel file.
 #' @param table_list_reference A data frame containing the table list reference. If \code{NULL}, it will be generated from \code{data}.
 #'
@@ -55,6 +56,7 @@ write_xlsx <- function(
   path,
   ...,
   sheet_name = NULL,
+  trim_sheet_names = FALSE,
   title = NULL,
   subtitle = NULL,
   source_note = NULL,
@@ -68,223 +70,174 @@ write_xlsx <- function(
   facade = get_tsg_facade()
 ) {
 
-  facade <- facade %||% get_tsg_facade()
+  facade <- resolve_facade(facade, table_meta(data)$facade)
+  is_list <- inherits(data, "list")
 
-  offset_row <- attributes(data)$facade$table.offsetRow %||% facade$table.offsetRow
-  offset_col <- attributes(data)$facade$table.offsetCol %||% facade$table.offsetCol
-
-  # --- Data inherits a "list" class and data is
-  # --- to be as separate file per item in the list
-
-  if(separate_files & !inherits(data, "list")) {
+  if(separate_files & !is_list) {
     stop("When `separate_files = TRUE`, `data` must be a list of data frames.")
   }
 
-  if(inherits(data, "list") & separate_files) {
-    return(
-      write_xlsx_multiple_files(
-        data = data,
-        path = path,
-        ...,
-        title = title,
-        subtitle = subtitle,
-        source_note = source_note,
-        footnotes = footnotes,
-        offset_row = offset_row,
-        offset_col = offset_col,
-        names_separator = names_separator,
-        row_group_as_column = row_group_as_column,
-        facade = facade
-      )
-    )
+  # sheets and files are named after list items; unnamed ones would write nothing
+  if(is_list) {
+    item_names <- names(data) %||% rep("", length(data))
+    missing_name <- is.na(item_names) | item_names == ""
+    item_names[missing_name] <- paste("Table", which(missing_name))
+    names(data) <- item_names
   }
 
+  write_args <- list(
+    names_separator = names_separator,
+    row_group_as_column = row_group_as_column,
+    facade = facade
+  )
 
-  if(!grepl("\\.xlsx$", path) & !separate_files) {
+  # --- one file per list item
+  if(is_list & separate_files) {
+
+    path <- stringr::str_remove(path, "\\.xlsx$")
+    fs::dir_create(path)
+
+    # files have no 31-character limit
+    sheet_names <- xlsx_set_valid_sheet_name(names(data), trim = FALSE)
+
+    for(i in seq_along(data)) {
+      sheet_name_i <- sheet_names[i]
+      wb <- xlsx_create_workbook(..., facade = facade)
+      meta <- resolve_table_meta(data[[i]], sheet_name_i, title, subtitle, source_note, footnotes)
+      wb <- rlang::inject(xlsx_write_data(wb, data[[i]], "Sheet1", ..., !!!meta[-1], !!!write_args))
+      openxlsx::saveWorkbook(wb, fs::path_norm(file.path(path, glue::glue("{sheet_name_i}.xlsx"))), overwrite = TRUE)
+    }
+
+    return(invisible(NULL))
+  }
+
+  if(!grepl("\\.xlsx$", path)) {
     path <- glue::glue("{path}.xlsx")
   }
 
-  wb <- openxlsx::createWorkbook(...)
+  wb <- xlsx_create_workbook(..., facade = facade)
 
-  openxlsx::modifyBaseFont(
-    wb,
-    fontName = facade$table.fontName,
-    fontSize = facade$table.fontSize
-  )
+  # --- one sheet per list item
+  if(is_list & !collapse_list) {
 
-  # --- Data inherits a "list" class and data is to be exported as one file
-  # --- and each item in the list is written in its own sheet
-  if(inherits(data, "list") & !collapse_list) {
+    sheet_names <- names(data)
+    valid_sheet_names <- xlsx_sheet_names(sheet_names, trim_sheet_names)
 
     if(include_table_list) {
       table_list_reference <- resolve_table_list(data, table_list_reference)
-      wb <- tsg_write_table_list(wb, data, table_list_reference)
-
+      table_list_reference$table_name <- xlsx_sheet_names(table_list_reference$table_name, trim_sheet_names)
+      wb <- tsg_write_table_list(wb, data, table_list_reference, facade = facade)
     }
-
-    sheet_names <- names(data)
 
     for(i in seq_along(sheet_names)) {
 
-      sheet_name_i <- xlsx_set_valid_sheet_name(sheet_names[i])
-
-      data_i <- data[[i]]
-
-      attr_i <- resolve_table_meta(
-        attr = attributes(data[[i]]),
-        sheet_name = sheet_name_i,
-        title = title,
-        subtitle = subtitle,
-        source_note = source_note,
-        footnotes = footnotes
+      meta <- resolve_table_meta(
+        data[[i]],
+        valid_sheet_names[i],
+        title, subtitle, source_note, footnotes
       )
 
-      table_meta <- resolve_table_ref(
-        refs = table_list_reference,
-        include_ref = include_table_list,
-        sheet_name = sheet_names[i],
-        attr = attr_i
-      )
+      if(include_table_list) {
+        meta <- resolve_table_ref(table_list_reference, sheet_names[i], meta)
+      }
 
-      wb <- xlsx_write_data(
-        wb = wb,
-        data = data_i,
-        sheet_name = table_meta$sheet_name,
-        title = table_meta$title,
-        subtitle = table_meta$subtitle,
-        source_note = table_meta$source_note,
-        footnotes = table_meta$footnotes,
-        offset_row = offset_row,
-        offset_col = offset_col,
-        names_separator = names_separator,
-        collapse_list = FALSE,
-        row_group_as_column = row_group_as_column,
-        include_table_list = include_table_list,
-        facade = facade
+      wb <- rlang::inject(
+        xlsx_write_data(
+          wb,
+          data[[i]],
+          ...,
+          !!!meta,
+          !!!write_args,
+          include_table_list = include_table_list
+        )
       )
     }
 
   } else {
 
-    if(is.null(sheet_name)) { sheet_name <- "Sheet1" }
-
-    wb <- xlsx_write_data(
-      wb = wb,
-      data = data,
-      sheet_name = sheet_name,
-      ...,
-      title = title,
-      subtitle = subtitle,
-      source_note = source_note,
-      footnotes = footnotes,
-      offset_row = offset_row,
-      offset_col = offset_col,
-      collapse_list = collapse_list,
-      names_separator = names_separator,
-      row_group_as_column = row_group_as_column,
-      facade = facade
+    wb <- rlang::inject(
+      xlsx_write_data(
+        wb,
+        data,
+        xlsx_sheet_names(sheet_name %||% "Sheet1", trim_sheet_names),
+        ...,
+        title = title,
+        subtitle = subtitle,
+        source_note = source_note,
+        footnotes = footnotes,
+        !!!write_args
+      )
     )
-
   }
 
   openxlsx::saveWorkbook(wb, path, overwrite = TRUE)
-
 }
 
 
-write_xlsx_multiple_files <- function(
-  data,
-  path,
-  ...,
-  title = NULL,
-  subtitle = NULL,
-  source_note = NULL,
-  footnotes = NULL,
-  offset_row = 0,
-  offset_col = 0,
-  names_separator = "__",
-  row_group_as_column = FALSE,
-  facade = get_tsg_facade()
-) {
-
-  if(grepl("\\.xlsx$", path)) {
-    path <- stringr::str_remove(path, "\\.xlsx$")
-  }
-
-  fs::dir_create(path)
-  sheet_names <- names(data)
-
-  for(i in seq_along(sheet_names)) {
-
-    wb <- openxlsx::createWorkbook(...)
-    openxlsx::modifyBaseFont(
-      wb,
-      fontName = facade$table.fontName,
-      fontSize = facade$table.fontSize
-    )
-
-    sheet_name_i <- xlsx_set_valid_sheet_name(sheet_names[i])
-    path_i <- file.path(path, glue::glue("{sheet_name_i}.xlsx"))
-    path_i <- fs::path_norm(path_i)
-
-    title_i <- NULL
-    if(!is.null(title)) {
-      title_i <- glue::glue("{title}: {sheet_name_i}")
+# Valid sheet names; a name over Excel's 31-character limit is cut when `trim` is TRUE
+# and an error otherwise.
+xlsx_sheet_names <- function(names, trim) {
+  if(!trim) {
+    long <- names[nchar(xlsx_set_valid_sheet_name(names, trim = FALSE)) > 31]
+    if(length(long) > 0) {
+      stop(
+        "Sheet names can have at most 31 characters: ", paste0("\"", long, "\"", collapse = ", "),
+        ". Use shorter names, or set `trim_sheet_names = TRUE` to cut them.",
+        call. = FALSE
+      )
     }
-
-    wb <- xlsx_write_data(
-      wb = wb,
-      data = data[[i]],
-      title = title_i,
-      subtitle = subtitle,
-      sheet_name = "Sheet1",
-      source_note = source_note,
-      footnotes = footnotes,
-      offset_row = offset_row,
-      offset_col = offset_col,
-      names_separator = names_separator,
-      row_group_as_column = row_group_as_column,
-      facade = facade
-    )
-
-    openxlsx::saveWorkbook(wb, path_i, overwrite = TRUE)
-
   }
-
+  xlsx_set_valid_sheet_name(names)
 }
 
+
+# `...` holds both createWorkbook() and addWorksheet() arguments; keep the former.
+xlsx_create_workbook <- function(..., facade) {
+  dots <- list(...)
+  wb <- do.call(
+    openxlsx::createWorkbook,
+    dots[names(dots) %in% names(formals(openxlsx::createWorkbook))]
+  )
+  openxlsx::modifyBaseFont(wb, fontName = facade$table.fontName, fontSize = facade$table.fontSize)
+  wb
+}
 
 
 tsg_write_table_list <- function(wb, data, table_list_reference = NULL, facade = get_tsg_facade()) {
 
-  sheet_summary <- 'List of Tables' %||% facade$label.titleTableList
+  sheet_summary <- facade$label.titleTableList %||% 'List of Tables'
 
   ref <- dplyr::select(table_list_reference, table_number, table_name, title)
 
+  listing <- ref |>
+    dplyr::transmute(
+      name = table_name,
+      number = dplyr::if_else(
+        grepl('^table', table_number, ignore.case = TRUE),
+        as.character(table_number),
+        paste("Table", table_number)
+      ),
+      title = title
+    ) |>
+    rename_label(
+      name = "Tab Name",
+      number = "Table",
+      title = "Title"
+    )
+
   wb <- xlsx_write_data(
     wb,
-    data = ref |>
-      dplyr::transmute(
-        name = table_name,
-        number = dplyr::if_else(
-          grepl('^table', table_number, ignore.case = TRUE),
-          as.character(table_number),
-          paste("Table", table_number)
-        ),
-        title = title
-      ) |>
-      rename_label(
-        name = "Tab Name",
-        number = "Table",
-        title = "Title"
-      ),
+    data = listing,
     sheet_name = sheet_summary,
     title = sheet_summary,
     offset_col = 1,
-    offset_row = 1
+    offset_row = 1,
+    facade = facade
   )
 
-  openxlsx::setColWidths(wb, sheet = sheet_summary, cols = c(2, 3, 4), widths = c(36, 12, 148))
+  # fit the content; long titles stop at 148 characters
+  widths <- c(xlsx_fit_width(listing, 1), xlsx_fit_width(listing, 2), xlsx_fit_width(listing, 3, max_width = 148))
+  openxlsx::setColWidths(wb, sheet = sheet_summary, cols = c(2, 3, 4), widths = widths)
 
   for (s in 1:nrow(table_list_reference)) {
 
@@ -348,7 +301,7 @@ resolve_table_list <- function(data, table_list_reference) {
         title = stringr::str_trim(title)
       ) |>
       dplyr::filter(table_id %in% names(data)) |>
-      dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name))
+      dplyr::mutate(table_name = xlsx_set_valid_sheet_name(table_name, trim = FALSE))
 
     if("subtitle" %in% names(table_list_reference)) {
 
@@ -365,85 +318,56 @@ resolve_table_list <- function(data, table_list_reference) {
 
 }
 
-resolve_table_ref <- function(refs, sheet_name, include_ref, attr) {
+# A table-list reference row overrides the table's metadata.
+resolve_table_ref <- function(refs, table_id, meta) {
 
-  title <- attr$title
-  subtitle <- attr$subtitle
-  source_note <- attr$source_note
-  footnotes <- attr$footnotes
+  ref <- dplyr::filter(refs, table_id == !!table_id)
+  if(nrow(ref) == 0) return(meta)
 
-  if(include_ref) {
+  meta$sheet_name <- ref$table_name[1]
+  meta$title <- ref$title[1]
 
-    ref <- dplyr::filter(refs, table_id == sheet_name)
+  if("table_number" %in% names(ref)) {
 
-    if(nrow(ref) > 0) {
+    table_number <- ref$table_number[1]
 
-      sheet_name <- ref$table_name[1]
-      title <- ref$title[1]
+    if(!is.na(table_number) & table_number != '') {
 
-      if("table_number" %in% names(ref)) {
-
-        table_number <- ref$table_number[1]
-
-        if(!is.na(table_number) & table_number != '') {
-
-          if(!grepl('^table', table_number, ignore.case = TRUE)) {
-            table_number <- paste("Table", table_number)
-          }
-
-          title <- paste0(table_number, ". ", title)
-        }
-
+      if(!grepl('^table', table_number, ignore.case = TRUE)) {
+        table_number <- paste("Table", table_number)
       }
 
-      if("subtitle" %in% names(ref)) {
-        subtitle <- ref$subtitle[1]
-      }
-
-      if("source_note" %in% names(ref)) {
-        source_note <- ref$source_note[1]
-      }
-
-      if("footnotes" %in% names(ref)) {
-        footnotes <- ref$footnotes[1]
-      }
-
+      meta$title <- paste0(table_number, ". ", meta$title)
     }
-
   }
 
-  return(
-    list(
-      sheet_name = sheet_name,
-      title = title,
-      subtitle = subtitle,
-      source_note = source_note,
-      footnotes = footnotes
-    )
+  # an empty cell (NA, or "" read from a file) keeps the table's own text
+  for(key in c("subtitle", "source_note", "footnotes")) {
+    value <- ref[[key]][1]
+    if(key %in% names(ref) && !is.na(value) && nzchar(value)) {
+      meta[[key]] <- as.character(value)
+    }
+  }
+
+  meta
+}
+
+
+# For a table in a list, its own metadata wins; write_xlsx() arguments fill the gaps
+# (a title argument becomes "<title>: <sheet name>").
+resolve_table_meta <- function(data, sheet_name, title, subtitle, source_note, footnotes) {
+
+  meta <- table_meta(data)
+
+  if(!is.null(title)) {
+    title <- glue::glue("{title}: {sheet_name}")
+  }
+
+  list(
+    sheet_name = sheet_name,
+    title = meta$title %||% title,
+    subtitle = meta$subtitle %||% subtitle,
+    source_note = meta$source_note %||% source_note,
+    footnotes = meta$footnotes %||% footnotes
   )
-
 }
-
-resolve_table_meta <- function(attr, sheet_name, title, subtitle, source_note, footnotes) {
-
-  if(!is.null(title) & is.null(attr$title)) {
-    attr$title <- glue::glue("{title}: {sheet_name}")
-  }
-
-  if(!is.null(subtitle) & is.null(attr$subtitle)) {
-    attr$subtitle <- subtitle
-  }
-
-  if(!is.null(source_note) & is.null(attr$source_note)) {
-    attr$source_note <- source_note
-  }
-
-  if(!is.null(subtitle) & is.null(attr$footnotes)) {
-    attr$footnotes <- footnotes
-  }
-
-  attr
-
-}
-
-

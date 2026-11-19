@@ -12,6 +12,25 @@ knitr::opts_chunk$set(
   collapse = TRUE,
   comment = "#>"
 )
+
+# The workbooks behind the screenshots go to a temporary folder. The screenshots are
+# made from the same code by data-raw/vignette-screenshots.R with Microsoft Excel and
+# are stored in man/figures/; they are shown at half their pixel width, their size in Excel.
+fig_dir <- normalizePath("../man/figures", mustWork = FALSE)
+out_dir <- Sys.getenv("TSG_VIGNETTE_OUT", file.path(tempdir(), "facade"))
+dir.create(out_dir, showWarnings = FALSE, recursive = TRUE)
+knitr::opts_knit$set(root.dir = out_dir)
+
+shot <- function(name) {
+  path <- file.path(fig_dir, paste0("facade-", name, ".png"))
+  if (!file.exists(path)) return(invisible())
+  header <- readBin(path, "raw", 24)
+  width <- sum(as.integer(header[17:20]) * 256^(3:0))
+  knitr::asis_output(sprintf(
+    '<div style="overflow-x:auto"><img src="%s" width="%d" alt="Excel sheet: %s" style="max-width:none;height:auto"></div>',
+    knitr::image_uri(path), width %/% 2, name
+  ))
+}
 ```
 
 ```{r setup}
@@ -19,7 +38,7 @@ library(tsg)
 library(dplyr)
 ```
 
-`tsg` uses a **style** object (called a *facade*) to control how your tables look when exported — fonts, colours, borders, cell sizes, and more. You can:
+`tsg` uses a **style** object (called a *facade*) to control how your tables look when exported: fonts, colours, borders, cell sizes, and more. You can:
 
 - Use a **built-in style** out of the box,
 - **Tweak a few settings** with `add_facade()`, or
@@ -31,23 +50,63 @@ The same style applies consistently to all output formats (Excel, HTML, PDF, Wor
 
 ## Using a built-in style
 
-The package ships with two named styles for Excel output. Pass one to `write_xlsx()` via the `facade` argument.
+The package ships with thirteen named styles. Pass a name to any writer via the `facade` argument: a style looks the same in Excel, HTML, PDF and Word.
 
 | Style name | Description |
 |------------|-------------|
-| `"default"` | Clean, neutral — used automatically when no style is specified |
+| `"default"` | Clean, neutral; used automatically when no style is specified |
 | `"yolo"` | Bolder colours and heavier formatting |
+| `"apa"` | APA style: horizontal rules only, no fills, Times New Roman |
+| `"booktabs"` | Thick top and bottom rules, a thin rule under the header, nothing else |
+| `"striped"` | Coloured header band and banded body rows |
+| `"gridded"` | Thin lines around every cell and a grey header, as in statistical yearbooks |
+| `"minimal"` | No borders or fills, light grey rules between rows; suits web and dashboards |
+| `"financial"` | Dark blue header, thin grey grid and a bold last row, as in business reports |
+| `"nyt"` | Editorial: bold header over a thick rule, no vertical lines, light banding |
+| `"jama"` | Medical-journal: horizontal rules only, bold sans-serif header and first column |
+| `"dark"` | Light text on a dark background |
+| `"pastel"` | Soft blue header and group titles |
+| `"census"` | Official statistics: grey header, bold group titles, small italic notes |
 
 ```{r, eval=FALSE}
-# Bold "yolo" style
-person_record |>
-  generate_frequency(sex) |>
-  write_xlsx(path = "yolo.xlsx", facade = get_tsg_facade("yolo"))
+tbl <- person_record |>
+  generate_frequency(sex)
 
-# Explicitly use the default style (same as omitting the facade argument)
-person_record |>
-  generate_frequency(sex) |>
-  write_xlsx(path = "default.xlsx", facade = get_tsg_facade("default"))
+write_xlsx(tbl, path = "booktabs.xlsx", facade = "booktabs")
+write_html(tbl, path = "booktabs.html", facade = "booktabs")
+write_docx(tbl, path = "booktabs.docx", facade = "booktabs")
+
+# The default style is used when you leave out `facade`
+write_xlsx(tbl, path = "default.xlsx")
+```
+
+Only `"default"` differs a little between formats (for example, Word uses a smaller font). Every other style is laid over that format's default. Settings that only mean something in a spreadsheet, such as row heights and column widths, are ignored outside Excel.
+
+Here is each style in Excel (a screenshot of the sheet `write_xlsx()` writes) and in HTML (built with `as_gt()`, which returns the styled `gt` table for your own Quarto or R Markdown documents):
+
+```{r, include = FALSE}
+gallery_tbl <- person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_table_title("Marital status by sex") |>
+  add_source_note("Source: person_record")
+
+facades <- c("default", "yolo", "apa", "booktabs", "striped", "gridded", "minimal",
+             "financial", "nyt", "jama", "dark", "pastel", "census")
+
+for (f in facades) {
+  write_xlsx(gallery_tbl, paste0("facade-", f, ".xlsx"), facade = f)
+}
+```
+
+```{r, echo = FALSE, results = "asis", purl = FALSE}
+for (f in facades) {
+  cat("\n\n#### `", f, "`\n\n**Excel**\n\n", sep = "")
+  cat(shot(f))
+  if (requireNamespace("gt", quietly = TRUE)) {
+    cat("\n\n**HTML**\n\n")
+    cat(gt::as_raw_html(as_gt(gallery_tbl, facade = f)))
+  }
+}
 ```
 
 ---
@@ -58,9 +117,9 @@ person_record |>
 
 Style settings use a two-part name: **which part of the table** `.` **what to change**. For example:
 
-- `header.bgFill` — background colour of the column header
-- `body.fontSize` — font size of the data cells
-- `table.offsetRow` — blank rows above the table (Excel only)
+- `header.fgFill`: fill colour of the column header
+- `body.fontSize`: font size of the data cells
+- `table.offsetRow`: blank rows above the table (Excel only)
 
 ```{r}
 person_record |>
@@ -73,28 +132,61 @@ person_record |>
 
 ### Common tweaks
 
-```{r, eval=FALSE}
+```{r}
 person_record |>
   generate_crosstab(marital_status, sex) |>
   add_facade(
     # Move the table down 2 rows and right 1 column (Excel only)
-    table.offsetRow        = 2,
-    table.offsetCol        = 1,
+    table.offsetRow = 2,
+    table.offsetCol = 1,
     # Round numbers to 1 decimal place
     table.decimalPrecision = 1,
     # Make the last row (usually Total) bold
-    table.lastRowBold      = TRUE,
+    table.lastRowBold = TRUE,
     # Header background colour and white text
-    header.bgFill          = "#003366",
-    header.fontColour      = "#FFFFFF",
-    header.textDecoration  = "bold",
+    header.fgFill = "#003366",
+    header.fontColour = "#FFFFFF",
+    header.textDecoration = "bold",
     # Data cell font size
-    body.fontSize          = 11
+    body.fontSize = 11
   ) |>
   write_xlsx(path = "styled-table.xlsx")
 ```
 
-> **Good to know:** A few settings only apply to Excel output (such as `table.offsetRow`, `table.gridLines`, and `table.tabColour`). They are harmlessly ignored when exporting to HTML, Word, or PDF — so you can attach them once and export to any format without changing anything.
+```{r, echo = FALSE}
+shot("tweaks")
+```
+
+> **Good to know:** A few settings only mean something in a spreadsheet: row heights (`height`), column widths (`width`, `table.widthOffset`), `table.offsetRow`, `table.offsetCol`, `table.gridLines`, `table.tabColour`, `table.locked`, `table.hidden`, `indent` and `wrapText`. HTML, Word and PDF ignore them, so you can attach them once and export to any format without changing anything.
+
+### Borders
+
+Borders take three settings per part: `border` (which sides: `"top"`, `"bottom"`, `"left"`, `"right"`), `borderColour` and `borderStyle`. Border styles use the Excel names in every format; HTML, PDF and Word draw the nearest line:
+
+| `borderStyle` | HTML / PDF | Word |
+|---|---|---|
+| `"thin"`, `"hair"` | 1px solid | 0.75pt solid |
+| `"medium"` | 2px solid | 1.5pt solid |
+| `"thick"` | 3px solid | 2.25pt solid |
+| `"dashed"`, `"mediumDashed"` | 1px / 2px dashed | 0.75pt / 1.5pt dashed |
+| `"dotted"` | 1px dotted | 0.75pt dotted |
+| `"double"` | 3px double | 2.25pt double |
+| `"dashDot"`, `"dashDotDot"`, `"slantDashDot"` and their `medium` forms | dashed | dashed |
+
+The parts with borders are `body` (every data cell), `header` (every header cell), `spanner` (the upper header rows of a crosstab), `border_header` (the rule under the header) and `border_outer` (the outline around header and body). `body.bandFill` shades every other data row.
+
+```{r, eval=FALSE}
+person_record |>
+  generate_crosstab(marital_status, sex) |>
+  add_facade(
+    border_outer.border = c("top", "bottom"),
+    border_outer.borderStyle = "medium",
+    border_header.border = "bottom",
+    border_header.borderStyle = "thin",
+    body.bandFill = "#F2F2F2"
+  ) |>
+  write_html(path = "rules.html")
+```
 
 ### Applying the same tweaks across formats
 
@@ -106,16 +198,16 @@ styled_tbl <- person_record |>
   add_table_title("Distribution by Sex") |>
   add_source_note("Source: Survey 2024") |>
   add_facade(
-    header.bgFill         = "#003366",
-    header.fontColour     = "#FFFFFF",
+    header.fgFill = "#003366",
+    header.fontColour = "#FFFFFF",
     header.textDecoration = "bold",
-    body.fontSize         = 11,
-    table.lastRowBold     = TRUE
+    body.fontSize = 11,
+    table.lastRowBold = TRUE
   )
 
 write_xlsx(styled_tbl, path = "table.xlsx")
 write_html(styled_tbl, path = "table.html")
-write_pdf(styled_tbl,  path = "table.pdf")
+write_pdf(styled_tbl, path = "table.pdf")
 write_docx(styled_tbl, path = "table.docx")
 ```
 
@@ -125,13 +217,13 @@ write_docx(styled_tbl, path = "table.docx")
 
 For full control, generate a starter YAML file, edit it to your taste, and load it back in.
 
-### Step 1 — generate the template
+### Step 1: generate the template
 
 ```{r, eval=FALSE}
 generate_template("my-style.yaml", template = "facade")
 ```
 
-### Step 2 — edit the file
+### Step 2: edit the file
 
 Open `my-style.yaml` in any text editor. It looks like this:
 
@@ -144,7 +236,7 @@ table.decimalPrecision: 2
 table.lastRowBold: false
 table.width: 14
 
-header.bgFill: ~          # ~ means "use the default"
+header.fgFill: ~          # ~ leaves the setting off
 header.fontColour: ~
 header.textDecoration: ~
 header.height: 28
@@ -162,36 +254,38 @@ source_note.fontSize: 10
 source_note.textDecoration: "italic"
 ```
 
-Change any value you like. Use `~` to keep the built-in default for a setting.
+Change any value you like. A setting set to `~` is turned off; a setting you delete from the file comes from the default facade.
 
 > **Tip:** `get_tsg_facade()` also accepts `.json` file paths if you prefer JSON over YAML.
 
-### Step 3 — use your style
+### Step 3: use your style
+
+Pass the file's path as the `facade` of any writer:
 
 ```{r, eval=FALSE}
-my_style <- get_tsg_facade("my-style.yaml")
+tbl <- person_record |>
+  generate_frequency(sex)
 
-person_record |>
-  generate_frequency(sex) |>
-  write_xlsx(path = "custom-styled.xlsx", facade = my_style)
+write_xlsx(tbl, path = "custom-styled.xlsx", facade = "my-style.yaml")
+write_docx(tbl, path = "custom-styled.docx", facade = "my-style.yaml")
 ```
 
 ---
 
 ## Programmatic style overrides
 
-If you need to build style settings dynamically (for example, in a loop or from a config), use `add_facade_alt()`. It accepts a named list instead of individual named arguments.
+If you need to build style settings dynamically (for example, in a loop or from a config), keep them in a named list and pass it to `add_facade()` with `do.call()`, or pass the list as the `facade` of a writer.
 
 ```{r}
 overrides <- list(
-  table.offsetRow   = 3,
-  header.bgFill     = "#2E4057",
+  table.offsetRow = 3,
+  header.fgFill = "#2E4057",
   header.fontColour = "#FFFFFF",
-  body.fontSize     = 11
+  body.fontSize = 11
 )
 
 do.call(
-  add_facade_alt,
+  add_facade,
   c(list(data = person_record |> generate_frequency(sex)), overrides)
 )
 ```
@@ -227,7 +321,7 @@ has_prop <- function(section, prop) {
 
 ref <- do.call(rbind, lapply(sections, function(s) {
   data.frame(
-    Section  = s,
+    Section = s,
     Properties = paste(
       Filter(function(p) has_prop(s, p), props),
       collapse = ", "
@@ -261,7 +355,7 @@ knitr::kable(ref, row.names = FALSE)
 
 ### Colour values
 
-All `fontColour`, `bgFill`, and `fgFill` settings accept:
+`fgFill` is the fill colour of a cell. `bgFill` is the background of a fill pattern in Excel, so it shows only behind a pattern; HTML and Word use it when `fgFill` is not set. All `fontColour`, `bgFill`, and `fgFill` settings accept:
 
 - Hex colour codes: `"#003366"`
 - Named R colours: `"navy"`

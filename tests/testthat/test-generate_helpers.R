@@ -1,18 +1,18 @@
 df_freq <- dplyr::tibble(
   category_1 = c("A", "B", "C", "A", "B"),
   category_2 = c("X", "X", "Y", "Y", "Y"),
-  value      = c(10, 20, 10, 30, 20)
+  value = c(10, 20, 10, 30, 20)
 )
 
 df_labelled_freq <- dplyr::tibble(
   status = haven::labelled(
     c(1, 2, 1, 3, 2, 1),
-    label  = "Status",
+    label = "Status",
     labels = c(High = 1, Medium = 2, Low = 3)
   ),
   sex = haven::labelled(
     c(1, 2, 1, 2, 1, 2),
-    label  = "Sex",
+    label = "Sex",
     labels = c(Male = 1, Female = 2)
   )
 )
@@ -62,9 +62,9 @@ test_that("rename_label renames a single column label", {
 test_that("rename_label renames multiple column labels", {
   result <- generate_frequency(df_freq, category_1) |>
     rename_label(category = "Var", frequency = "Count", percent = "Pct")
-  expect_equal(attr(result$category,  "label"), "Var")
+  expect_equal(attr(result$category, "label"), "Var")
   expect_equal(attr(result$frequency, "label"), "Count")
-  expect_equal(attr(result$percent,   "label"), "Pct")
+  expect_equal(attr(result$percent, "label"), "Pct")
 })
 
 test_that("rename_label warns for non-existent column", {
@@ -82,7 +82,7 @@ test_that("rename_label works on list output", {
   freq_list <- generate_frequency(df_freq)
   result <- rename_label(freq_list, category = "Variable", frequency = "N")
   for(tbl in result) {
-    expect_equal(attr(tbl$category,  "label"), "Variable")
+    expect_equal(attr(tbl$category, "label"), "Variable")
     expect_equal(attr(tbl$frequency, "label"), "N")
   }
 })
@@ -106,7 +106,7 @@ test_that("remove_label clears label attr for specified column only", {
   expect_equal(attr(result2$frequency, "label"), original_freq_label)
 })
 
-test_that("remove_label does NOT clear labels or xlsx_label attrs", {
+test_that("remove_label does NOT clear labels or label_xlsx attrs", {
   freq <- generate_frequency(df_labelled_freq, status)
   attr(freq$category, "labels") <- c(High = 1, Medium = 2, Low = 3)
   result <- remove_label(freq, category)
@@ -127,15 +127,15 @@ test_that("remove_label works on list output", {
 
 # ---------- remove_labels ------------------------------------------------
 
-test_that("remove_labels clears label, labels and xlsx_label attrs", {
+test_that("remove_labels clears label, labels and label_xlsx attrs", {
   freq <- generate_frequency(df_labelled_freq, status)
-  attr(freq$category, "labels")     <- c(A = 1, B = 2)
-  attr(freq$category, "xlsx_label") <- "Excel Label"
+  attr(freq$category, "labels") <- c(A = 1, B = 2)
+  attr(freq$category, "label_xlsx") <- "Excel Label"
 
   result <- remove_labels(freq, category)
   expect_null(attr(result$category, "label"))
   expect_null(attr(result$category, "labels"))
-  expect_null(attr(result$category, "xlsx_label"))
+  expect_null(attr(result$category, "label_xlsx"))
 })
 
 test_that("remove_labels on list clears attrs in every sub-table", {
